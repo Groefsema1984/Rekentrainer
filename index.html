@@ -1,0 +1,1801 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rekentrainer">
+<meta name="theme-color" content="#f08a09">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500;600;700;800&display=swap" rel="stylesheet">
+<title>Rekentrainer · Vellesan College</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23f08a09'/><path d='M28 28 L50 74 L72 28' fill='none' stroke='white' stroke-width='12' stroke-linejoin='round' stroke-linecap='round'/></svg>">
+<style>
+/* ===== Vellesan College huisstijl: oranje #F08A09, antraciet #171C24, Raleway =====
+   Layout geïnspireerd op moderne nieuws-, shop- en sportdashboards: witte topnavigatie,
+   grote fotokoppen met donkere overlay, fotokaarten en een dashboard in kolommen. */
+:root{--bg:#f4f4f2;--kaart:#ffffff;--ink:#171c24;--zacht:#626873;--lijn:#e5e3df;--acc:#f08a09;--knop:#e47f00;--donker:#171c24;--goed:#1f9e6e;--fout:#d6453d;--goud:#d9a521;--r:10px;
+  --schaduw:0 1px 2px rgba(23,28,36,.05),0 1px 0 rgba(23,28,36,.03);--kop:"Raleway","Helvetica Neue",Helvetica,Arial,sans-serif;--tekst:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+body.th-nacht{--bg:#12161d;--kaart:#1d232c;--ink:#eef0f4;--zacht:#a7afbf;--lijn:#2f3744;--donker:#0b0e13}
+body.th-zee{--acc:#1b8fb0;--knop:#167b98}
+body.th-bos{--acc:#3f8f3a;--knop:#367c32}
+body.
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 var(--tekst);-webkit-text-size-adjust:100%;font-variant-numeric:lining-nums}
+body{min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+h1,h2,h3,.sectie,.knop,.chip,.getal,.eyebrow{font-family:var(--kop);font-variant-numeric:lining-nums}
+h1,h2,h3{letter-spacing:-.01em}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:var(--knop)}
+
+/* ---------- topnavigatie ---------- */
+.topnav{background:var(--kaart);border-bottom:1px solid var(--lijn);position:sticky;top:0;z-index:10;padding-top:env(safe-area-inset-top)}
+.topnav .rij1{max-width:1240px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:16px;min-height:66px}
+.logo{display:flex;align-items:center;gap:10px;border:0;background:none;padding:0;text-align:left}
+.logo svg{width:40px;height:40px;flex:none}
+.logo .lw{display:flex;flex-direction:column;line-height:1}
+.logo .lw b{font:800 23px/1 var(--kop);color:#4a4d52;letter-spacing:-.02em}
+body.th-nacht .logo .lw b{color:#e8eaee}
+.logo .lw small{font:700 11px/1.2 var(--kop);color:var(--acc);letter-spacing:.18em;margin-top:3px}
+.logo .vak{font:700 14px/1.2 var(--kop);color:var(--zacht);border-left:1px solid var(--lijn);padding-left:12px;margin-left:4px}
+.topnav .rechts{margin-left:auto;display:flex;align-items:center;gap:10px}
+.profiel{display:flex;align-items:center;gap:10px;border:2px solid var(--acc);border-radius:8px;background:none;padding:5px 12px 5px 5px;color:var(--knop);font:700 15px var(--kop);max-width:240px}
+.profiel span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.avatar{width:32px;height:32px;border-radius:6px;background:var(--acc);color:#fff;display:grid;place-items:center;font:800 14px var(--kop);flex:none}
+.ikoonknop{border:0;background:var(--acc);color:#fff;border-radius:8px;height:44px;padding:0 16px;font:800 14px var(--kop);letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.topnav .rij2{border-top:1px solid var(--lijn)}
+.menu{max-width:1240px;margin:0 auto;padding:10px 24px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.menu::-webkit-scrollbar{display:none}
+.menu button{border:0;background:none;border-radius:999px;padding:9px 18px;font:600 16px var(--tekst);color:var(--ink);white-space:nowrap}
+.menu button:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.menu button.aan{background:var(--donker);color:#fff}
+body.th-nacht .menu button.aan{background:var(--acc)}
+body[data-scherm=quiz] .rij2,body[data-scherm=welkom] .rij2,body[data-scherm=quiz] .rechts,body[data-scherm=welkom] .rechts{display:none}
+body[data-scherm=quiz] .topnav{position:static}
+
+/* ---------- algemene layout ---------- */
+.wrap{max-width:1240px;margin:0 auto;padding:28px 24px 60px}
+.wrap.smal{max-width:820px}
+.sectie{display:flex;align-items:baseline;gap:12px;margin:36px 0 16px;font-size:24px;font-weight:800;color:var(--ink)}
+.sectie .meer{margin-left:auto;font:600 15px var(--tekst);color:var(--zacht);border:0;background:none;padding:0}
+.sectie:first-child{margin-top:0}
+.kaart{background:var(--kaart);border:1px solid var(--lijn);border-radius:var(--r);padding:22px;box-shadow:var(--schaduw)}
+.kaart h3{font-size:20px;font-weight:800}
+.zacht{color:var(--zacht)}
+.mid{text-align:center}
+.groot{font-size:56px;text-align:center;margin:6px 0}
+.eyebrow{display:inline-block;font:800 13px/1 var(--kop);letter-spacing:.12em;text-transform:uppercase}
+
+/* ---------- foto-koppen ---------- */
+.foto{position:relative;background:#2b313b center/cover no-repeat;color:#fff;overflow:hidden}
+.foto::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(15,18,24,.82) 0%,rgba(15,18,24,.55) 45%,rgba(15,18,24,.15) 100%);pointer-events:none}
+.foto>*{position:relative;z-index:1}
+.held{min-height:440px;display:flex;align-items:center}
+.held .in{max-width:1240px;width:100%;margin:0 auto;padding:56px 24px;display:flex;gap:40px;align-items:center}
+.held h1{font:800 54px/1.05 var(--kop);text-transform:uppercase;margin:12px 0 16px;max-width:760px;letter-spacing:-.01em}
+.held p{font-size:19px;max-width:600px;margin:0 0 26px;opacity:.95}
+.held .eyebrow{color:var(--acc)}
+.usp{list-style:none;padding:0;margin:26px 0 0;display:flex;flex-wrap:wrap;gap:8px 26px;font-weight:600;font-size:16px}
+.usp li::before{content:"✓";color:var(--acc);font-weight:900;margin-right:8px}
+.paneel{flex:none;width:300px;background:rgba(40,44,52,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:var(--r);overflow:hidden;align-self:stretch;max-height:340px}
+.paneel h4{margin:0;padding:16px 20px;background:rgba(255,255,255,.12);font:800 15px var(--kop);text-transform:uppercase;letter-spacing:.06em}
+.paneel button{display:flex;gap:10px;width:100%;border:0;background:none;color:#fff;text-align:left;padding:11px 20px;font-size:16px;opacity:.92}
+.paneel button:hover{background:rgba(255,255,255,.08)}
+.paneel button span:first-child{width:22px;text-align:center}
+.paginakop{border-radius:var(--r);min-height:190px;display:flex;flex-direction:column;justify-content:flex-end;padding:22px 26px;margin-bottom:26px}
+.paginakop::after{background:linear-gradient(0deg,rgba(15,18,24,.85) 0%,rgba(15,18,24,.35) 70%,rgba(15,18,24,.2) 100%)}
+.paginakop h1{font:800 36px/1.1 var(--kop);margin:4px 0 0}
+.paginakop .bovenin{position:absolute;top:16px;left:22px;right:22px;display:flex;gap:8px;align-items:center}
+.paginakop .bovenin .chip:first-of-type{margin-left:auto}
+.terug{border:0;background:none;color:var(--knop);font:700 16px var(--kop);padding:6px 4px 6px 0}
+.foto .terug{color:#fff;background:rgba(0,0,0,.3);border-radius:999px;padding:7px 14px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--kaart);border:1px solid var(--lijn);border-radius:999px;padding:6px 13px;font-weight:700;font-size:14px}
+.foto .chip{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.3);color:#fff;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+/* oude kop (fallback) */
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.top h1{font:800 26px/1.2 var(--kop);margin:0;flex:1;min-width:200px}
+
+/* ---------- knoppen ---------- */
+.knop{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:6px;padding:13px 24px;font-weight:800;background:var(--knop);color:#fff;font-size:16px;letter-spacing:.03em;min-height:50px;transition:filter .1s,transform .05s}
+.knop:hover{filter:brightness(1.06)}
+.knop:active{transform:translateY(1px)}
+.knop.groot{font-size:18px;padding:16px 32px;text-transform:uppercase;letter-spacing:.05em}
+.knop.zacht{background:var(--kaart);color:var(--ink);border:1px solid color-mix(in srgb,var(--ink) 22%,var(--lijn))}
+.knop.rand{background:transparent;color:var(--knop);border:2px solid var(--knop)}
+.knop.vol{width:100%}
+.knop:disabled{opacity:.45}
+.knop.klein{min-height:40px;padding:8px 14px;font-size:14px}
+
+/* ---------- dashboard (startpagina) ---------- */
+.dash{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;gap:28px;align-items:start}
+.dash>aside{display:flex;flex-direction:column;gap:22px}
+.profielkaart{padding:0;overflow:hidden;text-align:center}
+.profielkaart .bg{height:70px;background:linear-gradient(120deg,var(--knop),var(--acc))}
+.profielkaart .avatar{width:84px;height:84px;font-size:32px;border-radius:14px;margin:-42px auto 10px;border:4px solid var(--kaart);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.profielkaart h2{margin:0;font-size:24px;font-weight:800}
+.profielkaart .klas{color:var(--zacht);font-size:15px;margin:2px 0 14px}
+.cijfers{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--lijn);border-bottom:1px solid var(--lijn)}
+.cijfers div{padding:14px 6px}
+.cijfers div+div{border-left:1px solid var(--lijn)}
+.cijfers small{display:block;color:var(--zacht);font-size:13px}
+.getal{font:700 28px/1.15 var(--tekst);letter-spacing:-.01em}
+.profielkaart .blok{text-align:left;padding:16px 20px;border-bottom:1px solid var(--lijn)}
+.profielkaart .blok:last-child{border-bottom:0}
+.profielkaart .blok>small{display:block;color:var(--zacht);font-size:14px;margin-bottom:8px}
+.streak{display:flex;align-items:flex-end;gap:6px}
+.streak .vlam{text-align:center;color:var(--acc);font:800 12px/1.1 var(--kop);min-width:38px}
+.streak .vlam b{display:block;font-size:24px}
+.dagen{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;flex:1;text-align:center;font-size:12px;color:var(--zacht)}
+.dagen i{display:grid;place-items:center;width:26px;height:26px;margin:4px auto 0;border-radius:50%;border:1px solid var(--lijn);font-style:normal;font-size:12px;color:var(--ink)}
+.dagen i.ja{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:800}
+.dagen i.nu{border:2px solid var(--ink)}
+.linkrij{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;background:none;padding:16px 20px;color:var(--knop);font-weight:700;font-size:16px}
+.mijlpaal b{font-family:var(--kop);font-size:18px}
+
+.uitgelicht{border-radius:var(--r);min-height:340px;display:flex;flex-direction:column;justify-content:flex-end;padding:30px;cursor:pointer;border:0;width:100%;text-align:left}
+.uitgelicht::after{background:linear-gradient(0deg,rgba(15,18,24,.9) 0%,rgba(15,18,24,.45) 55%,rgba(15,18,24,.05) 100%)}
+.uitgelicht .eyebrow{color:var(--acc)}
+.uitgelicht h2{font:800 34px/1.12 var(--kop);margin:8px 0 6px}
+.uitgelicht p{margin:0 0 18px;opacity:.92;font-size:17px}
+.uitgelicht .knop{align-self:flex-start;text-transform:uppercase}
+
+.fotogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.fotokaart{border-radius:var(--r);min-height:230px;display:flex;flex-direction:column;justify-content:flex-end;padding:18px;border:0;text-align:left;width:100%;transition:transform .15s,box-shadow .15s}
+.fotokaart::after{background:linear-gradient(0deg,rgba(15,18,24,.92) 0%,rgba(15,18,24,.5) 50%,rgba(15,18,24,.08) 100%)}
+.fotokaart:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(23,28,36,.18)}
+.fotokaart:active{transform:scale(.985)}
+.fotokaart .nr{position:absolute;top:14px;left:14px;background:var(--k,var(--acc));color:#fff;font:800 12px/1 var(--kop);letter-spacing:.08em;text-transform:uppercase;padding:7px 10px;border-radius:5px}
+.fotokaart .status{position:absolute;top:12px;right:12px;font-size:22px}
+.fotokaart h3{font:800 20px/1.2 var(--kop);margin:0 0 4px}
+.fotokaart p{margin:0 0 10px;font-size:14px;opacity:.88}
+.fotokaart .balk{background:rgba(255,255,255,.25)}
+.fotokaart .balk>i{background:var(--acc)}
+.fotokaart.dicht{filter:grayscale(1);opacity:.6}
+
+.zijkop{font:800 22px var(--kop);margin:0 0 14px}
+.uitdaging{display:flex;gap:14px;align-items:center;width:100%;border:0;background:none;text-align:left;padding:12px 0;border-bottom:1px solid var(--lijn)}
+.uitdaging:last-of-type{border-bottom:0}
+.uitdaging .thumb{width:62px;height:62px;border-radius:8px;flex:none;background:#2b313b center/cover;display:grid;place-items:center;font-size:26px;color:#fff;position:relative;overflow:hidden}
+.uitdaging .thumb::after{content:"";position:absolute;inset:0;background:rgba(15,18,24,.25)}
+.uitdaging .thumb span{position:relative;z-index:1}
+.uitdaging b{display:block;font:700 17px/1.25 var(--kop)}
+.uitdaging small{color:var(--zacht);font-size:14px}
+.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.badges span{aspect-ratio:1;display:grid;place-items:center;font-size:28px;border-radius:10px;background:color-mix(in srgb,var(--acc) 12%,var(--kaart));border:1px solid color-mix(in srgb,var(--acc) 30%,var(--lijn))}
+.badges span.nee{filter:grayscale(1);opacity:.35;background:var(--bg);border-color:var(--lijn)}
+
+/* ---------- hoofdstukpagina ---------- */
+.statstrook{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));background:var(--kaart);border:1px solid var(--lijn);border-radius:var(--r);margin:-46px auto 0;position:relative;z-index:2;box-shadow:0 8px 24px rgba(23,28,36,.08)}
+.statstrook div{padding:18px 22px}
+.statstrook div+div{border-left:1px solid var(--lijn)}
+.statstrook small{display:block;color:var(--zacht);font-size:14px}
+.levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.levelkaart{background:var(--kaart);border:1px solid var(--lijn);border-radius:var(--r);padding:20px;text-align:left;display:flex;flex-direction:column;gap:6px;box-shadow:var(--schaduw);border-top:4px solid var(--k,var(--acc));min-height:170px}
+.levelkaart:hover{box-shadow:0 10px 24px rgba(23,28,36,.10)}
+.levelkaart .boven{display:flex;justify-content:space-between;align-items:center;font:800 12px var(--kop);letter-spacing:.08em;text-transform:uppercase;color:var(--zacht)}
+.levelkaart .boven span:last-child{font-size:26px;letter-spacing:0}
+.levelkaart h3{margin:2px 0 0;font-size:19px;font-weight:800}
+.levelkaart p{margin:0;color:var(--zacht);font-size:15px}
+.levelkaart .onder{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:10px;font-weight:700;color:var(--knop);font-size:15px}
+.levelkaart.dicht{opacity:.55}
+.toetsblok{display:flex;gap:22px;align-items:center;background:var(--donker);color:#fff;border-radius:var(--r);padding:26px;margin-top:18px}
+.toetsblok .ic{font-size:46px}
+.toetsblok h3{margin:0;font:800 22px var(--kop)}
+.toetsblok p{margin:4px 0 0;color:#c9ced6}
+
+/* ---------- lijsten en tegels (overige pagina's) ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.tegel{position:relative;background:var(--kaart);border:1px solid var(--lijn);border-radius:var(--r);padding:18px;text-align:left;box-shadow:var(--schaduw);min-height:130px;display:flex;flex-direction:column;gap:6px}
+.tegel .ic{font-size:28px}
+.tegel h3{margin:4px 0 0;font-size:18px;font-weight:800}
+.tegel p{margin:0;color:var(--zacht);font-size:14px}
+.balk{height:8px;background:color-mix(in srgb,var(--ink) 9%,transparent);border-radius:99px;overflow:hidden}
+.balk>i{display:block;height:100%;background:var(--k,var(--acc));border-radius:99px}
+.rij{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--lijn)}
+.rij:last-child{border-bottom:0}
+.lv{width:100%;border:0;background:none;text-align:left;display:flex;align-items:center;gap:14px;padding:14px 8px;border-bottom:1px solid var(--lijn)}
+.lv:hover{background:color-mix(in srgb,var(--acc) 5%,var(--kaart))}
+.lv:last-child{border-bottom:0}
+.lv .med{font-size:28px;width:40px;text-align:center}
+.lv b{display:block;font-family:var(--kop);font-weight:700}
+.lv small{color:var(--zacht)}
+.domein{display:grid;grid-template-columns:34px 1fr 52px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--lijn)}
+.domein:last-child{border-bottom:0}
+.pct{font-weight:800;text-align:right;font-family:var(--kop)}
+.kaarten{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.bk{border-radius:var(--r);padding:14px;min-height:110px;background:var(--kaart);border:1px solid var(--lijn);border-top:3px solid var(--acc);font-size:13px;box-shadow:var(--schaduw)}
+.bk b{display:block;font:800 15px/1.3 var(--kop);margin-bottom:4px}
+.bk.nee{background:repeating-linear-gradient(45deg,var(--lijn),var(--lijn) 6px,transparent 6px,transparent 12px);color:transparent;border-top-color:var(--lijn);box-shadow:none}
+.bk.nee b{color:var(--zacht)}
+.welkom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:22px;align-items:start}
+
+/* ---------- oefenen ---------- */
+.vraag{white-space:pre-line;font:700 22px/1.4 var(--kop);margin:6px 0 22px}
+.vraag.lang{font:500 17px/1.55 var(--tekst,inherit)}
+.opties{display:grid;gap:10px}
+.optie{border:2px solid var(--lijn);background:var(--kaart);border-radius:8px;padding:14px 16px;text-align:left;font-size:17px;display:flex;gap:14px;align-items:center;min-height:58px;transition:border-color .1s,background .1s}
+.optie:hover{border-color:color-mix(in srgb,var(--acc) 55%,var(--lijn))}
+.optie .l{font:800 15px/1 var(--kop);color:var(--ink);min-width:34px;height:34px;display:grid;place-items:center;border-radius:6px;background:var(--bg);flex:none}
+.optie.kies{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,var(--kaart))}
+.optie.kies .l{background:var(--knop);color:#fff}
+.opties .optie.goed{border-color:var(--goed);background:color-mix(in srgb,var(--goed) 10%,var(--kaart))}
+.optie.goed .l{background:var(--goed);color:#fff}
+.opties .optie.fout{border-color:var(--fout);background:color-mix(in srgb,var(--fout) 9%,var(--kaart))}
+.optie.fout .l{background:var(--fout);color:#fff}
+#qz{max-width:820px}
+#qz>.kaart{padding:30px;border-top:4px solid var(--k,var(--acc))}
+#qz .top{padding-bottom:14px;border-bottom:1px solid var(--lijn)}
+#qz .top h1{font-size:20px}
+.koppel{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;align-items:center}
+select,input[type=text],input[type=number],input[type=password]{font:inherit;width:100%;padding:13px 14px;border:1px solid color-mix(in srgb,var(--ink) 22%,var(--lijn));border-radius:6px;background:var(--kaart);color:var(--ink);min-height:50px}
+select:focus,input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%,transparent)}
+select.goed,input.goed{border-color:var(--goed);border-width:2px} select.fout,input.fout{border-color:var(--fout);border-width:2px}
+.reken{display:flex;gap:10px;align-items:center;font-size:22px;font-weight:700}
+.reken input{font-size:22px;max-width:240px}
+.fb{margin-top:18px;padding:14px 18px;border-radius:8px;font-size:16px}
+.fb.goed{background:color-mix(in srgb,var(--goed) 10%,var(--kaart));border-left:5px solid var(--goed)}
+.fb.fout{background:color-mix(in srgb,var(--fout) 8%,var(--kaart));border-left:5px solid var(--fout)}
+.voet{display:flex;gap:10px;margin-top:20px;justify-content:flex-end;flex-wrap:wrap}
+.voortgang{display:flex;gap:5px;margin:16px 0}
+.voortgang i{flex:1;height:6px;border-radius:9px;background:var(--lijn)}
+.voortgang i.g{background:var(--goed)} .voortgang i.f{background:var(--fout)} .voortgang i.nu{background:var(--acc)}
+.label{display:block;font-weight:700;margin:14px 0 6px}
+.code{font:700 24px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:var(--knop)}
+
+/* ---------- tabellen, meldingen ---------- */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px 8px;border-bottom:1px solid var(--lijn);text-align:left;vertical-align:top}
+th{font:800 12px var(--kop);text-transform:uppercase;letter-spacing:.05em;color:var(--zacht);background:var(--bg)}
+.tabelwrap{overflow-x:auto}
+.melding{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:var(--donker);color:#fff;padding:12px 18px;border-radius:8px;z-index:30;font-weight:600;max-width:92vw;border-left:5px solid var(--acc);box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.sync{font-size:13px}
+.sync.ok{color:var(--goed)} .sync.fout{color:var(--fout)}
+
+/* ---------- voettekst ---------- */
+.voettekst{background:var(--donker);color:#aab1bc;font-size:14px}
+.voettekst .in{max-width:1240px;margin:0 auto;padding:26px 24px calc(26px + env(safe-area-inset-bottom));display:flex;flex-wrap:wrap;gap:8px 26px;align-items:center}
+.voettekst b{color:#fff;font-family:var(--kop)}
+.voettekst .o{color:var(--acc)}
+
+/* ---------- iPad en kleiner ---------- */
+@media (max-width:1180px){.dash{grid-template-columns:280px minmax(0,1fr)}.dash>aside.rechts{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}}
+@media (max-width:900px){.paneel{display:none}.held h1{font-size:42px}.held{min-height:380px}}
+@media (max-width:820px){.dash{grid-template-columns:1fr}.dash>aside.links{display:grid;grid-template-columns:1fr}.dash>aside.rechts{grid-template-columns:1fr}.logo .vak{display:none}.profiel span:last-child{display:none}.profiel{padding:5px}.uitgelicht{min-height:300px}.uitgelicht h2{font-size:28px}}
+@media (max-width:560px){.wrap{padding:20px 16px 40px}.topnav .rij1,.menu{padding-left:16px;padding-right:16px}.held .in{padding:40px 16px}.held h1{font-size:32px}.koppel{grid-template-columns:1fr}.vraag{font-size:19px}.ikoonknop .t{display:none}.paginakop h1{font-size:28px}.statstrook div+div{border-left:0;border-top:1px solid var(--lijn)}#qz>.kaart{padding:20px}.logo .lw b{font-size:20px}}
+@media print{.topnav,.terug,.voet,.voettekst{display:none}}
+
+
+/* ===== Rekentrainer: Got It-indeling in Vellesan-huisstijl ===== */
+:root{--ring:#ebe9e4;--ring-leeg:#f1efea}
+body.th-nacht{--ring:#2b323d;--ring-leeg:#232a33}
+.klein{font-size:14px}
+.lijst{padding-left:20px}.lijst li{margin:6px 0}
+
+/* niveaukop op het dashboard */
+.niveaukop{min-height:300px;display:flex;align-items:flex-end}
+.niveaukop .in{max-width:1240px;width:100%;margin:0 auto;padding:40px 24px 34px;display:flex;gap:24px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.niveaukop h1{font:800 46px/1.05 var(--kop);text-transform:uppercase;margin:8px 0 8px}
+.niveaukop p{margin:0 0 16px;max-width:620px;opacity:.92}
+.niveaukop .eyebrow{color:var(--acc)}
+.ladder{display:flex;gap:6px;flex-wrap:wrap}
+.ladder span{width:38px;height:38px;border-radius:8px;display:grid;place-items:center;font:800 15px var(--kop);background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3)}
+.ladder span.af{background:var(--goed);border-color:var(--goed)}
+.ladder span.nu{background:var(--acc);border-color:#fff;box-shadow:0 0 0 2px var(--acc)}
+
+/* dashboard in drie kolommen: totaal | 4 domeinen | verder werken */
+.gotdash{display:grid;grid-template-columns:290px minmax(0,1fr) 300px;gap:22px;align-items:start}
+.gotdash.docent{grid-template-columns:290px minmax(0,1fr)}
+.kaartkop{font:800 15px var(--kop);text-transform:uppercase;letter-spacing:.06em;margin:0 0 14px;color:var(--ink)}
+.totaal{text-align:center}
+.ringen{width:100%;max-width:230px;margin:0 auto;display:block}
+.ringgetal{font:800 40px var(--kop);fill:var(--ink)}
+.legenda{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:14px;margin:10px 0 14px}
+.legenda i,.wiellegenda i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px}
+.totaal .cijfers{margin:0 -22px -22px}
+.domgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.domkaart{background:var(--kaart);border:1px solid var(--lijn);border-radius:var(--r);box-shadow:var(--schaduw);display:flex;flex-direction:column;border-top:5px solid var(--k)}
+.dkkop{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 0}
+.dkkop h3{margin:0;font:800 17px var(--kop);text-transform:uppercase;letter-spacing:.03em;color:var(--k)}
+.dkkop h3 span{color:var(--zacht);font-weight:700;margin-left:4px}
+.dkkop .med{font-size:26px}
+.dkbody{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:center;padding:12px 18px;flex:1}
+.donut{width:100%;display:block}
+.donutgetal{font-family:var(--kop);font-weight:800;fill:var(--ink)}
+.ap{display:block;font:italic 700 14px var(--kop);color:var(--zacht);margin-bottom:6px}
+.aplijst{list-style:none;margin:0;padding:0}
+.aplijst li{border-bottom:1px solid var(--lijn)}
+.aplijst button{border:0;background:none;padding:7px 0;font:700 14px var(--kop);color:var(--k);text-transform:uppercase;letter-spacing:.02em;text-align:left;width:100%}
+.aplijst button::before{content:"›";margin-right:8px}
+.status{display:inline-block;margin-top:8px;font:800 12px var(--kop);text-transform:uppercase;letter-spacing:.05em;padding:4px 8px;border-radius:5px}
+.status.check{background:color-mix(in srgb,var(--goed) 16%,transparent);color:var(--goed)}
+.status.herk{background:color-mix(in srgb,var(--fout) 14%,transparent);color:var(--fout)}
+.dkvoet{display:flex;gap:8px;padding:0 18px 16px}
+.dkvoet .knop{flex:1}
+.rechterkol{display:flex;flex-direction:column;gap:18px}
+.verder{display:grid;grid-template-columns:1fr auto;gap:0 10px;width:100%;text-align:left;border:0;border-radius:8px;background:var(--donker);color:#fff;padding:14px 16px;margin-bottom:10px;border-left:6px solid var(--acc)}
+.verder b{font:800 16px var(--kop);text-transform:uppercase;letter-spacing:.03em}
+.verder small{grid-column:1;opacity:.8;font-size:13px}
+.verder span{grid-row:1/3;grid-column:2;align-self:center;font-size:26px;color:var(--acc)}
+.verder.rood{border-left-color:var(--fout)}
+.minirij{display:grid;grid-template-columns:96px 1fr 46px auto;gap:10px;align-items:center;font-size:14px;margin:6px 0}
+.minirij b{text-align:right;font-family:var(--kop)}
+.minirij .plus{color:var(--goed);font-weight:800}.minirij .min{color:var(--fout);font-weight:800}
+.melden{border-left:5px solid var(--acc);margin-bottom:18px}
+
+/* domeinpagina: wiel + to-do */
+.domlayout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start}
+.wielkop{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.wiel{width:100%;max-width:600px;display:block;margin:0 auto}
+.wielcel{cursor:pointer;transition:filter .1s}.wielcel:hover{filter:brightness(1.1)}
+.wiellabel{font:700 15px var(--kop);fill:var(--ink)}
+.wielmidden{font:700 13px var(--kop);fill:var(--zacht);text-transform:uppercase}.wielmidden.groot{font-size:30px;fill:var(--ink)}
+.wiellegenda{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center;font-size:13px;color:var(--zacht);margin-top:8px}
+.nivkeuze{display:flex;gap:4px;flex-wrap:wrap}
+.nivkeuze button{min-width:40px;height:40px;border-radius:8px;border:1px solid var(--lijn);background:var(--kaart);font:800 15px var(--kop);padding:0 12px}
+.nivkeuze button.aan{background:var(--donker);color:#fff;border-color:var(--donker)}
+.nivkeuze button:disabled{opacity:.35}
+.todokaart{max-height:none}
+.todo{border-top:1px solid var(--lijn);padding:10px 0}
+.todo.uit{background:color-mix(in srgb,var(--acc) 6%,transparent);margin:0 -22px;padding:10px 22px}
+.todo h4{margin:0 0 6px;font:800 14px var(--kop);text-transform:uppercase;letter-spacing:.05em;color:var(--knop);display:flex;justify-content:space-between}
+.todo h4 span{color:var(--zacht)}
+.todoitem{display:flex;gap:10px;align-items:center;width:100%;border:0;background:none;text-align:left;padding:8px 4px;border-radius:6px;min-height:48px}
+.todoitem:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.todoitem b{display:block;font-size:15px;font-weight:600}
+.todoitem small{color:var(--zacht);font-size:13px}
+.todoitem em{margin-left:auto;font-style:normal;font-weight:900;color:var(--fout);width:22px;height:22px;border-radius:50%;border:2px solid var(--fout);display:grid;place-items:center;font-size:12px;flex:none}
+.vink{width:24px;height:24px;border-radius:6px;border:2px solid var(--lijn);flex:none;display:grid;place-items:center;color:#fff;font-weight:900;font-size:14px}
+.vink.ja{background:var(--goed);border-color:var(--goed)}.vink.half{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 25%,transparent)}
+
+/* oefenen */
+.qkop{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-bottom:12px}
+.qkop .eyebrow{flex-basis:100%}
+.rmknop{margin-left:auto;border:1px solid var(--lijn);background:var(--kaart);border-radius:999px;padding:7px 14px;font:700 13px var(--kop)}
+.rmknop.dicht{color:var(--zacht);background:var(--bg);cursor:default}
+.vraag{font:600 20px/1.5 var(--kop)}
+.figuur{margin:4px 0 18px;overflow-x:auto}
+.fig{width:100%;max-width:560px;height:auto;display:block;font-family:var(--tekst);font-size:16px}
+.fig text{fill:var(--ink)}.fig text.zacht{fill:var(--zacht)}.fig text.op{fill:#fff;font-weight:700}
+.fig .vlak.a{fill:var(--acc)}.fig .vlak.b{fill:#1b8fb0}.fig .vlak.c{fill:#3f8f3a}.fig .vlak.leeg{fill:var(--ring);stroke:var(--zacht);stroke-width:1}
+.fig .vlak.goed{fill:var(--goed)}.fig .vlak.fout{fill:var(--fout)}.fig .vlak.zacht{fill:#a7afbf}
+.fig .vlak.t0{fill:#f08a09}.fig .vlak.t1{fill:#1b8fb0}.fig .vlak.t2{fill:#3f8f3a}.fig .vlak.t3{fill:#7a5bd6}.fig .vlak.t4{fill:#a7afbf}
+.fig .vlak{stroke:var(--kaart);stroke-width:2}
+.fig .lijn{stroke:var(--ink);stroke-width:1.5;fill:none}.fig .dik{stroke:var(--ink);stroke-width:4}
+.fig .ax{stroke:var(--ink);stroke-width:2}.fig .rast{stroke:var(--lijn);stroke-width:1}
+.fig .pt{fill:var(--knop)}.fig .serie{stroke-width:3}.fig .serie.s0{stroke:var(--knop)}.fig .serie.s1{stroke:#1b8fb0}.fig .pt.s1,.fig .leg.s1{fill:#1b8fb0}.fig .leg.s0{fill:var(--knop)}
+.eh{font:700 22px var(--kop);color:var(--zacht)}
+.reken input{max-width:220px}
+.uitlegblok{background:color-mix(in srgb,var(--acc) 8%,var(--kaart));border-radius:8px;padding:12px 16px;margin-bottom:16px}
+.uitlegblok p{margin:6px 0 0}
+.stappen{margin:0 0 16px;padding-left:24px;font-size:17px}
+.stappen li{padding:6px 0;border-bottom:1px dashed var(--lijn)}
+.stappen.klein{font-size:15px;margin-top:8px}
+.leegstap{background:color-mix(in srgb,var(--acc) 7%,transparent);border-radius:6px;padding:8px!important}
+.checkvraag{margin:10px 0;font-weight:700}
+.sabstappen{display:grid;gap:8px;margin-bottom:12px}
+.sabstap{display:flex;gap:12px;align-items:center;text-align:left;border:2px solid var(--lijn);background:var(--kaart);border-radius:8px;padding:12px 14px;font-size:17px;min-height:54px}
+.sabstap .nr{font:800 14px var(--kop);width:30px;height:30px;border-radius:50%;background:var(--bg);display:grid;place-items:center;flex:none}
+.sabstap.kies{border-color:var(--acc)}.sabstap.goed{border-color:var(--goed);background:color-mix(in srgb,var(--goed) 9%,var(--kaart))}.sabstap.fout{border-color:var(--fout);background:color-mix(in srgb,var(--fout) 8%,var(--kaart))}
+.vtab{border-collapse:collapse;width:auto;font-size:18px;margin:4px 0 12px}
+.vtab th,.vtab td{border:1px solid var(--lijn);padding:8px 14px;text-align:center;min-width:80px;background:var(--kaart)}
+.vtab th{background:var(--bg);font:700 14px var(--kop);text-transform:none;letter-spacing:0;color:var(--ink);text-align:left}
+.vtab input{width:90px;padding:8px;text-align:center;font-size:18px}
+.vtab td.leeg{color:var(--zacht)}
+.volgorde{display:grid;gap:8px;margin-bottom:12px}
+.vstap{text-align:left;border:2px dashed var(--lijn);background:var(--kaart);border-radius:8px;padding:12px 14px;font-size:16px;min-height:50px}
+.vstap:disabled{opacity:.3}
+.koppelgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.koppelgrid>div{display:grid;gap:8px;align-content:start}
+.kp{position:relative;text-align:left;border:2px solid var(--lijn);background:var(--kaart);border-radius:8px;padding:12px 14px 12px 28px;font-size:16px;min-height:54px}
+.kp.kies{border-color:var(--ink)}.kp .kb{position:absolute;left:8px;top:50%;width:10px;height:10px;border-radius:50%;transform:translateY(-50%)}
+.kp.goed{background:color-mix(in srgb,var(--goed) 9%,var(--kaart))}.kp.fout{background:color-mix(in srgb,var(--fout) 8%,var(--kaart))}
+textarea{width:100%;font:inherit;padding:12px;border-radius:6px;border:1px solid color-mix(in srgb,var(--ink) 22%,var(--lijn));background:var(--kaart);color:var(--ink)}
+.v3ant{border:1px solid var(--lijn);border-radius:8px;padding:10px 14px;margin:10px 0;background:var(--bg)}
+.v3ant p{margin:0 0 8px}
+.segment{display:flex;gap:6px;flex-wrap:wrap}
+.segment button{flex:1;min-height:44px;border:1px solid var(--lijn);background:var(--kaart);border-radius:6px;font:700 14px var(--kop);padding:6px 10px}
+.segment button.kies{background:var(--donker);color:#fff}.segment button.goed{background:var(--goed);color:#fff;border-color:var(--goed)}.segment button.fout{background:var(--fout);color:#fff;border-color:var(--fout)}
+.segment.breed button{min-height:54px;font-size:15px}
+.zekerknop,.gokknop{min-width:140px;font-size:17px}
+.zekerknop b,.gokknop b{font-size:22px;margin-right:4px}
+.gokknop{background:var(--kaart);color:var(--ink);border:2px solid color-mix(in srgb,var(--ink) 25%,var(--lijn))}
+.fb p{margin:8px 0 0}.fb details{margin-top:8px}.fb summary,.anders summary{cursor:pointer;font-weight:700;color:var(--knop)}
+.fb .zf{font-weight:700;color:var(--fout)}
+.anders{margin-top:14px;border:1px solid var(--lijn);border-radius:8px;padding:14px 18px;background:var(--bg)}
+.anders p{margin:8px 0}
+.fbicoon{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:900;background:var(--bg);border:2px solid var(--lijn);flex:none}
+.fbicoon.zf{border-color:var(--fout);color:var(--fout)}
+.nivbadge{width:110px;height:110px;margin:12px auto 4px;border-radius:22px;background:var(--acc);color:#fff;display:grid;place-items:center;font:800 60px var(--kop)}
+table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb,var(--acc) 6%,var(--kaart))}
+.pctcel{font-weight:700}.pctcel.hoog{color:var(--goed)}.pctcel.laag{color:var(--fout)}
+
+/* rekenmachine */
+#rekenmachine{position:fixed;right:16px;bottom:16px;z-index:25}
+.rm{width:290px;background:var(--donker);color:#fff;border-radius:14px;padding:12px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.rmkop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.rmkop button{border:0;background:none;color:#fff;font-size:18px}
+.rmhist{min-height:18px;text-align:right;font-size:13px;opacity:.6}
+.rmscherm{background:#0b0e13;border-radius:8px;padding:10px 12px;text-align:right;font:700 26px ui-monospace,Menlo,monospace;margin-bottom:10px;overflow:hidden}
+.rmtoetsen{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.rmtoetsen button{height:48px;border:0;border-radius:8px;background:#2b313b;color:#fff;font:700 18px var(--kop)}
+.rmtoetsen button.op{background:var(--acc)}.rmtoetsen button.wis{background:#5a6170}
+
+@media (max-width:1180px){.gotdash{grid-template-columns:270px minmax(0,1fr)}.rechterkol{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,1fr)}}
+@media (max-width:980px){.domlayout{grid-template-columns:1fr}}
+@media (max-width:860px){.gotdash,.gotdash.docent{grid-template-columns:1fr}.rechterkol{grid-template-columns:1fr}.domgrid{grid-template-columns:1fr}.niveaukop h1{font-size:34px}}
+@media (max-width:560px){.dkbody{grid-template-columns:96px 1fr}.koppelgrid{grid-template-columns:1fr}.minirij{grid-template-columns:80px 1fr 40px auto}.zekerknop,.gokknop{flex:1;min-width:0}}
+
+</style>
+</head>
+<body>
+<header class="topnav"><div class="rij1">
+ <button class="logo" onclick="if(S&&S.niv&&scherm!=='quiz')go('home')" aria-label="Naar het dashboard"><svg viewBox="0 0 42 42" aria-hidden="true"><circle cx="21" cy="21" r="20" fill="#f08a09"/><path d="M12 12 L21 31 L30 12" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></svg><span class="lw"><b>vellesan</b><small>college</small></span><span class="vak">Rekentrainer</span></button>
+ <div class="rechts" id="profiel"></div>
+</div><div class="rij2"><nav class="menu" id="menu"></nav></div></header>
+<div id="app"></div>
+<script>
+// ===== Rekentrainer Vellesan · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
+const DATA_ENDPOINT_URL = "";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
+const BOUW = 'e5108d7857';
+const KLASSEN = ['1e klas','2e klas','3e klas','4e klas','5e klas','6e klas','Thuis'];
+const KEY = 'rekenvel-v1';
+const OUTBOX = 'rekenvel-outbox';
+const IDLE_MS = 90*1000;
+
+const NIVEAUS = [
+  {n:1,ref:'1F',titel:'Basis op orde',       sub:'Hele getallen, eenvoudige breuken en procenten, maten en tabellen'},
+  {n:2,ref:'1S',titel:'Stevige basis',       sub:'Kommagetallen, verhoudingstabellen, oppervlakte en grafieken'},
+  {n:3,ref:'1S → 2F',titel:'Op weg naar 2F', sub:'Procenten, schaal, eenheden omrekenen en formules in woorden'},
+  {n:4,ref:'2F',titel:'Niveau 2F',           sub:'Alles wat je nodig hebt voor de rekentoets 2F'},
+  {n:5,ref:'2F → 3F',titel:'Op weg naar 3F', sub:'Procentuele verandering, snelheid, inhoud en negatieve getallen'},
+  {n:6,ref:'3F',titel:'3F in aanloop',       sub:'Groeifactoren, Pythagoras, machten en formules'},
+  {n:7,ref:'3F',titel:'3F basis',            sub:'Rente, indexcijfers, gelijkvormigheid en statistiek'},
+  {n:8,ref:'3F',titel:'3F eindniveau',       sub:'Gemengde, complexe contexten op het hoogste rekenniveau'}
+];
+// subdomeinen (onderdelen): het wiel op de domeinpagina heeft per onderdeel een ring per niveau
+const SUBDOMEINEN = {
+  G:[{id:'getalbegrip',naam:'Getalbegrip'},{id:'bewerkingen',naam:'Bewerkingen'},{id:'breuken',naam:'Breuken'},{id:'komma',naam:'Kommagetallen'},{id:'negatief',naam:'Negatief en machten'}],
+  V:[{id:'vtabel',naam:'Verhoudingstabel'},{id:'schaal',naam:'Schaal en snelheid'},{id:'procent',naam:'Procenten'},{id:'pverandering',naam:'Procentuele verandering'},{id:'groei',naam:'Groei en rente'}],
+  M:[{id:'eenheden',naam:'Eenheden omrekenen'},{id:'tijd',naam:'Tijd en geld'},{id:'oppervlak',naam:'Omtrek en oppervlakte'},{id:'inhoud',naam:'Inhoud'},{id:'meetkunde',naam:'Meetkunde'}],
+  B:[{id:'tabellen',naam:'Tabellen'},{id:'grafieken',naam:'Grafieken'},{id:'formules',naam:'Formules'},{id:'statistiek',naam:'Statistiek'}]
+};
+const STARTNIVEAU_KLAS = {'1e klas':2,'2e klas':3,'3e klas':4,'4e klas':5,'5e klas':6,'6e klas':6,'Thuis':2};
+const DOMEINEN = [
+  {id:'G',naam:'Getallen',kort:'Getallen',k:'#f08a09',ic:'🔢'},
+  {id:'V',naam:'Verhoudingen',kort:'Verhoudingen',k:'#1b8fb0',ic:'⚖️'},
+  {id:'M',naam:'Meten en meetkunde',kort:'Meten',k:'#3f8f3a',ic:'📐'},
+  {id:'B',naam:'Verbanden',kort:'Verbanden',k:'#7a5bd6',ic:'📈'}
+];
+const DOM = Object.fromEntries(DOMEINEN.map(d=>[d.id,d]));
+const DREMPEL = 80;                       // beheersing waarbij een domein "Klaar voor de check" is
+const MEDAILLES = [{n:'brons',e:'🥉',min:50},{n:'zilver',e:'🥈',min:80},{n:'goud',e:'🥇',min:95}];
+
+// ---------- hulpfuncties ----------
+const $ = (s,el=document)=>el.querySelector(s);
+const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rondaf = (x,d=2)=>{ const f=Math.pow(10,d); return Math.round((x+Number.EPSILON*Math.sign(x||1))*f)/f };
+const duiz = s => s.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+// getal in Nederlandse notatie: max d decimalen, geen overbodige nullen; duizendtallen met punt (vanaf 10.000)
+function nl(x,d=4){
+  if(typeof x!=='number'||!isFinite(x)) return String(x);
+  const neg=x<0; let s=String(rondaf(Math.abs(x),d));
+  if(/e/.test(s)) s=Math.abs(x).toFixed(d).replace(/0+$/,'').replace(/\.$/,'');
+  let [h,dd]=s.split('.'); if(h.length>4) h=duiz(h);
+  return (neg?'−':'')+h+(dd?','+dd:'');
+}
+const eur = (x,altijdCent=false) => { const c=Math.abs(rondaf(x,2)%1)>1e-9||altijdCent; const [h,d]=Math.abs(x).toFixed(2).split('.'); return '€ '+(x<0?'−':'')+(h.length>3?duiz(h):h)+(c?','+d:',-') };
+const pct = x => nl(x,2)+'%';
+function parseGetal(s){
+  if(s==null) return NaN;
+  s=String(s).trim().replace(/[−–]/g,'-').replace(/[€%\s]/g,'').replace(/[a-zA-Z²³\/]+$/,'');
+  if(/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) s=s.replace(/\./g,'');
+  if(/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s=s.replace(/,/g,'');
+  s=s.replace(',','.');
+  if(/^-?\d+\/\d+$/.test(s)){ const [a,b]=s.split('/'); return Number(a)/Number(b) }
+  return s===''||!/^-?(\d+\.?\d*|\.\d+)$/.test(s)?NaN:Number(s);
+}
+const vandaag = ()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function weekId(d=new Date()){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const dn=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-dn);const y=new Date(Date.UTC(t.getUTCFullYear(),0,1));return t.getUTCFullYear()+'-W'+String(Math.ceil(((t-y)/864e5+1)/7)).padStart(2,'0')}
+const datumKort = t => t?new Date(t).toLocaleDateString('nl-NL',{day:'numeric',month:'short'}):'–';
+const eid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+function shuffle(a,r=Math.random){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+// ---------- seeded random (spiegelvragen = zelfde generator, andere seed) ----------
+function RNG(seed){
+  let a=seed>>>0||1;
+  const f=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+  const r={ f,
+    int:(lo,hi)=>lo+Math.floor(f()*(hi-lo+1)),
+    pick:arr=>arr[Math.floor(f()*arr.length)],
+    stap:(lo,hi,s)=>lo+s*Math.floor(f()*(Math.floor((hi-lo)/s)+1)),
+    shuffle:arr=>shuffle(arr,f),
+    naam:()=>r.pick(NAMEN), naam2:()=>{const a=r.pick(NAMEN);let b;do{b=r.pick(NAMEN)}while(b===a);return [a,b]},
+    ja:(p=.5)=>f()<p
+  };
+  return r;
+}
+const NAMEN=['Sem','Noor','Daan','Aya','Milan','Sara','Mohammed','Lotte','Finn','Yara','Luuk','Emma','Bram','Fenna','Jayden','Zoë','Ravi','Lina','Thijs','Iris','Ilias','Julia','Mees','Nora','Jesse','Hanna','Ayoub','Sophie','Tim','Elif'];
+const nieuweSeed = () => (Math.random()*2**31)>>>0;
+
+// ---------- staat ----------
+function nieuweStaat(){
+  return { id:'', code:'', naam:'', klas:'', upd:0, aangemaakt:Date.now(),
+    niv:0, max:0, plaatsing:null,            // niv 0 = nog geen instaptoets gemaakt
+    ld:{}, dom:{}, fb:{}, toetsen:[], diplomas:{}, rec:[], recNiv:0,
+    tijd:0, week:{}, dag:{}, aantal:0, goed:0, badges:[], th:'' };
+}
+let S = null;
+
+function laad(){
+  try{ const r=localStorage.getItem(KEY); if(r) S=Object.assign(nieuweStaat(),JSON.parse(r)); }catch(e){ S=null }
+  if(!S){ try{ const r=localStorage.getItem(KEY+'-reserve'); if(r) S=Object.assign(nieuweStaat(),JSON.parse(r)); }catch(e){} }
+}
+function bewaar(sync=true){
+  if(!S) return; S.upd=Date.now();
+  try{ const oud=localStorage.getItem(KEY); if(oud) localStorage.setItem(KEY+'-reserve',oud); localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){}
+  if(sync) planSync();
+}
+
+// ---------- samenvoegen (zelfde regels als server/Code.gs) ----------
+const MAX_VELDEN = new Set(['tijd','aantal','goed','max']);
+function merge(a,b,pad=''){
+  if(a===undefined||a===null) return b; if(b===undefined||b===null) return a;
+  if(Array.isArray(a)&&Array.isArray(b)){
+    const ab=a.concat(b);
+    if(ab.length&&ab.every(x=>x&&typeof x==='object'&&x.eid)){ const s=new Set(),u=[]; ab.forEach(x=>{if(!s.has(x.eid)){s.add(x.eid);u.push(x)}}); return u.sort((x,y)=>(x.tijd||0)-(y.tijd||0)) }
+    if(ab.length&&ab.every(x=>typeof x==='string')){ const u=a.slice(); b.forEach(x=>{if(!u.includes(x))u.push(x)}); return u }
+    return b;
+  }
+  if(typeof a==='object'&&typeof b==='object'){
+    if('u' in a||'u' in b) return (a.u||0)>(b.u||0)?a:b;
+    const o={}; for(const k of Object.keys(a).concat(Object.keys(b))) if(!(k in o)) o[k]=merge(a[k],b[k],pad+'.'+k); return o;
+  }
+  if(typeof a==='number'&&typeof b==='number'){ const v=pad.split('.').pop(); if(MAX_VELDEN.has(v)||pad.startsWith('.week.')||pad.startsWith('.dag.')) return Math.max(a,b) }
+  return b;
+}
+function mergeStaat(p,q){ const [o,n]=(p.upd||0)<=(q.upd||0)?[p,q]:[q,p]; const m=merge(o,n); m.upd=Math.max(o.upd||0,n.upd||0); return m }
+
+// ---------- events (fouten, toetsen) voor de Sheet ----------
+function outbox(){ try{ return JSON.parse(localStorage.getItem(OUTBOX)||'[]') }catch(e){ return [] } }
+function zetOutbox(l){ try{ localStorage.setItem(OUTBOX,JSON.stringify(l.slice(-800))) }catch(e){} }
+function event(ev){ if(!S||demoModus) return; ev.eid=ev.eid||eid(); ev.tijd=ev.tijd||Date.now(); const l=outbox(); l.push(ev); zetOutbox(l); planSync() }
+
+// ---------- server ----------
+const serverModus = ()=>!!DATA_ENDPOINT_URL;
+let syncStatus='lokaal', syncTimer=null, bezig=false, syncTijd=0, syncFout='', demoModus=false;
+async function api(actie,data){
+  const r=await fetch(DATA_ENDPOINT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({actie},data))});
+  const j=await r.json(); if(!j.ok) throw new Error(j.fout||'Serverfout'); return j;
+}
+function planSync(ms=4000){ if(!serverModus()||!S||!S.id||demoModus) return; clearTimeout(syncTimer); syncTimer=setTimeout(sync,ms) }
+async function sync(){
+  if(!serverModus()||!S||!S.id||bezig||demoModus) return;
+  bezig=true; syncStatus='bezig'; toonSync();
+  const evs=outbox().slice(0,300);
+  try{
+    const j=await api('sync',{id:S.id,code:S.code,staat:S,events:evs});
+    const code=S.code; S=mergeStaat(S,j.staat); S.code=code;
+    if(j.klasinst) S.klasinst=j.klasinst;
+    const klaar=new Set(j.verwerkt||[]); zetOutbox(outbox().filter(e=>!klaar.has(e.eid)));
+    try{ localStorage.setItem(KEY,JSON.stringify(S)) }catch(e){}
+    syncStatus='ok'; syncTijd=Date.now(); syncFout='';
+  }catch(e){ syncStatus='fout'; syncFout=String(e.message||e); setTimeout(()=>planSync(30000),0) }
+  bezig=false; toonSync();
+}
+function toonSync(){ const el=$('#syncStatus'); if(el) el.innerHTML=syncLabel() }
+function syncLabel(){
+  if(!serverModus()) return '<span class="sync">Testmodus: alleen op dit apparaat</span>';
+  if(syncStatus==='ok') return `<span class="sync ok">✓ Opgeslagen ${new Date(syncTijd).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}</span>`;
+  if(syncStatus==='fout') return `<span class="sync fout">Niet verstuurd, probeert het straks opnieuw</span>`;
+  if(syncStatus==='bezig') return '<span class="sync">Opslaan…</span>';
+  return '<span class="sync">Op dit apparaat opgeslagen</span>';
+}
+window.addEventListener('online',()=>planSync(500));
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'&&S&&S.id){ bewaar(false); sync() } });
+
+// ---------- oefentijd ----------
+let laatsteTik=Date.now(), oefenActief=false;
+['pointerdown','keydown'].forEach(e=>document.addEventListener(e,()=>{laatsteTik=Date.now()},{passive:true}));
+setInterval(()=>{
+  if(!S||!S.id||!oefenActief||document.visibilityState!=='visible'||Date.now()-laatsteTik>IDLE_MS) return;
+  S.tijd=(S.tijd||0)+15; const w=weekId(); S.week[w]=(S.week[w]||0)+15; const d=vandaag(); S.dag[d]=(S.dag[d]||0)+15;
+  if(S.tijd%120===0) bewaar(); else { try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){} }
+},15000);
+
+// ===== Functionele figuren (SVG): verhoudingsbalk, -tabel, getallenlijn, breukstrook, meetkunde en grafieken =====
+const FIG = {
+  wrap:(inner,w,h,extra='')=>`<svg class="fig" viewBox="0 0 ${w} ${h}" role="img" ${extra} xmlns="http://www.w3.org/2000/svg">${inner}</svg>`,
+  t:(x,y,s,o={})=>`<text x="${x}" y="${y}" text-anchor="${o.a||'middle'}" class="${o.c||''}" ${o.fs?`font-size="${o.fs}"`:''}>${esc(s)}</text>`,
+
+  // verhoudingsbalk: delen [{w:aandeel,label,k:'acc'|'zacht'|'goed'|'fout'}], boven: label boven totale balk
+  balk(delen,boven=''){
+    const W=560,H=boven?110:84,x0=10,bw=540; const tot=delen.reduce((s,d)=>s+d.w,0); let x=x0,o='';
+    if(boven) o+=`<path d="M${x0} 28 v-8 h${bw} v8" class="lijn"/>`+FIG.t(x0+bw/2,14,boven);
+    const y=boven?34:10;
+    delen.forEach((d,i)=>{ const w=bw*d.w/tot; o+=`<rect x="${x}" y="${y}" width="${w}" height="44" class="vlak ${d.k||(i%2?'b':'a')}"/>`+FIG.t(x+w/2,y+27,d.label||'',{c:'op'}); if(d.onder) o+=FIG.t(x+w/2,y+66,d.onder,{c:'zacht'}); x+=w });
+    return FIG.wrap(o,W,H+(delen.some(d=>d.onder)?18:0));
+  },
+  // breukstrook: n gelijke stukken, k gekleurd
+  strook(k,n,label=''){
+    const W=560,bw=540,w=bw/n; let o='';
+    for(let i=0;i<n;i++) o+=`<rect x="${10+i*w}" y="10" width="${w}" height="40" class="vlak ${i<k?'a':'leeg'}"/>`;
+    if(label) o+=FIG.t(280,74,label,{c:'zacht'});
+    return FIG.wrap(o,W,label?84:60);
+  },
+  // getallenlijn van a tot b met streepjes elke s; punten [{x,label,k}]
+  lijn(a,b,s,punten=[],labelsElke=1){
+    const W=580,x0=20,x1=560,X=v=>x0+(v-a)/(b-a)*(x1-x0); let o=`<line x1="${x0}" y1="40" x2="${x1}" y2="40" class="ax"/>`;
+    let i=0; for(let v=a; v<=b+1e-9; v=rondaf(v+s,6),i++){ o+=`<line x1="${X(v)}" y1="32" x2="${X(v)}" y2="48" class="ax"/>`; if(i%labelsElke===0) o+=FIG.t(X(v),70,nl(v),{c:'zacht',fs:15}) }
+    punten.forEach(p=>{ o+=`<circle cx="${X(p.x)}" cy="40" r="7" class="pt ${p.k||''}"/>`+(p.label?FIG.t(X(p.x),20,p.label,{fs:16}):'') });
+    return FIG.wrap(o,W,82);
+  },
+  // rechthoek met maten
+  rechthoek(b,h,lb,lh,opt={}){
+    const sc=Math.min(360/b,170/h), w=b*sc, hh=h*sc, x=(460-w)/2, y=20;
+    let o=`<rect x="${x}" y="${y}" width="${w}" height="${hh}" class="vlak ${opt.leeg?'leeg':'a'}"/>`;
+    o+=FIG.t(x+w/2,y+hh+26,lb)+FIG.t(x+w+10,y+hh/2+6,lh,{a:'start'});
+    return FIG.wrap(o,460,hh+56);
+  },
+  // L-vorm: buitenmaat B×H met een rechthoek bw×bh weggesneden rechtsboven
+  lvorm(B,H,bw,bh,lab){
+    const sc=Math.min(360/B,190/H), X=v=>50+v*sc, Y=v=>20+v*sc;
+    const p=`M${X(0)} ${Y(0)} H${X(B-bw)} V${Y(bh)} H${X(B)} V${Y(H)} H${X(0)} Z`;
+    let o=`<path d="${p}" class="vlak a"/>`;
+    o+=FIG.t((X(0)+X(B))/2,Y(H)+26,lab.B)+FIG.t(X(0)-10,(Y(0)+Y(H))/2+6,lab.H,{a:'end'})+FIG.t((X(0)+X(B-bw))/2,Y(0)-6,lab.top||'')+FIG.t(X(B)+10,(Y(bh)+Y(H))/2+6,lab.r||'',{a:'start'});
+    return FIG.wrap(o,480,H*sc+60);
+  },
+  // rechthoekige driehoek met rechthoekszijden a (horizontaal) en b (verticaal)
+  driehoek(a,b,la,lb,lc){
+    const sc=Math.min(320/a,180/b), w=a*sc, h=b*sc, x=70, y=20;
+    let o=`<path d="M${x} ${y} L${x} ${y+h} L${x+w} ${y+h} Z" class="vlak a"/><path d="M${x} ${y+h-16} h16 v16" class="lijn"/>`;
+    o+=FIG.t(x+w/2,y+h+26,la)+FIG.t(x-10,y+h/2+6,lb,{a:'end'})+FIG.t(x+w/2+14,y+h/2-8,lc,{a:'start'});
+    return FIG.wrap(o,460,h+56);
+  },
+  cirkel(r,label){
+    return FIG.wrap(`<circle cx="120" cy="100" r="80" class="vlak a"/><line x1="120" y1="100" x2="200" y2="100" class="lijn"/><circle cx="120" cy="100" r="4" class="pt"/>`+FIG.t(160,92,label),260,200);
+  },
+  // balk (3D) l×b×h
+  doos(l,b,h,ll,lb,lh){
+    const d=40,w=220,hh=110,x=40,y=60;
+    let o=`<path d="M${x} ${y} h${w} v${hh} h-${w} Z" class="vlak a"/><path d="M${x} ${y} l${d} -${d} h${w} l-${d} ${d} Z" class="vlak b"/><path d="M${x+w} ${y} l${d} -${d} v${hh} l-${d} ${d} Z" class="vlak c"/>`;
+    o+=FIG.t(x+w/2,y+hh+26,ll)+FIG.t(x+w+d/2+12,y+hh-6,lb,{a:'start'})+FIG.t(x-10,y+hh/2+6,lh,{a:'end'});
+    return FIG.wrap(o,360,y+hh+40);
+  },
+  // lijngrafiek: series [{punten:[[x,y]...],naam,k}], as {xmax,ymax,xs,ys,xl,yl}
+  grafiek(series,as){
+    const W=560,H=320,L=60,R=20,T=20,B=50, X=v=>L+(v-(as.xmin||0))/(as.xmax-(as.xmin||0))*(W-L-R), Y=v=>H-B-(v-(as.ymin||0))/(as.ymax-(as.ymin||0))*(H-T-B);
+    let o='';
+    for(let v=as.ymin||0; v<=as.ymax+1e-9; v=rondaf(v+as.ys,6)) o+=`<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" class="rast"/>`+FIG.t(L-8,Y(v)+5,nl(v),{a:'end',c:'zacht',fs:14});
+    for(let v=as.xmin||0; v<=as.xmax+1e-9; v=rondaf(v+as.xs,6)) o+=`<line x1="${X(v)}" y1="${T}" x2="${X(v)}" y2="${H-B}" class="rast"/>`+FIG.t(X(v),H-B+20,as.xlab?as.xlab(v):nl(v),{c:'zacht',fs:14});
+    o+=`<line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" class="ax"/><line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" class="ax"/>`;
+    o+=FIG.t((L+W-R)/2,H-8,as.xl||'',{fs:15})+`<text x="14" y="${(T+H-B)/2}" transform="rotate(-90 14 ${(T+H-B)/2})" text-anchor="middle" font-size="15">${esc(as.yl||'')}</text>`;
+    series.forEach((s,i)=>{ o+=`<polyline points="${s.punten.map(p=>X(p[0])+','+Y(p[1])).join(' ')}" class="serie s${i}" fill="none"/>`+s.punten.map(p=>`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="4" class="pt s${i}"/>`).join('') });
+    if(series.length>1) o+=series.map((s,i)=>`<rect x="${L+10+i*150}" y="${T+4}" width="14" height="14" class="leg s${i}"/>`+FIG.t(L+30+i*150,T+16,s.naam,{a:'start',fs:14})).join('');
+    return FIG.wrap(o,W,H);
+  },
+  staaf(labels,waarden,as){
+    const W=560,H=300,L=56,R=16,T=16,B=46,n=labels.length,bw=(W-L-R)/n, Y=v=>H-B-v/as.ymax*(H-T-B);
+    let o='';
+    for(let v=0; v<=as.ymax+1e-9; v=rondaf(v+as.ys,6)) o+=`<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" class="rast"/>`+FIG.t(L-8,Y(v)+5,nl(v),{a:'end',c:'zacht',fs:14});
+    labels.forEach((l,i)=>{ o+=`<rect x="${L+i*bw+bw*.18}" y="${Y(waarden[i])}" width="${bw*.64}" height="${Y(0)-Y(waarden[i])}" class="vlak a"/>`+FIG.t(L+i*bw+bw/2,H-B+20,l,{fs:14}) });
+    o+=`<line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" class="ax"/>`+`<text x="14" y="${(T+H-B)/2}" transform="rotate(-90 14 ${(T+H-B)/2})" text-anchor="middle" font-size="15">${esc(as.yl||'')}</text>`;
+    return FIG.wrap(o,W,H);
+  },
+  taart(delen){ // [{w,label}]
+    const tot=delen.reduce((s,d)=>s+d.w,0); let a=-Math.PI/2,o='';
+    delen.forEach((d,i)=>{ const b=a+2*Math.PI*d.w/tot, gr=b-a>Math.PI?1:0, x1=130+100*Math.cos(a),y1=120+100*Math.sin(a),x2=130+100*Math.cos(b),y2=120+100*Math.sin(b);
+      o+=`<path d="M130 120 L${x1} ${y1} A100 100 0 ${gr} 1 ${x2} ${y2} Z" class="vlak t${i%5}"/>`; const m=(a+b)/2; o+=FIG.t(130+64*Math.cos(m),120+64*Math.sin(m)+5,d.kort||'',{c:'op',fs:14}); a=b });
+    o+=delen.map((d,i)=>`<rect x="260" y="${30+i*28}" width="16" height="16" class="vlak t${i%5}"/>`+FIG.t(284,43+i*28,d.label,{a:'start',fs:15})).join('');
+    return FIG.wrap(o,480,240);
+  },
+  // schaallijn: lijnstuk met label
+  meetlat(cm,label){
+    const w=Math.min(500,cm*40); let o=`<line x1="20" y1="30" x2="${20+w}" y2="30" class="dik"/>`;
+    for(let i=0;i<=cm;i++) o+=`<line x1="${20+i*w/cm}" y1="22" x2="${20+i*w/cm}" y2="38" class="lijn"/>`;
+    return FIG.wrap(o+FIG.t(20+w/2,62,label),Math.max(260,w+40),74);
+  }
+};
+// verhoudingstabel als html-tabel; cellen met null worden een invulvak (data-i volgnummer)
+function vtabelHtml(kop,rijen,invul=false){
+  let i=0;
+  const cel=v=>v===null?(invul?`<td><input type="text" inputmode="decimal" class="tvak" data-i="${i++}" autocomplete="off"></td>`:'<td class="leeg">…</td>'):`<td>${typeof v==='number'?nl(v):esc(v)}</td>`;
+  return `<table class="vtab"><tbody>${kop.map((k,r)=>`<tr><th>${esc(k)}</th>${rijen.map(c=>cel(c[r])).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+// ===== Leerdoelen, opgaven maken (uit generatoren), tonen en nakijken =====
+// Een leerdoel heeft een generator gen(r) die nette getallen kiest. Elke opgave, spiegelvraag en toetsvraag
+// wordt daaruit gemaakt met een seed; het antwoord wordt berekend (en in tools/controleer.js gecontroleerd).
+const LD = {}; const LDS = [];
+function L(def){
+  def.rm = def.niv<=2 ? false : !!def.rm;               // rekenmachine pas vanaf niveau 3, per leerdoel
+  def.verwar = def.verwar||[];
+  if(LD[def.id]) throw new Error('Dubbel leerdoel '+def.id);
+  LD[def.id]=def; LDS.push(def); return def;
+}
+const ldsVan = (niv,dom,sub) => LDS.filter(l=>l.niv===niv&&(!dom||l.dom===dom)&&(!sub||l.sub===sub));
+const subVan = (dom,id) => (SUBDOMEINEN[dom]||[]).find(s=>s.id===id)||{id,naam:id};
+const eenheidVan = (ld,v) => typeof ld.eenheid==='function'?ld.eenheid(v):(ld.eenheid||'');
+const antwTekst = (ld,v,x=ld.antw(v)) => { const e=eenheidVan(ld,v); if(typeof x!=='number') return String(x); return e==='€'?eur(x):nl(x)+(e?(e==='%'?'%':' '+e):'') };
+
+// welke vraagvormen kan dit leerdoel op trede 3?
+function vormen(ld){
+  const v=[]; if(ld.opties) return ['mc'].concat(ld.sab?['sab']:[],ld.koppel?['koppel']:[],ld.v3?['v3']:[]);
+  if(ld.antw) v.push('open','open'); if(ld.antw&&ld.fouten) v.push('mc');
+  if(ld.sab) v.push('sab'); if(ld.tabel) v.push('tabel'); if(ld.volgorde&&ld.stappen) v.push('volgorde');
+  if(ld.koppel) v.push('koppel'); if(ld.v3) v.push('v3');
+  return v;
+}
+
+// ---------- opgave maken ----------
+// opt: {vorm, trede, seed, bron:'oefen'|'spiegel'|'herhaal'|'toets'|'instap'}
+function maakItem(ldId,opt={}){
+  const ld=LD[ldId]; const seed=opt.seed||nieuweSeed(); const r=RNG(seed); const v=ld.gen(r);
+  const trede=opt.trede||3;
+  let vorm=opt.vorm;
+  if(!vorm){
+    if(trede===1&&ld.stappen) vorm='faded1';
+    else if(trede===2&&ld.stappen) vorm='faded2';
+    else { const vs=vormen(ld); vorm=vs[Math.floor(RNG(seed+7).f()*vs.length)] }
+  }
+  const it={ key:ldId+'#'+seed, ld:ldId, niv:ld.niv, dom:ld.dom, sub:ld.sub, seed, v, vorm, trede, bron:opt.bron||'oefen', rm:ld.rm, r:RNG(seed+99) };
+  it.vraag = ld.vraag?ld.vraag(v):'';
+  it.fig = ld.fig?ld.fig(v):'';
+  if(ld.antw) it.antw = ld.antw(v);
+  it.eenheid = eenheidVan(ld,v);
+  if(vorm==='mc'){
+    if(ld.opties){ it.opties=it.r.shuffle(ld.opties(v).map(o=>({t:o[0],goed:!!o[1],fb:o[2]||''}))) }
+    else {
+      const f=(ld.fouten(v)||[]).filter(x=>typeof x[0]==='number'&&Math.abs(x[0]-it.antw)>1e-9);
+      const uniek=[]; f.forEach(x=>{ if(!uniek.some(u=>Math.abs(u[0]-x[0])<1e-9)) uniek.push(x) });
+      // te weinig misconcepties? vul aan met plausibele getallen (factor 10, of een stap ernaast)
+      const a=it.antw, stap=Math.pow(10,Math.max(0,Math.floor(Math.log10(Math.abs(a)||1))-1))*(ld.dec===0?1:1);
+      for(const x of [a*10,a/10,a+stap,a-stap,a+2*stap,a*2]){ if(uniek.length>=3) break; const xr=rondaf(x,ld.dec??2); if((xr>0||a<=0)&&Math.abs(xr-a)>1e-9&&!uniek.some(u=>Math.abs(u[0]-xr)<1e-9)&&antwTekst(ld,v,xr)!==antwTekst(ld,v)) uniek.push([xr,'']) }
+      it.opties=it.r.shuffle([{t:antwTekst(ld,v),goed:true}].concat(uniek.slice(0,3).map(x=>({t:antwTekst(ld,v,x[0]),goed:false,fb:x[1]}))));
+    }
+  }
+  if(vorm==='faded1'||vorm==='faded2'||vorm==='volgorde'){ it.stappen=ld.stappen(v) }
+  if(vorm==='faded1'){ const w=ld.waarom?(typeof ld.waarom==='function'?ld.waarom(v):ld.waarom):{vraag:'Klopt de laatste stap van deze uitwerking?',opties:['Ja, het antwoord past bij de vraag','Nee, er moet nog iets bij','Nee, je moet delen in plaats van vermenigvuldigen']};
+    it.check={vraag:w.vraag,opties:it.r.shuffle(w.opties.map((t,i)=>({t,goed:i===0})))} }
+  if(vorm==='faded2'){ // één lege tussenstap: bij voorkeur niet de laatste
+    const kand=it.stappen.map((s,i)=>i).filter(i=>typeof it.stappen[i][1]==='number');
+    const midden=kand.filter(i=>i<it.stappen.length-1);
+    it.leeg = (midden.length&&it.r.f()<.7)?it.r.pick(midden):kand[kand.length-1];
+  }
+  if(vorm==='volgorde'){ it.volg=it.r.shuffle(it.stappen.map((s,i)=>i)); if(it.volg.every((x,i)=>x===i)) it.volg.reverse() }
+  if(vorm==='sab') it.sab=ld.sab(v);
+  if(vorm==='tabel'){ it.tab=ld.tabel(v); it.tab.leeg=it.tab.leeg.slice().sort((a,b)=>a[1]-b[1]||a[0]-b[0]) }
+  if(vorm==='koppel'){ const k=ld.koppel(v,it.r); it.kvraag=k.vraag; it.paren=k.paren; it.rechts=it.r.shuffle(k.paren.map((p,i)=>i)) }
+  if(vorm==='v3'){ const k=ld.v3(v); it.v3=k; it.v3volg=it.r.shuffle([0,1,2]) }
+  if(ld.eenheden&&(vorm==='open')) it.eenheden=it.r.shuffle(ld.eenheden.slice());
+  return it;
+}
+const spiegelVan = (it,bron='spiegel') => maakItem(it.ld,{trede:3,vorm:LD[it.ld].opties?'mc':(LD[it.ld].antw?'open':null),bron});
+
+// ---------- tonen ----------
+const TREDE_LABEL={faded1:'Voorbeeld',faded2:'Invulsom',open:'Zelf doen',mc:'Kies het goede antwoord',sab:'De Saboteur',tabel:'Verhoudingstabel',volgorde:'Zet in de goede volgorde',koppel:'Koppel',v3:'Drie antwoorden vergelijken'};
+function invoerVak(id,e,extra=''){
+  const pre=e==='€'?'<span class="eh">€</span>':''; const post=e&&e!=='€'?`<span class="eh">${esc(e)}</span>`:'';
+  return `<div class="reken">${pre}<input type="text" id="${id}" inputmode="decimal" autocomplete="off" autocorrect="off" spellcheck="false" ${extra}>${post}</div>`;
+}
+function itemHtml(it){
+  const ld=LD[it.ld]; let h='';
+  const vraag=`<div class="vraag">${it.vraag}</div>${it.fig?`<div class="figuur">${it.fig}</div>`:''}`;
+  switch(it.vorm){
+    case 'open':
+      h=vraag;
+      if(it.eenheden) h+=`<div class="reken"><input type="text" id="antw" inputmode="decimal" autocomplete="off"><select id="eenh" style="max-width:130px"><option value="">eenheid</option>${it.eenheden.map(e=>`<option>${esc(e)}</option>`).join('')}</select></div>`;
+      else h+=invoerVak('antw',it.eenheid);
+      break;
+    case 'mc':
+      h=vraag+`<div class="opties">${it.opties.map((o,i)=>`<button class="optie" data-i="${i}" onclick="kiesOptie(${i})"><span class="l">${'ABCD'[i]}</span><span>${o.t}</span></button>`).join('')}</div>`;
+      break;
+    case 'faded1':
+      h=`<div class="uitlegblok"><span class="eyebrow">Zo werkt het</span><p>${ld.uitleg}</p></div>`+vraag+
+        `<ol class="stappen">${it.stappen.map(s=>`<li>${s[0]}</li>`).join('')}</ol>`+
+        `<div class="checkvraag"><b>Checkvraag:</b> ${esc(it.check.vraag)}</div><div class="opties">${it.check.opties.map((o,i)=>`<button class="optie" data-i="${i}" onclick="kiesOptie(${i})"><span class="l">${'ABC'[i]}</span><span>${esc(o.t)}</span></button>`).join('')}</div>`;
+      break;
+    case 'faded2':
+      h=vraag+`<ol class="stappen">${it.stappen.map((s,i)=>i===it.leeg?`<li class="leegstap">${s[0].replace(/\{\?\}|…|\.\.\./,'')}<div style="margin-top:8px">${invoerVak('antw',s[2]||'')}</div></li>`:`<li>${s[0]}</li>`).join('')}</ol><p class="zacht klein">Vul de lege stap in.</p>`;
+      break;
+    case 'sab':
+      h=`<div class="vraag">${it.sab.intro||it.vraag}</div>${it.fig?`<div class="figuur">${it.fig}</div>`:''}<p class="zacht">Eén stap bevat een denkfout. Tik op de foute stap en verbeter hem.</p>`+
+        `<div class="sabstappen">${it.sab.stappen.map((s,i)=>`<button class="sabstap" data-i="${i}" onclick="kiesSab(${i})"><span class="nr">${i+1}</span><span>${s}</span></button>`).join('')}</div>`+
+        `<div id="sabverb" hidden><label class="label">${esc(it.sab.vraag||'Wat is het juiste antwoord?')}</label>${invoerVak('antw',it.sab.eenheid??it.eenheid)}</div>`;
+      break;
+    case 'tabel':
+      h=vraag+`<div class="tabelwrap">${vtabelHtml(it.tab.kop,it.tab.rijen.map((c,ci)=>c.map((x,ri)=>it.tab.leeg.some(l=>l[0]===ci&&l[1]===ri)?null:x)),true)}</div><p class="zacht klein">Vul de lege vakjes in.</p>`;
+      break;
+    case 'volgorde':
+      h=vraag+`<p class="zacht">Tik de stappen aan in de goede volgorde.</p><div class="volgorde" id="volgBron">${it.volg.map(i=>`<button class="vstap" data-i="${i}" onclick="tikVolg(${i})">${it.stappen[i][0]}</button>`).join('')}</div><ol class="stappen" id="volgDoel"></ol><button class="knop zacht klein" onclick="wisVolg()">Opnieuw</button>`;
+      break;
+    case 'koppel':
+      h=`<div class="vraag">${it.kvraag}</div><p class="zacht">Tik links, dan rechts om een paar te maken.</p><div class="koppelgrid"><div>${it.paren.map((p,i)=>`<button class="kp links" data-i="${i}" onclick="tikKop('l',${i})">${p[0]}</button>`).join('')}</div><div>${it.rechts.map(i=>`<button class="kp rechts" data-i="${i}" onclick="tikKop('r',${i})">${it.paren[i][1]}</button>`).join('')}</div></div>`;
+      break;
+    case 'v3':
+      h=`<div class="vraag">${it.v3.vraag}</div>${it.fig?`<div class="figuur">${it.fig}</div>`:''}<label class="label">Stap 1 · Schrijf kort hoe jij het aanpakt</label><textarea id="eigen" rows="3" placeholder="Mijn aanpak…"></textarea><div id="v3deel2" hidden></div>`;
+      break;
+  }
+  return h;
+}
+
+// ---------- interactie per vorm (houdt de keuze bij in Q.keuze) ----------
+let Q=null; // {it, keuze, ...}
+function kiesOptie(i){ if(Q.klaar) return; Q.keuze=i; $$('.optie').forEach(b=>b.classList.toggle('kies',+b.dataset.i===i)) }
+function kiesSab(i){ if(Q.klaar) return; Q.sabStap=i; $$('.sabstap').forEach(b=>b.classList.toggle('kies',+b.dataset.i===i)); const v=$('#sabverb'); v.hidden=false; setTimeout(()=>$('#antw').focus(),50) }
+function tikVolg(i){ if(Q.klaar) return; Q.volg=Q.volg||[]; if(Q.volg.includes(i)) return; Q.volg.push(i); $(`.vstap[data-i="${i}"]`).disabled=true; $('#volgDoel').insertAdjacentHTML('beforeend',`<li>${Q.it.stappen[i][0]}</li>`) }
+function wisVolg(){ if(Q.klaar) return; Q.volg=[]; $$('.vstap').forEach(b=>b.disabled=false); $('#volgDoel').innerHTML='' }
+function tikKop(kant,i){
+  if(Q.klaar) return; Q.paar=Q.paar||{};
+  if(kant==='l'){ Q.links=i; $$('.kp.links').forEach(b=>b.classList.toggle('kies',+b.dataset.i===i)); return }
+  if(Q.links==null) return;
+  for(const k in Q.paar) if(Q.paar[k]===i) delete Q.paar[k];
+  Q.paar[Q.links]=i; Q.links=null; tekenKoppel();
+}
+function tekenKoppel(){
+  const kl=['#f08a09','#1b8fb0','#3f8f3a','#7a5bd6','#d6453d','#c49a00'];
+  $$('.kp').forEach(b=>{b.style.borderColor='';b.classList.remove('kies');b.querySelector('.kb')?.remove()});
+  Object.entries(Q.paar).forEach(([l,r],n)=>{ const c=kl[+l%kl.length]; const bl=$(`.kp.links[data-i="${l}"]`), br=$(`.kp.rechts[data-i="${r}"]`); [bl,br].forEach(b=>{b.style.borderColor=c;b.insertAdjacentHTML('afterbegin',`<i class="kb" style="background:${c}"></i>`)}) });
+}
+
+// is er iets ingevuld? (voordat Zeker/Gok werkt)
+function heeftAntwoord(){
+  const it=Q.it;
+  switch(it.vorm){
+    case 'mc': case 'faded1': return Q.keuze!=null;
+    case 'open': case 'faded2': return ($('#antw').value.trim()!=='') && (!it.eenheden||$('#eenh').value);
+    case 'sab': return Q.sabStap!=null && $('#antw').value.trim()!=='';
+    case 'tabel': return $$('.tvak').every(x=>x.value.trim()!=='');
+    case 'volgorde': return (Q.volg||[]).length===it.stappen.length;
+    case 'koppel': return Object.keys(Q.paar||{}).length===it.paren.length;
+    case 'v3': return true;
+  }
+  return true;
+}
+const zelfde = (a,b,tol=1e-6) => typeof a==='number'&&typeof b==='number'&&Math.abs(a-b)<=tol+1e-9*Math.abs(b);
+
+// nakijken → {goed, gegeven, juist, fb (html), misconceptie}
+function nakijk(){
+  const it=Q.it, ld=LD[it.ld]; const tol=ld.tol||1e-6; let goed=false, gegeven='', fb='', mis='';
+  switch(it.vorm){
+    case 'open': {
+      const x=parseGetal($('#antw').value); gegeven=$('#antw').value+(it.eenheden?' '+$('#eenh').value:'');
+      goed=zelfde(x,it.antw,tol);
+      if(goed&&it.eenheden&&$('#eenh').value!==it.eenheid){ goed=false; fb=`Het getal klopt, maar de eenheid niet. Het moet <b>${esc(it.eenheid)}</b> zijn.`; mis='eenheid' }
+      if(!goed&&!fb&&isNaN(x)) fb='Vul een getal in. Je mag een komma of een punt gebruiken.';
+      if(!goed&&!fb&&ld.fouten){ const m=ld.fouten(it.v).find(f=>zelfde(x,f[0],tol)); if(m){ fb=m[1]; mis=m[2]||'misconceptie' } }
+      if(!goed&&!fb&&ld.afronding&&zelfde(rondaf(x,0),rondaf(it.antw,0),.5)) fb='Je zit er dichtbij. Let op het afronden.';
+      break; }
+    case 'mc': case 'faded1': {
+      const o=(it.vorm==='mc'?it.opties:it.check.opties)[Q.keuze]; goed=o.goed; gegeven=o.t.replace(/<[^>]+>/g,'');
+      if(!goed){ fb=o.fb||''; mis=o.fb?'misconceptie':'' }
+      $$('.optie').forEach((b,i)=>{ const oo=(it.vorm==='mc'?it.opties:it.check.opties)[i]; if(oo.goed) b.classList.add('goed'); else if(i===Q.keuze) b.classList.add('fout') });
+      break; }
+    case 'faded2': {
+      const s=it.stappen[it.leeg]; const x=parseGetal($('#antw').value); gegeven=$('#antw').value; goed=zelfde(x,s[1],tol);
+      if(!goed) fb=`In deze stap hoort <b>${nl(s[1])}</b>.`;
+      break; }
+    case 'sab': {
+      const x=parseGetal($('#antw').value); const stapGoed=Q.sabStap===it.sab.fout; const valGoed=zelfde(x,it.sab.juist,tol);
+      gegeven='stap '+(Q.sabStap+1)+': '+$('#antw').value; goed=stapGoed&&valGoed;
+      $$('.sabstap').forEach((b,i)=>{ if(i===it.sab.fout) b.classList.add('goed'); else if(i===Q.sabStap) b.classList.add('fout') });
+      if(!stapGoed) fb=`De denkfout zit in stap ${it.sab.fout+1}. ${it.sab.uitleg}`;
+      else if(!valGoed) fb=`Goed gezien: stap ${it.sab.fout+1} is fout. ${it.sab.uitleg} Maar je verbetering klopt nog niet.`;
+      else fb=it.sab.uitleg;
+      break; }
+    case 'tabel': {
+      const vakken=$$('.tvak'); let alle=true; const lijst=it.tab.leeg.map(([c,r])=>it.tab.rijen[c][r]);
+      vakken.forEach((x,i)=>{ const ok=zelfde(parseGetal(x.value),lijst[i],tol); x.classList.add(ok?'goed':'fout'); if(!ok) alle=false });
+      goed=alle; gegeven=vakken.map(x=>x.value).join(' | ');
+      if(!goed) fb='Niet alle vakjes kloppen. De goede waarden: '+lijst.map(x=>nl(x)).join(', ')+'.';
+      break; }
+    case 'volgorde': {
+      goed=Q.volg.every((x,i)=>x===i); gegeven=Q.volg.map(x=>x+1).join('-');
+      if(!goed) fb='De goede volgorde staat hieronder in de uitwerking.';
+      break; }
+    case 'koppel': {
+      goed=it.paren.every((p,i)=>Q.paar[i]===i); gegeven=JSON.stringify(Q.paar);
+      $$('.kp.links').forEach(b=>{ const i=+b.dataset.i; b.classList.add(Q.paar[i]===i?'goed':'fout') });
+      if(!goed) fb='Goede paren: '+it.paren.map(p=>`${p[0]} ↔ ${p[1]}`).join(' · ');
+      break; }
+  }
+  const juist = it.vorm==='sab'?antwTekstVrij(it.sab.juist,it.sab.eenheid??it.eenheid):it.vorm==='faded2'?nl(it.stappen[it.leeg][1]):(it.vorm==='mc'||it.vorm==='faded1')?((it.vorm==='mc'?it.opties:it.check.opties).find(o=>o.goed).t.replace(/<[^>]+>/g,'')):(it.antw!=null?antwTekst(ld,it.v):'');
+  return {goed,gegeven,juist,fb,mis};
+}
+const antwTekstVrij=(x,e)=> e==='€'?eur(x):nl(x)+(e?(e==='%'?'%':' '+e):'');
+
+// uitwerking van een opgave (stappen) en andere uitleg
+function uitwerkingHtml(it){
+  const ld=LD[it.ld]; if(it.vorm==='sab') return `<ol class="stappen klein">${(it.sab.goed||[]).map(s=>`<li>${s}</li>`).join('')}</ol>`;
+  if(!ld.stappen) return '';
+  return `<ol class="stappen klein">${ld.stappen(it.v).map(s=>`<li>${s[0].replace(/\{\?\}/,s[1]!=null?nl(s[1]):'')}</li>`).join('')}</ol>`;
+}
+function andersHtml(it){
+  const ld=LD[it.ld]; if(!ld.anders) return `<p>${ld.uitleg}</p>`;
+  const a=ld.anders(it.v); const o=typeof a==='string'?{tekst:a}:a;
+  return `<p>${o.tekst}</p>${o.svg?`<div class="figuur">${o.svg}</div>`:''}${o.tabel?`<div class="tabelwrap">${vtabelHtml(o.tabel.kop,o.tabel.rijen)}</div>`:''}`;
+}
+
+// ===== Adaptieve engine: beheersing, treden, foutenbank (spaced repetition), vraagkeuze en niveau omhoog/omlaag =====
+const GEWICHT = { t3zg:.30, t3zf:.40, t3gg:.20, t3gf:.30, t2g:.15, t2f:.15, t1g:.05, t1f:.08, spg:.15, spf:.25 };
+const ldS = id => S.ld[id] || {b:0,n:0,tr:0,rij:0,frij:0,l:0,u:0};
+const domKey = (n,d) => n+'.'+d;
+
+// beheersing van een domein op een niveau = gemiddelde van de leerdoelen (niet geoefend = 0)
+function domB(n,d){ const l=ldsVan(n,d); if(!l.length) return 0; return Math.round(l.reduce((s,x)=>s+ldS(x.id).b,0)/l.length) }
+function subB(n,d,sub){ const l=ldsVan(n,d,sub); if(!l.length) return null; return Math.round(l.reduce((s,x)=>s+ldS(x.id).b,0)/l.length) }
+function nivB(n){ return Math.round(DOMEINEN.reduce((s,d)=>s+domB(n,d.id),0)/4) }
+const medaille = b => [...MEDAILLES].reverse().find(m=>b>=m.min)||null;
+function domStatus(n,d){
+  if(S.diplomas[n]) return 'beheerst';
+  const b=domB(n,d); const x=S.dom[domKey(n,d)]||{};
+  if(x.herk&&b<DREMPEL) return 'herkansing';
+  return b>=DREMPEL?'check':'oefenen';
+}
+const toetsOpen = n => DOMEINEN.every(d=>domB(n,d.id)>=DREMPEL) && !S.diplomas[n] && (!S.klasinst||S.klasinst.toetsVrij!==false);
+// aandachtspunten: zwakste onderdelen van een domein op het huidige niveau
+function aandachtspunten(n,d,max=3){
+  return (SUBDOMEINEN[d]||[]).map(s=>({s,b:subB(n,d,s.id)})).filter(x=>x.b!==null&&x.b<DREMPEL).sort((a,b)=>a.b-b.b).slice(0,max);
+}
+
+// ---------- verwerken van een antwoord ----------
+// res: {goed, zeker(bool|null), gegeven, juist, mis, fouttype}
+function verwerk(it,res){
+  const ld=LD[it.ld]; const x=Object.assign({},ldS(it.ld)); const nu=Date.now();
+  const zelfstandig = it.trede===3 && it.bron!=='instap-oefen';
+  // 1. beheersing
+  let w;
+  if(it.bron==='spiegel') w=res.goed?GEWICHT.spg:GEWICHT.spf;
+  else if(it.trede===1) w=res.goed?GEWICHT.t1g:GEWICHT.t1f;
+  else if(it.trede===2) w=res.goed?GEWICHT.t2g:GEWICHT.t2f;
+  else if(res.zeker===false) w=res.goed?GEWICHT.t3gg:GEWICHT.t3gf;
+  else w=res.goed?GEWICHT.t3zg:GEWICHT.t3zf;
+  if(it.trede===1&&!res.goed) w=0;                 // checkvraag fout: geen straf, wel extra uitleg
+  x.b = rondaf(x.b + w*((res.goed?100:0)-x.b),1);
+  if(zelfstandig||it.bron==='spiegel') x.n++;
+  // 2. treden (faded examples)
+  if(it.bron==='spiegel'){ if(!res.goed) x.tr=Math.min(x.tr||3,2) }
+  else if(x.tr===0){ x.tr = res.goed ? (res.zeker!==false?3:2) : 1 }      // instapvraag van een nieuw leerdoel
+  else if(it.trede===1){ x.tr=2 }
+  else if(it.trede===2){ if(res.goed){ x.tr=3; x.frij=0 } else { x.frij=(x.frij||0)+1; if(x.frij>=2){ x.tr=1; x.frij=0 } } }
+  else { if(res.goed){ x.rij=(x.rij||0)+1; x.frij=0 } else { x.rij=0; x.frij=(x.frij||0)+1; if(x.frij>=2){ x.tr=2; x.frij=0 } } }
+  x.l=nu; x.u=nu; S.ld[it.ld]=x;
+  // 3. foutenbank
+  if(it.trede===3||it.bron==='spiegel') foutenbank(it,res);
+  // 4. tellers, recente resultaten (voor niveau omlaag), domeinstatus
+  S.aantal=(S.aantal||0)+1; if(res.goed) S.goed=(S.goed||0)+1;
+  if(it.niv===S.niv&&it.trede===3&&it.bron!=='spiegel'){ if(S.recNiv!==S.niv){S.rec=[];S.recNiv=S.niv} S.rec=S.rec.concat([res.goed?1:0]).slice(-24) }
+  werkDomBij(it.niv,it.dom);
+  // 5. log voor de Sheet
+  if(!res.goed&&it.trede!==1) event({t:'fout',niveau:it.niv,domein:it.dom,leerdoel:it.ld,opgave:it.key,type:TREDE_LABEL[it.vorm]||it.vorm,trede:it.trede,
+    gegeven:res.gegeven,juist:res.juist,zeker:res.zeker,fouttype:res.fouttype||(res.mis?'Misconceptie: '+res.mis:''),rekenmachine:!!it.rmGebruikt});
+  if(it.bron==='spiegel'&&Q&&Q.vorigeFout) event({t:'fout',eid:Q.vorigeFout+'-sp',niveau:it.niv,domein:it.dom,leerdoel:it.ld,opgave:it.key,type:'Spiegelvraag',trede:3,gegeven:res.gegeven,juist:res.juist,zeker:res.zeker,spiegelGoed:res.goed});
+  badgesBijwerken();
+  bewaar();
+}
+function werkDomBij(n,d){
+  const k=domKey(n,d); const oud=S.dom[k]||{}; const b=domB(n,d);
+  const nieuw=Object.assign({},oud,{b,n:(oud.n||0)+1,l:Date.now(),u:Date.now()});
+  if(oud.herk&&b>=DREMPEL) nieuw.herk=false;
+  nieuw.st=domStatus(n,d); S.dom[k]=nieuw;
+}
+
+// ---------- foutenbank ----------
+// één item per leerdoel; komt terug in dezelfde sessie (na 6-10 vragen) en daarna na 1 en 3 dagen.
+// opgelost na 2 keer achter elkaar zelfstandig goed (3 keer bij "Zeker én fout").
+function foutenbank(it,res){
+  const k=it.ld; const f=S.fb[k]; const nu=Date.now();
+  if(it.bron==='herhaal'&&f&&!f.opgelost){
+    const g=Object.assign({},f,{u:nu});
+    if(res.goed){ g.rij=(g.rij||0)+1; if(g.rij>=g.nodig){ g.opgelost=true; g.opgelostOp=nu } else { g.dueN=1e12; g.dueT=nu+[1,1,3][g.rij]*864e5 } }
+    else { g.rij=0; g.dueN=S.aantal+6; g.dueT=0; if(res.zeker!==false){ g.zf=true; g.nodig=3 } g.gegeven=res.gegeven; g.juist=res.juist; g.keer=(g.keer||1)+1 }
+    S.fb[k]=g; return;
+  }
+  if(res.goed||it.bron==='spiegel') return;
+  const zf=res.zeker!==false;
+  const basis=f&&!f.opgelost?f:{keer:0,t0:nu};
+  S.fb[k]=Object.assign({},basis,{ld:it.ld,niv:it.niv,dom:it.dom,sub:it.sub,vorm:it.vorm,gegeven:res.gegeven,juist:res.juist,zeker:res.zeker,
+    zf:!!(basis.zf||zf), nodig:(basis.zf||zf)?3:2, rij:0, keer:(basis.keer||0)+1, dueN:S.aantal+6+Math.floor(Math.random()*5), dueT:0, opgelost:false, t:nu, u:nu});
+}
+const fbOpen = () => Object.entries(S.fb).filter(([k,f])=>!f.opgelost&&LD[k]);
+const fbDue = () => fbOpen().filter(([k,f])=>(f.dueN<=S.aantal)||(f.dueT&&f.dueT<=Date.now()));
+
+// ---------- welke vraag komt nu? ----------
+// ctx: {modus:'slim'|'domein'|'sub'|'ld'|'fouten', niv, dom, sub, ld, recent:[ldIds]}
+function volgende(ctx){
+  const niv=ctx.niv||S.niv; const recent=ctx.recent||[];
+  const inScope = id => { const l=LD[id]; if(!l) return false;
+    if(ctx.modus==='fouten') return true;
+    if(ctx.modus==='ld') return id===ctx.ld;
+    if(l.niv!==niv && !(ctx.modus==='slim'&&l.niv<niv)) return false;
+    if(ctx.dom&&l.dom!==ctx.dom) return false; if(ctx.sub&&l.sub!==ctx.sub) return false; return true };
+  // 1. foutenbank (Zeker én fout eerst)
+  const due=fbDue().filter(([k])=>inScope(k)).sort((a,b)=>(b[1].zf-a[1].zf)||(a[1].t-b[1].t));
+  const kans = ctx.modus==='fouten'?1 : due.length&&due[0][1].zf?.6:.35;
+  if(due.length&&Math.random()<kans) return maakItem(due[0][0],{trede:3,vorm:LD[due[0][0]].opties?'mc':(LD[due[0][0]].antw?'open':null),bron:'herhaal'});
+  if(ctx.modus==='fouten'){ const open=fbOpen().sort((a,b)=>(b[1].zf-a[1].zf)||(a[1].t-b[1].t)); if(open.length) return maakItem(open[0][0],{trede:3,vorm:LD[open[0][0]].opties?'mc':(LD[open[0][0]].antw?'open':null),bron:'herhaal'}); return null }
+  if(ctx.modus==='ld') return itemVoor(ctx.ld);
+  // 2. interleaving: na 3 keer hetzelfde leerdoel een verwarbaar leerdoel
+  const laatste=recent.slice(-3);
+  if(laatste.length===3&&laatste.every(x=>x===laatste[0])){
+    const opties=(LD[laatste[0]].verwar||[]).filter(id=>LD[id]&&LD[id].niv<=niv);
+    if(opties.length) return itemVoor(opties[Math.floor(Math.random()*opties.length)]);
+  }
+  // 3. domein kiezen (slim: zwakste domein krijgt voorrang) en daarbinnen het zwakste leerdoel
+  let doms=ctx.dom?[ctx.dom]:DOMEINEN.map(d=>d.id);
+  if(doms.length>1){
+    const g=doms.map(d=>Math.max(5,105-domB(niv,d))+(recent.length&&LD[recent[recent.length-1]]?.dom===d?-20:0));
+    let t=Math.random()*g.reduce((a,b)=>a+Math.max(1,b),0); let i=0; for(;i<g.length;i++){ t-=Math.max(1,g[i]); if(t<=0) break } doms=[doms[Math.min(i,doms.length-1)]];
+  }
+  let kand=LDS.filter(l=>l.niv===niv&&l.dom===doms[0]&&(!ctx.sub||l.sub===ctx.sub));
+  if(ctx.modus==='slim'&&Math.random()<.12){ const lager=LDS.filter(l=>l.niv<niv&&l.niv>=niv-2&&l.dom===doms[0]); if(lager.length) kand=lager } // af en toe onderhoud van lagere niveaus
+  if(!kand.length) kand=LDS.filter(l=>l.niv===niv);
+  const score=l=>{ const x=ldS(l.id); return (100-x.b) + (x.tr===0?12:0) + Math.random()*25 - (recent.slice(-2).includes(l.id)?40:0) - (x.b>=95?30:0) };
+  kand.sort((a,b)=>score(b)-score(a));
+  return itemVoor(kand[0].id);
+}
+function itemVoor(id){ const x=ldS(id); return maakItem(id,{trede:x.tr===0?3:x.tr,bron:x.tr===0?'nieuw':'oefen'}) }
+
+// ---------- niveau omlaag ----------
+// als op het huidige niveau 24 zelfstandige vragen gemaakt zijn en minder dan 40% goed is, gaat de leerling een niveau terug
+function checkNiveauOmlaag(){
+  if(!S.niv||S.niv<=1||S.recNiv!==S.niv||S.rec.length<24) return false;
+  const p=S.rec.reduce((a,b)=>a+b,0)/S.rec.length;
+  if(p>=.4) return false;
+  const van=S.niv; S.niv=van-1; S.rec=[]; S.recNiv=S.niv;
+  event({t:'niveau',van,naar:S.niv,reden:'beheersing te laag'});
+  bewaar(); return true;
+}
+
+// ---------- badges ----------
+const BADGES = [
+  {id:'start',e:'🚀',naam:'Gestart',uit:'Instaptoets gemaakt',test:()=>!!S.plaatsing},
+  {id:'o100',e:'💯',naam:'100 opgaven',uit:'100 opgaven gemaakt',test:()=>S.aantal>=100},
+  {id:'o500',e:'🏋️',naam:'500 opgaven',uit:'500 opgaven gemaakt',test:()=>S.aantal>=500},
+  {id:'sab',e:'🕵️',naam:'Saboteur-jager',uit:'10 Saboteurs ontmaskerd',test:()=>(S.sabGoed||0)>=10},
+  {id:'fb10',e:'🧹',naam:'Opruimer',uit:'10 fouten uit je foutenbank opgelost',test:()=>Object.values(S.fb).filter(f=>f.opgelost).length>=10},
+  {id:'zilver4',e:'🎯',naam:'Klaar voor de check',uit:'Alle vier domeinen op zilver',test:()=>S.niv&&DOMEINEN.every(d=>domB(S.niv,d.id)>=80)},
+  {id:'dip1',e:'🎓',naam:'Eerste diploma',uit:'Een rekentoets gehaald',test:()=>Object.keys(S.diplomas).length>=1},
+  {id:'2f',e:'🏅',naam:'2F gehaald',uit:'Rekentoets van Niveau 4 gehaald',test:()=>!!S.diplomas[4]},
+  {id:'3f',e:'🏆',naam:'3F gehaald',uit:'Rekentoets van Niveau 8 gehaald',test:()=>!!S.diplomas[8]}
+];
+function badgesBijwerken(){ BADGES.forEach(b=>{ if(!S.badges.includes(b.id)&&b.test()){ S.badges=S.badges.concat([b.id]); setTimeout(()=>melding(`${b.e} Badge: ${b.naam}`),600) } }) }
+
+// ===== Voortgangsgrafieken in Got It-indeling (Vellesan-kleuren): ringen, donuts en het onderdelenwiel =====
+function boog(cx,cy,r,a0,a1){ // a in graden, 0 = boven, met de klok mee
+  const p=a=>[cx+r*Math.sin(a*Math.PI/180), cy-r*Math.cos(a*Math.PI/180)];
+  const [x0,y0]=p(a0),[x1,y1]=p(a1); return `M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+}
+// concentrische ringen (totaaloverzicht): vals [{b,k,label}]
+function ringenSvg(vals,midden){
+  const S0=230,c=S0/2; let o='';
+  vals.forEach((v,i)=>{ const r=c-14-i*19;
+    o+=`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--ring)" stroke-width="13"/>`;
+    if(v.b>0) o+=`<path d="${boog(c,c,r,0,Math.min(359.9,3.6*v.b))}" fill="none" stroke="${v.k}" stroke-width="13" stroke-linecap="round"/>`;
+  });
+  o+=`<text x="${c}" y="${c+4}" text-anchor="middle" class="ringgetal">${esc(midden)}</text>`;
+  return `<svg class="ringen" viewBox="0 0 ${S0} ${S0}" role="img" aria-label="Totaaloverzicht">${o}</svg>`;
+}
+function donutSvg(b,k,klein=false){
+  const S0=klein?90:130,c=S0/2,r=c-12,sw=klein?11:15;
+  return `<svg class="donut" viewBox="0 0 ${S0} ${S0}" role="img" aria-label="${b}%"><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--ring)" stroke-width="${sw}"/>${b>0?`<path d="${boog(c,c,r,0,Math.min(359.9,3.6*b))}" fill="none" stroke="${k}" stroke-width="${sw}" stroke-linecap="round"/>`:''}<text x="${c}" y="${c+(klein?6:8)}" text-anchor="middle" class="donutgetal" style="font-size:${klein?19:26}px">${b}%</text></svg>`;
+}
+// onderdelenwiel: taartpunten = onderdelen, ringen = niveau 1 (binnen) t/m 8 (buiten)
+function wielSvg(dom,huidig){
+  const subs=SUBDOMEINEN[dom]; const k=DOM[dom].k; const m=subs.length; const W=520,c=W/2, r0=52, dr=19, gap=3;
+  let o='';
+  subs.forEach((s,i)=>{
+    const a0=i*360/m+gap/2, a1=(i+1)*360/m-gap/2;
+    for(let n=1;n<=8;n++){
+      const ri=r0+(n-1)*dr, ro=ri+dr-2; const b=subB(n,dom,s.id);
+      const p=a=>[c+Math.sin(a*Math.PI/180),-Math.cos(a*Math.PI/180)];
+      const [sx,sy]=p(a0),[ex,ey]=p(a1); const gr=a1-a0>180?1:0;
+      const d=`M${(c+ (sx-c)*ri).toFixed(1)} ${(c+sy*ri).toFixed(1)} A${ri} ${ri} 0 ${gr} 1 ${(c+(ex-c)*ri).toFixed(1)} ${(c+ey*ri).toFixed(1)} L${(c+(ex-c)*ro).toFixed(1)} ${(c+ey*ro).toFixed(1)} A${ro} ${ro} 0 ${gr} 0 ${(c+(sx-c)*ro).toFixed(1)} ${(c+sy*ro).toFixed(1)} Z`;
+      const op = b===null?0: b>=DREMPEL?1: b>=50?.62: b>0?.32:.1;
+      const fill = b===null?'var(--ring-leeg)':k;
+      o+=`<path d="${d}" fill="${fill}" fill-opacity="${b===null?1:Math.max(op,.1)}" stroke="${n===huidig?'var(--ink)':'none'}" stroke-width="${n===huidig?1.5:0}" class="wielcel" data-sub="${s.id}" data-n="${n}" onclick="go('domein',{dom:'${dom}',niv:${n},sub:'${s.id}'})"><title>${esc(s.naam)} · Niveau ${n}${b===null?' (geen opgaven)':': '+b+'%'}</title></path>`;
+    }
+    const am=(a0+a1)/2, rl=r0+8*dr+18, lx=c+rl*Math.sin(am*Math.PI/180), ly=c-rl*Math.cos(am*Math.PI/180);
+    const anchor=Math.abs(lx-c)<20?'middle':lx>c?'start':'end';
+    o+=`<text x="${lx.toFixed(1)}" y="${(ly+5).toFixed(1)}" text-anchor="${anchor}" class="wiellabel">${esc(s.naam)}</text>`;
+  });
+  o+=`<circle cx="${c}" cy="${c}" r="${r0-6}" fill="var(--kaart)" stroke="var(--lijn)"/><text x="${c}" y="${c-4}" text-anchor="middle" class="wielmidden">Niveau</text><text x="${c}" y="${c+22}" text-anchor="middle" class="wielmidden groot">${huidig||'–'}</text>`;
+  return `<svg class="wiel" viewBox="-70 -10 ${W+140} ${W+20}" role="img" aria-label="Voortgang per onderdeel en niveau">${o}</svg>`;
+}
+
+// ===== Hulpmiddelen voor de vragenbanken =====
+// Contexten voor 10-16 jaar: sport, gamen, bijbaan, festival, OV, koken, reizen, social media, school.
+const CTX = {
+  product:[['hoodie',[30,40,45,50,60,80]],['paar sneakers',[60,80,90,100,120,150]],['game',[20,30,40,50,60,70]],['koptelefoon',[40,50,80,100,120,150]],['voetbalshirt',[40,60,70,80,90]],['skateboard',[50,60,80,90,100,120]],['spijkerbroek',[40,50,60,70,80]],['rugzak',[25,30,40,50,60]],['racket',[30,40,50,60,80]],['fiets',[250,300,400,450,500,600]]],
+  eten:[['pizza',8],['portie friet',3],['smoothie',4],['wrap',5],['bak sushi',10]],
+  sport:['voetbal','hockey','basketbal','volleybal','tennis','zwemmen','turnen','handbal'],
+  stad:[['Amsterdam','Utrecht'],['Rotterdam','Den Haag'],['Groningen','Assen'],['Haarlem','Leiden'],['Zwolle','Deventer']],
+  vak:['wiskunde','Engels','geschiedenis','biologie','aardrijkskunde','Nederlands']
+};
+const prodPrijs = r => { const p=r.pick(CTX.product); return [p[0],r.pick(p[1])] };
+const st = (tekst,waarde,eenheid) => [tekst,waarde,eenheid];       // stap in een uitwerking
+const ggd = (a,b) => b?ggd(b,a%b):Math.abs(a);
+const breuk = (t,n) => `<span class="breuk"><sup>${t}</sup>⁄<sub>${n}</sub></span>`;
+const tijdStr = m => { m=((m%1440)+1440)%1440; return Math.floor(m/60)+':'+String(m%60).padStart(2,'0') };
+const m2 = 'm²', cm2 = 'cm²', cm3='cm³', m3='m³', dm3='dm³', km2='km²';
+
+// ===== Niveau 1 · 1F · ongeveer groep 7 =====
+// ---------- Getallen ----------
+L({id:'G1.afronden',niv:1,dom:'G',sub:'getalbegrip',naam:'Afronden op tientallen, honderdtallen en duizendtallen',
+  uitleg:'Kijk naar het cijfer rechts van de plek waarop je afrondt. Is dat 5 of meer, dan rond je naar boven af. Is het 4 of minder, dan naar beneden.',
+  gen(r){ const op=r.pick([10,100,1000]); let x; do{ x=r.int(1200,98000) }while(x%op===0||Math.floor(x/(op/10))%10===0&&op>10&&r.ja(.5)); return {x,op,ctx:r.pick([['Bij een concert waren','bezoekers'],['Een filmpje op social media heeft','views'],['Een stadion heeft','stoelen'],['Bij de marathon liepen','lopers mee'],['Een game heeft al','downloads']])} },
+  vraag:v=>`${v.ctx[0]} ${nl(v.x)} ${v.ctx[1]}. Rond dit getal af op ${({10:'tientallen',100:'honderdtallen',1000:'duizendtallen'})[v.op]}.`,
+  antw:v=>Math.round(v.x/v.op)*v.op,
+  stappen:v=>{ const d=Math.floor(v.x/(v.op/10))%10; return [st(`Het cijfer rechts van de ${({10:'tientallen',100:'honderdtallen',1000:'duizendtallen'})[v.op]} is ${d}.`,d),st(d>=5?`${d} is 5 of meer, dus naar boven afronden.`:`${d} is minder dan 5, dus naar beneden afronden.`),st(`Afgerond: ${nl(Math.round(v.x/v.op)*v.op)}`,Math.round(v.x/v.op)*v.op)] },
+  fouten:v=>[[Math.floor(v.x/v.op)*v.op,'Je hebt de cijfers alleen weggestreept. Kijk naar het cijfer erachter: bij 5 of meer rond je naar boven af.'],[Math.ceil(v.x/v.op)*v.op,'Bij een cijfer onder de 5 rond je naar beneden af.'],[Math.round(v.x/(v.op===1000?100:v.op*10))*(v.op===1000?100:v.op*10),'Let op op welke plek je moet afronden.']],
+  anders:v=>({tekst:`Zet het getal op een getallenlijn tussen de twee mogelijke uitkomsten. Welke ligt het dichtst bij?`,svg:FIG.lijn(Math.floor(v.x/v.op)*v.op,Math.floor(v.x/v.op)*v.op+v.op,v.op/10,[{x:v.x,label:nl(v.x)}],5)}),
+  waarom:{vraag:'Waarom kijk je naar het cijfer rechts van de plek waarop je afrondt?',opties:['Dat cijfer bepaalt of je dichter bij het hogere of het lagere getal zit.','Omdat je altijd het laatste cijfer weghaalt.','Omdat je daar 1 bij moet optellen.']}
+});
+L({id:'G1.nullen',niv:1,dom:'G',sub:'bewerkingen',naam:'Vermenigvuldigen met nullen',verwar:['G1.cijferen'],
+  uitleg:'Reken eerst zonder de nullen. Tel daarna alle nullen van beide getallen bij elkaar en zet ze achter je uitkomst.',
+  gen(r){ const a=r.int(2,9),b=r.int(2,9),i=r.int(1,2),j=r.int(1,3-i); return {a,b,i,j,A:a*10**i,B:b*10**j,c:r.pick([['Een stadion heeft','vakken met elk','stoelen. Hoeveel stoelen zijn er in totaal?'],['Een school bestelt','dozen met elk','schriften. Hoeveel schriften zijn dat?'],['Op een festival staan','rijen met elk','fietsen. Hoeveel fietsen staan er?']])} },
+  vraag:v=>`${v.c[0]} ${nl(v.A)} ${v.c[1]} ${nl(v.B)} ${v.c[2]}`,
+  antw:v=>v.A*v.B,
+  stappen:v=>[st(`Zonder nullen: ${v.a} × ${v.b} = ${v.a*v.b}`,v.a*v.b),st(`Aantal nullen: ${v.i} + ${v.j} = ${v.i+v.j}`,v.i+v.j),st(`${v.a*v.b} met ${v.i+v.j} nullen erachter: ${nl(v.A*v.B)}`,v.A*v.B)],
+  fouten:v=>[[v.a*v.b*10**(v.i+v.j-1),'Je bent een nul vergeten. Tel de nullen van beide getallen.'],[v.a*v.b*10**(v.i+v.j+1),'Je hebt een nul te veel. Tel nog eens hoeveel nullen er in beide getallen staan.'],[v.A+v.B,'Je hebt opgeteld in plaats van vermenigvuldigd.']],
+  anders:v=>`Splits de getallen: ${nl(v.A)} = ${v.a} × ${nl(10**v.i)} en ${nl(v.B)} = ${v.b} × ${nl(10**v.j)}. Dan is het ${v.a} × ${v.b} × ${nl(10**v.i)} × ${nl(10**v.j)} = ${v.a*v.b} × ${nl(10**(v.i+v.j))}.`,
+  waarom:{vraag:'Waarom mag je de nullen eerst weglaten?',opties:['Omdat elke nul "keer 10" betekent; die zet je er aan het eind weer bij.','Omdat nullen niets waard zijn.','Omdat je met nullen altijd 0 krijgt.']},
+  volgorde:true
+});
+function kolomfout(a,b){ const s=String(a),t=String(b).padStart(s.length,'0'); let o=''; for(let i=0;i<s.length;i++) o+=Math.abs(+s[i]-+t[i]); return +o }
+L({id:'G1.cijferen',niv:1,dom:'G',sub:'bewerkingen',naam:'Aftrekken met lenen',verwar:['G1.nullen'],
+  uitleg:'Bij aftrekken met lenen: kan het niet in een kolom, leen dan 1 van de kolom links ervan (10 erbij). Je kunt ook rijgen: eerst de honderdtallen eraf, dan de tientallen, dan de eenheden.',
+  gen(r){ let a,c; do{ a=r.int(121,480); c=r.int(36,98) }while(a%10>=c%10||a-c<20); const [p]=prodPrijs(r); return {a,c,p,n:r.naam()} },
+  vraag:v=>`${v.n} heeft € ${v.a} gespaard en koopt een ${v.p} van € ${v.c}. Hoeveel euro houdt ${v.n} over?`,
+  antw:v=>v.a-v.c, eenheid:'€',
+  stappen:v=>{ const t=Math.floor(v.c/10)*10,e=v.c%10; return [st(`${v.a} − ${t} = ${v.a-t}`,v.a-t),st(`${v.a-t} − ${e} = ${v.a-v.c}`,v.a-v.c),st(`Controle: ${v.a-v.c} + ${v.c} = ${v.a}`)] },
+  fouten:v=>[[kolomfout(v.a,v.c),'Je hebt per kolom het kleinste van het grootste afgetrokken. Bij aftrekken moet je dan lenen.'],[v.a+v.c,'Je hebt opgeteld. Na het kopen heb je minder over.'],[v.a-v.c+10,'Bij lenen ben je vergeten dat de tientallen 1 minder worden.']],
+  anders:v=>({tekst:`Spring op de getallenlijn terug: eerst ${Math.floor(v.c/10)*10} terug, daarna nog ${v.c%10}.`,svg:FIG.lijn(Math.floor((v.a-v.c)/10)*10,Math.ceil(v.a/10)*10,10,[{x:v.a,label:String(v.a)},{x:v.a-Math.floor(v.c/10)*10,label:String(v.a-Math.floor(v.c/10)*10),k:'b'},{x:v.a-v.c,label:String(v.a-v.c)}])}),
+  sab:v=>{ const t=Math.floor(v.c/10)*10,e=v.c%10,kf=kolomfout(v.a,v.c); return {intro:`${v.n} heeft € ${v.a} en koopt iets van € ${v.c}. Ravi rekent onder elkaar uit wat er overblijft.`,
+    stappen:[`Eenheden: ${v.a%10} − ${e} kan niet, dus ${e} − ${v.a%10} = ${e-v.a%10}.`,`Tientallen: ${Math.floor(v.a/10)%10} en ${Math.floor(v.c/10)%10} → verschil ${Math.abs(Math.floor(v.a/10)%10-Math.floor(v.c/10)%10)}.`,`Honderdtallen: ${Math.floor(v.a/100)} blijft ${Math.floor(v.a/100)}.`,`Antwoord: € ${kf}.`],
+    fout:0,juist:v.a-v.c,eenheid:'€',vraag:'Hoeveel houdt ' + v.n + ' echt over?',uitleg:`Ravi draait de som om bij de eenheden. Je mag niet ${e} − ${v.a%10} doen: je moet lenen.`,
+    goed:[`${v.a} − ${t} = ${v.a-t}`,`${v.a-t} − ${e} = ${v.a-v.c}`]} }
+});
+L({id:'G1.breukvan',niv:1,dom:'G',sub:'breuken',naam:'Breuk van een hoeveelheid',verwar:['V1.procent'],
+  uitleg:'Een breuk van een hoeveelheid: deel eerst door de noemer (onder de streep), dan heb je 1 deel. Vermenigvuldig daarna met de teller (boven de streep).',
+  gen(r){ const n=r.pick([3,4,5,6,8,10]),t=r.int(2,n-1),k=r.int(2,9); const c=r.pick([['Van de','leerlingen in de klas sport','deel bij een club. Hoeveel leerlingen zijn dat?'],['Een zak bevat','snoepjes. Je eet','deel op. Hoeveel snoepjes zijn dat?'],['Een playlist duurt','minuten. Je hebt','deel geluisterd. Hoeveel minuten is dat?']]); return {n,t,k,tot:n*k,c} },
+  vraag:v=>`${v.c[0]} ${v.tot} ${v.c[1]} ${breuk(v.t,v.n)} ${v.c[2]}`,
+  fig:v=>FIG.strook(0,v.n,`${v.tot} verdeeld in ${v.n} gelijke stukken`),
+  antw:v=>v.k*v.t,
+  stappen:v=>[st(`${v.tot} : ${v.n} = ${v.k} (dat is 1 deel)`,v.k),st(`${v.t} delen: ${v.t} × ${v.k} = ${v.t*v.k}`,v.t*v.k)],
+  fouten:v=>[[v.k,`Je hebt 1 deel uitgerekend (${breuk(1,v.n)}). Het zijn er ${v.t}.`],[v.tot%v.t===0?v.tot/v.t*v.n:v.tot-v.t,'Je deelt door de teller. Deel eerst door de noemer: zo groot is 1 deel.'],[v.tot-v.t,'Je hebt de teller afgetrokken. Een breuk is een deel van het geheel.']],
+  anders:v=>({tekst:`Teken een strook van ${v.tot} en verdeel hem in ${v.n} gelijke stukken van ${v.k}. Kleur er ${v.t}.`,svg:FIG.strook(v.t,v.n,`${v.t} van de ${v.n} stukken = ${v.t} × ${v.k} = ${v.t*v.k}`)}),
+  waarom:{vraag:'Waarom deel je eerst door de noemer?',opties:['De noemer zegt in hoeveel gelijke delen je het geheel verdeelt.','De noemer is altijd het grootste getal.','Omdat je bij breuken altijd eerst deelt door het onderste getal en daarna optelt.']},
+  sab:v=>({intro:`Van ${v.tot} snoepjes is ${breuk(v.t,v.n)} rood. Lisa rekent uit hoeveel rode snoepjes er zijn.`,
+    stappen:[`${breuk(v.t,v.n)} betekent: ${v.t} van de ${v.n} gelijke delen.`,`Eén deel: ${v.tot} : ${v.t} = ${nl(v.tot/v.t,2)}`,`${v.t} delen: ${v.t} × ${nl(v.tot/v.t,2)} = ${nl(v.tot,2)}`,`Antwoord: ${v.tot} rode snoepjes.`],
+    fout:1,juist:v.k*v.t,eenheid:'',vraag:'Hoeveel rode snoepjes zijn er echt?',uitleg:`Eén deel krijg je door te delen door de noemer (${v.n}), niet door de teller. Dan klopt het antwoord ook: het moet minder zijn dan het geheel.`,
+    goed:[`1 deel: ${v.tot} : ${v.n} = ${v.k}`,`${v.t} delen: ${v.t} × ${v.k} = ${v.t*v.k}`]})
+});
+// ---------- Verhoudingen ----------
+L({id:'V1.vtabel',niv:1,dom:'V',sub:'vtabel',naam:'Verhoudingstabel: prijs per aantal',verwar:['V1.verdelen'],
+  uitleg:'In een verhoudingstabel doe je boven en onder hetzelfde. Handig is om eerst terug te rekenen naar 1 stuk.',
+  gen(r){ const a=r.pick([2,3,4,5]),p=r.int(3,12); let b; do{ b=r.pick([6,7,8,9,10,12,15]) }while(b===a); const d=r.pick([['bioscoopkaartjes','kaartjes'],['tickets voor het zwembad','tickets'],['pizza\'s','pizza\'s'],['T-shirts voor het sportteam','T-shirts']]); return {a,p,b,d} },
+  vraag:v=>`${v.a} ${v.d[0]} kosten samen ${eur(v.a*v.p)}. Hoeveel kosten ${v.b} ${v.d[1]}?`,
+  antw:v=>v.b*v.p, eenheid:'€',
+  stappen:v=>[st(`${v.a} ${v.d[1]} kosten € ${v.a*v.p}`,v.a*v.p),st(`1 stuk: ${v.a*v.p} : ${v.a} = € ${v.p}`,v.p),st(`${v.b} stuks: ${v.b} × ${v.p} = € ${v.b*v.p}`,v.b*v.p)],
+  tabel:v=>({kop:['Aantal','Prijs (€)'],rijen:[[v.a,v.a*v.p],[1,v.p],[v.b,v.b*v.p]],leeg:[[1,1],[2,1]]}),
+  fouten:v=>[[v.a*v.p+(v.b-v.a),'Je telde het verschil in aantal op bij de prijs. In een verhoudingstabel vermenigvuldig of deel je.'],[v.a*v.p*v.b,'Je vermenigvuldigde de totaalprijs met het aantal. Reken eerst uit wat 1 stuk kost.'],[v.p,'Dat is de prijs van 1 stuk.']],
+  anders:v=>({tekst:'Zet het in een verhoudingstabel. Ga via 1 stuk naar het aantal dat je zoekt.',tabel:{kop:['Aantal','Prijs (€)'],rijen:[[v.a,v.a*v.p],[1,v.p],[v.b,v.b*v.p]]}}),
+  waarom:{vraag:'Waarom reken je eerst uit wat 1 stuk kost?',opties:['Vanuit 1 stuk kun je makkelijk naar elk ander aantal.','Omdat 1 altijd het goedkoopst is.','Omdat je dan het antwoord al hebt.']}
+});
+L({id:'V1.procent',niv:1,dom:'V',sub:'procent',naam:'Makkelijke procenten: 50%, 25% en 10%',verwar:['G1.breukvan'],
+  uitleg:'50% is de helft, 25% is een kwart en 10% is een tiende. Deel dus door 2, door 4 of door 10.',
+  gen(r){ const p=r.pick([10,25,50]); const [d,pr]=prodPrijs(r); let x=pr; if(p===25&&x%4) x=x-x%4+4; return {p,d,x,vraagNaar:r.pick(['korting','nieuw'])} },
+  vraag:v=>v.vraagNaar==='korting'?`Een ${v.d} kost ${eur(v.x)}. In de sale krijg je ${v.p}% korting. Hoeveel euro korting krijg je?`:`Een ${v.d} kost ${eur(v.x)}. In de sale krijg je ${v.p}% korting. Wat betaal je nog?`,
+  antw:v=>v.vraagNaar==='korting'?v.x*v.p/100:v.x-v.x*v.p/100, eenheid:'€',
+  stappen:v=>{ const del=100/v.p, k=v.x/del; const s=[st(`${v.p}% = 1/${del} deel, dus ${v.x} : ${del} = € ${nl(k)}`,k)]; if(v.vraagNaar==='nieuw') s.push(st(`Nieuwe prijs: ${v.x} − ${nl(k)} = € ${nl(v.x-k)}`,v.x-k)); return s },
+  fouten:v=>{ const k=v.x*v.p/100; return [[v.p,'Procent is geen bedrag in euro. Reken uit hoeveel '+v.p+'% van de prijs is.'],[v.vraagNaar==='korting'?v.x-k:k,v.vraagNaar==='korting'?'Dat is de nieuwe prijs. De vraag is hoeveel korting je krijgt.':'Dat is de korting. De vraag is wat je nog betaalt.'],[v.x-v.p,'Je trok '+v.p+' euro af. Procent is een deel van de prijs.']] },
+  anders:v=>({tekst:`Teken de prijs als een balk van 100%. ${v.p}% is ${({10:'een tiende',25:'een kwart',50:'de helft'})[v.p]} van de balk.`,svg:FIG.balk([{w:v.p,label:`${v.p}% = ${eur(v.x*v.p/100)}`,k:'a'},{w:100-v.p,label:`${100-v.p}%`,k:'zacht'}],`100% = ${eur(v.x)}`)})
+});
+L({id:'V1.verdelen',niv:1,dom:'V',sub:'vtabel',naam:'Eerlijk verdelen in een verhouding',verwar:['V1.vtabel'],
+  uitleg:'Bij verdelen in een verhouding tel je eerst de delen bij elkaar op. Dan weet je hoe groot 1 deel is.',
+  gen(r){ let a,b; do{ a=r.int(1,4); b=r.int(1,5) }while(a===b||ggd(a,b)>1); const k=r.pick([5,6,8,10,12,15,20]); const [n1,n2]=r.naam2(); return {a,b,k,n1,n2,tot:(a+b)*k,c:r.pick(['met auto\'s wassen','met oppassen','met de flessenactie','met een kraam op de vrijmarkt'])} },
+  vraag:v=>`${v.n1} en ${v.n2} verdienen samen ${eur(v.tot)} ${v.c}. ${v.n1} werkte ${v.a} uur en ${v.n2} ${v.b} uur. Ze verdelen het geld in de verhouding ${v.a} : ${v.b}. Hoeveel krijgt ${v.n2}?`,
+  antw:v=>v.b*v.k, eenheid:'€',
+  stappen:v=>[st(`Samen ${v.a} + ${v.b} = ${v.a+v.b} delen`,v.a+v.b),st(`1 deel = ${v.tot} : ${v.a+v.b} = € ${v.k}`,v.k),st(`${v.n2}: ${v.b} × ${v.k} = € ${v.b*v.k}`,v.b*v.k)],
+  fouten:v=>[[v.tot/2,'Eerlijk delen betekent hier niet: allebei de helft. Wie langer werkt, krijgt meer.'],[v.a*v.k,`Dat is het deel van ${v.n1}.`],[v.k,'Dat is 1 deel. '+v.n2+' krijgt er '+v.b+'.']],
+  anders:v=>({tekst:`Teken een strook met ${v.a+v.b} gelijke vakjes: ${v.a} voor ${v.n1} en ${v.b} voor ${v.n2}. Elk vakje is ${eur(v.k)}.`,svg:FIG.balk(Array.from({length:v.a+v.b},(_,i)=>({w:1,label:'€'+v.k,k:i<v.a?'a':'b'})),`${eur(v.tot)}`)})
+});
+// ---------- Meten en meetkunde ----------
+const EENH1=[['km','m',1000,'Een wandelroute is','lang'],['m','cm',100,'Een springtouw is','lang'],['cm','mm',10,'Een gum is','lang'],['kg','g',1000,'Een zak meel weegt',''],['l','ml',1000,'Een fles water bevat','']];
+L({id:'M1.eenheden',niv:1,dom:'M',sub:'eenheden',naam:'Lengte, gewicht en inhoud omrekenen',
+  uitleg:'Van een grote naar een kleine eenheid: het getal wordt groter (vermenigvuldigen). Van klein naar groot: het getal wordt kleiner (delen). 1 km = 1000 m, 1 m = 100 cm, 1 cm = 10 mm, 1 kg = 1000 g, 1 l = 1000 ml.',
+  gen(r){ const e=r.pick(EENH1); const naarKlein=r.ja(.6); const x=naarKlein?r.int(2,9):r.int(2,9)*e[2]; return {e,naarKlein,x} },
+  vraag:v=>v.naarKlein?`${v.e[3]} ${v.x} ${v.e[0]} ${v.e[4]}. Hoeveel ${v.e[1]} is dat?`:`${v.e[3]} ${nl(v.x)} ${v.e[1]} ${v.e[4]}. Hoeveel ${v.e[0]} is dat?`,
+  antw:v=>v.naarKlein?v.x*v.e[2]:v.x/v.e[2], eenheid:v=>v.naarKlein?v.e[1]:v.e[0],
+  stappen:v=>[st(`1 ${v.e[0]} = ${nl(v.e[2])} ${v.e[1]}`,v.e[2]),st(v.naarKlein?`Naar een kleinere eenheid: keer ${nl(v.e[2])}`:`Naar een grotere eenheid: delen door ${nl(v.e[2])}`),st(v.naarKlein?`${v.x} × ${nl(v.e[2])} = ${nl(v.x*v.e[2])}`:`${nl(v.x)} : ${nl(v.e[2])} = ${nl(v.x/v.e[2])}`,v.naarKlein?v.x*v.e[2]:v.x/v.e[2])],
+  fouten:v=>v.naarKlein?[[v.x*v.e[2]/10,'Kijk nog eens hoeveel '+v.e[1]+' er in 1 '+v.e[0]+' gaan.'],[v.x*v.e[2]*10,'Kijk nog eens hoeveel '+v.e[1]+' er in 1 '+v.e[0]+' gaan.'],[v.x/v.e[2],'Je deelde, maar naar een kleinere eenheid wordt het getal groter.']]:[[v.x*v.e[2],'Naar een grotere eenheid wordt het getal kleiner: delen.'],[v.x/v.e[2]*10,'Kijk nog eens hoeveel '+v.e[1]+' er in 1 '+v.e[0]+' gaan.'],[v.x/v.e[2]/10,'Kijk nog eens hoeveel '+v.e[1]+' er in 1 '+v.e[0]+' gaan.']],
+  anders:v=>`Denk aan iets wat je kent: een liniaal van 30 cm is 300 mm. Een klein eenheidje past er vaak in een groot eenheidje. Daarom wordt het getal groter als je naar de kleine eenheid gaat.`,
+  koppel:(v,r)=>({vraag:'Koppel de maten die even groot zijn.',paren:r.shuffle([['1 km','1000 m'],['1 m','100 cm'],['1 cm','10 mm'],['1 kg','1000 g'],['1 l','1000 ml'],['½ km','500 m'],['1 dm','10 cm']]).slice(0,4)})
+});
+L({id:'M1.tijd',niv:1,dom:'M',sub:'tijd',naam:'Tijdsduur berekenen',
+  uitleg:'Een uur heeft 60 minuten, niet 100. Reken een tijdsduur uit door in stappen naar hele uren te springen.',
+  gen(r){ const s=r.int(8,19)*60+r.pick([15,20,25,35,40,45,50]); const d=r.int(50,170); return {s,e:s+d,d,c:r.pick(['De film begint om','De training begint om','De bus vertrekt om','Het concert begint om','De wedstrijd begint om']),c2:r.pick(['is afgelopen om','is klaar om','komt aan om','eindigt om'])} },
+  vraag:v=>`${v.c} ${tijdStr(v.s)} en ${v.c2} ${tijdStr(v.e)}. Hoeveel minuten duurt het?`,
+  antw:v=>v.d, eenheid:'min',
+  stappen:v=>{ const h1=Math.ceil(v.s/60)*60, a=h1-v.s, b=Math.floor(v.e/60)*60-h1, c=v.e-Math.floor(v.e/60)*60; return [st(`Van ${tijdStr(v.s)} naar ${tijdStr(h1)}: ${a} minuten`,a),st(`Van ${tijdStr(h1)} naar ${tijdStr(Math.floor(v.e/60)*60)}: ${b} minuten`,b),st(`Van ${tijdStr(Math.floor(v.e/60)*60)} naar ${tijdStr(v.e)}: ${c} minuten`,c),st(`Samen: ${a} + ${b} + ${c} = ${v.d} minuten`,v.d)] },
+  fouten:v=>{ const dec=(Math.floor(v.e/60)*100+v.e%60)-(Math.floor(v.s/60)*100+v.s%60); return [[dec,'Je rekende alsof een uur 100 minuten heeft. Een uur heeft 60 minuten.'],[v.d-60,'Tel de hele uren goed: elk heel uur is 60 minuten.'],[v.d+60,'Tel de hele uren goed: elk heel uur is 60 minuten.']] },
+  anders:v=>({tekst:'Spring op de tijdlijn naar het volgende hele uur, dan per uur, dan het laatste stukje.',svg:FIG.lijn(Math.floor(v.s/60)*60,Math.ceil(v.e/60)*60,15,[{x:v.s,label:tijdStr(v.s)},{x:v.e,label:tijdStr(v.e)}],100)}),
+  volgorde:true
+});
+L({id:'M1.rechthoek',niv:1,dom:'M',sub:'oppervlak',naam:'Omtrek en oppervlakte van een rechthoek',
+  uitleg:'Omtrek: de lengte van de rand, dus alle zijden bij elkaar (in m). Oppervlakte: hoeveel vierkantjes erin passen, lengte × breedte (in m²).',
+  gen(r){ const l=r.int(5,20),b=r.int(3,l-1); return {l,b,wat:r.pick(['omtrek','opp']),c:r.pick(['Een schoolplein','Een moestuin','Een speelveld','Een terras','Een zwembad'])} },
+  vraag:v=>`${v.c} is een rechthoek van ${v.l} m lang en ${v.b} m breed. ${v.wat==='omtrek'?'Er komt een hek omheen. Hoe lang is de omtrek?':'Hoe groot is de oppervlakte?'} Kies ook de goede eenheid.`,
+  fig:v=>FIG.rechthoek(v.l,v.b,v.l+' m',v.b+' m'),
+  antw:v=>v.wat==='omtrek'?2*(v.l+v.b):v.l*v.b, eenheid:v=>v.wat==='omtrek'?'m':m2, eenheden:['m',m2,m3],
+  stappen:v=>v.wat==='omtrek'?[st(`Twee lange zijden: 2 × ${v.l} = ${2*v.l}`,2*v.l),st(`Twee korte zijden: 2 × ${v.b} = ${2*v.b}`,2*v.b),st(`Omtrek: ${2*v.l} + ${2*v.b} = ${2*(v.l+v.b)} m`,2*(v.l+v.b))]:[st(`Oppervlakte = lengte × breedte`),st(`${v.l} × ${v.b} = ${v.l*v.b} m²`,v.l*v.b)],
+  fouten:v=>v.wat==='omtrek'?[[v.l*v.b,'Dat is de oppervlakte. De omtrek is de rand eromheen.'],[v.l+v.b,'Je telde maar twee zijden. Een rechthoek heeft er vier.'],[2*v.l+v.b,'Je bent een zijde vergeten.']]:[[2*(v.l+v.b),'Dat is de omtrek. De oppervlakte is lengte × breedte.'],[v.l+v.b,'Bij oppervlakte vermenigvuldig je.'],[v.l*v.b*2,'Oppervlakte is lengte × breedte, niet keer 2.']],
+  anders:v=>v.wat==='omtrek'?`Loop in gedachten om ${v.c.toLowerCase()} heen: ${v.l} + ${v.b} + ${v.l} + ${v.b} meter. Dat is de omtrek.`:`Stel je voor dat je tegels van 1 bij 1 meter legt: ${v.l} tegels in een rij, en ${v.b} rijen. Dat zijn ${v.l} × ${v.b} tegels.`
+});
+// ---------- Verbanden ----------
+const MAANDEN=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+L({id:'B1.tabel',niv:1,dom:'B',sub:'tabellen',naam:'Informatie uit een tabel halen',
+  uitleg:'Lees eerst de kop van de tabel: wat staat er in de rijen en de kolommen? Zoek dan de getallen die je nodig hebt.',
+  gen(r){ const st0=r.int(0,6); const m=MAANDEN.slice(st0,st0+5); const w=m.map(()=>r.int(3,15)*5); const n=r.naam(); const wat=r.pick(['verschil','totaal']); let i=r.int(0,4),j; do{j=r.int(0,4)}while(j===i||w[j]===w[i]); return {m,w,n,wat,i,j} },
+  vraag:v=>`${v.n} houdt bij hoeveel euro er per maand op de spaarrekening komt.<div class="vtabel">${vtabelHtml(['Maand','Gespaard (€)'],v.m.map((x,k)=>[x,v.w[k]]))}</div>${v.wat==='verschil'?`Hoeveel euro spaarde ${v.n} in ${v.m[v.i]} meer of minder dan in ${v.m[v.j]}? (Geef het verschil.)`:`Hoeveel euro spaarde ${v.n} in deze vijf maanden samen?`}`,
+  antw:v=>v.wat==='verschil'?Math.abs(v.w[v.i]-v.w[v.j]):v.w.reduce((a,b)=>a+b,0), eenheid:'€',
+  stappen:v=>v.wat==='verschil'?[st(`${v.m[v.i]}: € ${v.w[v.i]}`,v.w[v.i]),st(`${v.m[v.j]}: € ${v.w[v.j]}`,v.w[v.j]),st(`Verschil: ${Math.max(v.w[v.i],v.w[v.j])} − ${Math.min(v.w[v.i],v.w[v.j])} = ${Math.abs(v.w[v.i]-v.w[v.j])}`,Math.abs(v.w[v.i]-v.w[v.j]))]:[st(`${v.w.join(' + ')}`),st(`= ${v.w.reduce((a,b)=>a+b,0)}`,v.w.reduce((a,b)=>a+b,0))],
+  fouten:v=>v.wat==='verschil'?[[v.w[v.i]+v.w[v.j],'Je telde op. Het verschil krijg je door af te trekken.'],[v.w[v.i],'Dat is alleen het bedrag van '+v.m[v.i]+'.']]:[[v.w.reduce((a,b)=>a+b,0)-v.w[4],'Je bent een maand vergeten.'],[v.w.reduce((a,b)=>a+b,0)-v.w[0],'Je bent een maand vergeten.']],
+  anders:v=>`Wijs met je vinger in de tabel: zoek eerst de kolom van de maand, lees dan het bedrag eronder. Schrijf de getallen die je nodig hebt op kladpapier voordat je gaat rekenen.`
+});
+const SPORTEN=['voetbal','hockey','turnen','tennis','dansen','zwemmen','basketbal'];
+L({id:'B1.staaf',niv:1,dom:'B',sub:'grafieken',naam:'Staafdiagram aflezen',
+  uitleg:'Bij een staafdiagram lees je de hoogte van de staaf af op de verticale as. Kijk goed hoeveel één hokje waard is.',
+  gen(r){ const s=r.shuffle(SPORTEN).slice(0,5); const stap=r.pick([2,5]); const w=s.map(()=>r.int(1,8)*stap); let i=r.int(0,4),j; do{j=r.int(0,4)}while(j===i||w[i]===w[j]); return {s,w,stap,i,j,wat:r.pick(['meer','totaal'])} },
+  vraag:v=>v.wat==='meer'?`In het diagram zie je welke sport de leerlingen van groep 8 en de brugklas het leukst vinden. Hoeveel leerlingen kiezen ${v.s[v.i]} meer of minder dan ${v.s[v.j]}? (Geef het verschil.)`:`In het diagram zie je welke sport leerlingen het leukst vinden. Hoeveel leerlingen kiezen ${v.s[v.i]} of ${v.s[v.j]} samen?`,
+  fig:v=>FIG.staaf(v.s,v.w,{ymax:Math.max(...v.w)+v.stap*2-Math.max(...v.w)%v.stap,ys:v.stap,yl:'aantal leerlingen'}),
+  antw:v=>v.wat==='meer'?Math.abs(v.w[v.i]-v.w[v.j]):v.w[v.i]+v.w[v.j],
+  stappen:v=>[st(`${v.s[v.i]}: ${v.w[v.i]} leerlingen`,v.w[v.i]),st(`${v.s[v.j]}: ${v.w[v.j]} leerlingen`,v.w[v.j]),st(v.wat==='meer'?`Verschil: ${Math.abs(v.w[v.i]-v.w[v.j])}`:`Samen: ${v.w[v.i]+v.w[v.j]}`,v.wat==='meer'?Math.abs(v.w[v.i]-v.w[v.j]):v.w[v.i]+v.w[v.j])],
+  fouten:v=>[[v.wat==='meer'?v.w[v.i]+v.w[v.j]:Math.abs(v.w[v.i]-v.w[v.j]),v.wat==='meer'?'Je telde op, maar de vraag gaat over het verschil.':'Je trok af, maar de vraag is hoeveel samen.'],[v.w[v.i]/v.stap,'Je telde de hokjes. Eén hokje is '+v.stap+' leerlingen.'],[v.w[v.i],'Dat is alleen '+v.s[v.i]+'.']],
+  anders:v=>`Leg een liniaal horizontaal tegen de bovenkant van de staaf en kijk welk getal je op de as raakt. Elk hokje is hier ${v.stap} leerlingen.`
+});
+L({id:'B1.patroon',niv:1,dom:'B',sub:'formules',naam:'Een regelmaat voortzetten',
+  uitleg:'Bij een vaste groei per stap: begin bij de startwaarde en tel er voor elke stap hetzelfde bij. Na 8 stappen is het startwaarde + 8 × groei.',
+  gen(r){ const s=r.int(5,30),g=r.int(2,9),w=r.int(6,15); return {s,g,w,c:r.pick([['Een zonnebloem is','cm en groeit elke week','cm. Hoe lang is de zonnebloem na','weken?','cm'],['Op je spaarrekening staat','euro. Je zet er elke week','euro bij. Hoeveel staat erop na','weken?','€'],['Een kanaal heeft','volgers en krijgt er elke dag','bij. Hoeveel volgers na','dagen?','']])} },
+  vraag:v=>`${v.c[0]} ${v.s} ${v.c[1]} ${v.g} ${v.c[2]} ${v.w} ${v.c[3]}`,
+  antw:v=>v.s+v.w*v.g, eenheid:v=>v.c[4],
+  stappen:v=>[st(`Groei: ${v.w} × ${v.g} = ${v.w*v.g}`,v.w*v.g),st(`Begin erbij: ${v.s} + ${v.w*v.g} = ${v.s+v.w*v.g}`,v.s+v.w*v.g)],
+  tabel:v=>({kop:['Stap','Waarde'],rijen:[[0,v.s],[1,v.s+v.g],[2,v.s+2*v.g],[v.w,v.s+v.w*v.g]],leeg:[[2,1],[3,1]]}),
+  fouten:v=>[[v.w*v.g,'Je bent de beginwaarde vergeten.'],[v.s*v.w,'Je vermenigvuldigde de beginwaarde. Alleen de groei komt er elke stap bij.'],[v.s+(v.w-1)*v.g,'Tel de stappen goed: na '+v.w+' stappen is er '+v.w+' keer iets bijgekomen.']],
+  anders:v=>({tekst:'Maak een tabel: bij elke stap komt er hetzelfde bij.',tabel:{kop:['Stap','Waarde'],rijen:[[0,v.s],[1,v.s+v.g],[2,v.s+2*v.g],[3,v.s+3*v.g],['…','…'],[v.w,v.s+v.w*v.g]]}}),
+  v3:v=>({vraag:`${v.c[0]} ${v.s} ${v.c[1]} ${v.g} ${v.c[2]} ${v.w} ${v.c[3]} Leg uit hoe je dit uitrekent.`,
+    goed:`Er komt ${v.w} keer ${v.g} bij, dat is ${v.w*v.g}. Plus het begin ${v.s} geeft ${v.s+v.w*v.g}.`,
+    bijna:`Elke stap komt er ${v.g} bij. ${v.w} × ${v.g} = ${v.w*v.g}. Het antwoord is ${v.w*v.g}.`,
+    fout:`Je begint met ${v.s} en dat wordt ${v.w} keer zo veel: ${v.s} × ${v.w} = ${v.s*v.w}.`,
+    kijkwijzer:['Heb je de beginwaarde meegenomen?','Heb je de groei per stap keer het aantal stappen gedaan?','Staat er een duidelijk antwoord met een berekening?']})
+});
+
+// ===== Schermen voor de leerling =====
+// Foto's: Unsplash (gratis te gebruiken onder de Unsplash-licentie)
+const FOTO={start:'1509062522246-3755977927d7',G:'1635070041078-e363dbe005cb',V:'1554224155-6726b3ff858f',M:'1503387762-592deb58ef4e',B:'1551288049-bebda4e38f71',
+  toets:'1606326608606-aa0b62935f2b',instap:'1522202176988-66273c2fd55f',fouten:'1456513080510-7bf3a84b82f8',niveaus:'1519389950473-47ba0277781c'};
+const foto=(k,w=1400)=>FOTO[k]?`background-image:url('https://images.unsplash.com/photo-${FOTO[k]}?w=${w}&q=70&auto=format&fit=crop')`:'';
+const VOET=()=>`<footer class="voettekst"><div class="in"><b>vellesan <span class="o">college</span></b><span>Rekentrainer · Niveau 1 t/m 8 (1F tot en met 3F)</span><span style="margin-left:auto">Foto's: Unsplash</span></div></footer>`;
+
+let scherm='welkom', param={};
+function go(naam,p={}){
+  if(naam!=='quiz') oefenActief=false;
+  scherm=naam; param=p; document.body.dataset.scherm=naam;
+  const f=SCHERMEN[naam]||SCHERMEN.home; $('#app').innerHTML=f(p); menu(); profiel(); window.scrollTo(0,0);
+  if(naam==='quiz') naRender();
+}
+function menu(){
+  const m=$('#menu'); if(!m) return;
+  if(!S||!S.naam||!S.niv){ m.innerHTML=''; return }
+  const items=[['home','Dashboard'],['niveaus','Niveaus'],['fouten','Foutenbank'],['account','Account']];
+  m.innerHTML=items.map(([k,t])=>`<button class="${scherm===k||(k==='home'&&scherm==='domein')?'aan':''}" onclick="go('${k}')">${t}</button>`).join('')+
+    `<button onclick="go('docentLogin')" style="margin-left:auto">Docent</button>`;
+}
+function profiel(){
+  const p=$('#profiel'); if(!p) return;
+  if(!S||!S.naam){ p.innerHTML=`<button class="knop zacht klein" onclick="go('docentLogin')">Docent</button>`; return }
+  p.innerHTML=`<span id="syncStatus">${syncLabel()}</span><button class="profiel" onclick="go('account')"><span class="avatar">${esc(S.naam.trim()[0]||'?').toUpperCase()}</span><span>${esc(S.naam.split(' ')[0])}${S.niv?' · Niveau '+S.niv:''}</span></button>`;
+}
+function melding(t,ms=3500){ const d=document.createElement('div'); d.className='melding'; d.innerHTML=t; document.body.appendChild(d); setTimeout(()=>d.remove(),ms) }
+const balk=(b,k)=>`<div class="balk"><i style="width:${Math.max(0,Math.min(100,b))}%;${k?`background:${k}`:''}"></i></div>`;
+
+// ---------- account ----------
+async function nieuwAccount(){
+  const naam=$('#wNaam').value.trim().replace(/\s+/g,' '), klas=$('#wKlas').value;
+  if(naam.length<3||!naam.includes(' ')){ melding('Vul je voor- én achternaam in.'); return }
+  const btn=$('#wMaak'); btn.disabled=true; btn.textContent='Bezig…';
+  S=nieuweStaat(); S.naam=naam; S.klas=klas;
+  if(serverModus()){
+    try{ const j=await api('nieuw',{naam,klas}); S.id=j.id; S.code=j.code; S.klasinst=j.klasinst; bewaar(false); go('code'); return }
+    catch(e){ btn.disabled=false; btn.textContent='Account maken'; melding('Account maken lukte niet: '+esc(e.message)+'. Controleer je internet.'); S=null; return }
+  }
+  S.id='LOKAAL-'+Math.random().toString(36).slice(2,6).toUpperCase(); bewaar(false); go('instapIntro');
+}
+async function herstelAccount(){
+  const id=$('#hId').value.trim().toUpperCase(), code=$('#hCode').value.trim();
+  if(!id||code.length!==6){ melding('Vul je leerling-ID en je herstelcode van 6 cijfers in.'); return }
+  try{ const j=await api('herstel',{id,code}); S=Object.assign(nieuweStaat(),j.staat); S.id=id; S.code=code; S.klasinst=j.klasinst; bewaar(false); melding('Welkom terug, '+esc(S.naam.split(' ')[0])+'!'); go(S.niv?'home':'instapIntro') }
+  catch(e){ melding(esc(e.message)) }
+}
+function uitloggen(){ if(!confirm('Weet je zeker dat je wilt uitloggen? Schrijf eerst je leerling-ID en herstelcode op.')) return; sync().finally(()=>{ try{localStorage.removeItem(KEY);localStorage.removeItem(KEY+'-reserve');localStorage.removeItem(OUTBOX)}catch(e){} S=null; go('welkom') }) }
+
+const SCHERMEN = {
+welkom(){
+  return `<section class="foto held" style="${foto('start',1800)}"><div class="in"><div>
+    <span class="eyebrow">Vellesan College · Rekentrainer</span>
+    <h1>Word sterker in rekenen, stap voor stap</h1>
+    <p>Je start met een korte instaptoets. Daarna oefen je op jouw niveau, met uitleg bij elke fout, tot je de rekentoets haalt. Van Niveau 1 tot en met Niveau 8 (3F).</p>
+    <button class="knop groot" onclick="document.getElementById('aanmelden').scrollIntoView({behavior:'smooth'});setTimeout(()=>$('#wNaam').focus(),400)">Start</button>
+    <ul class="usp"><li>Op jouw niveau</li><li>Uitleg bij elke fout</li><li>Klaar voor de rekentoets</li></ul></div></div></section>
+   <div class="wrap" id="aanmelden" style="max-width:1000px"><div class="welkom-grid">
+   <div class="kaart"><span class="eyebrow" style="color:var(--knop)">Eerste keer</span><h3 style="margin:6px 0 0">Ik ben nieuw</h3>
+    <label class="label">Je voor- en achternaam</label><input type="text" id="wNaam" autocomplete="name">
+    <label class="label">Je klas</label><select id="wKlas">${KLASSEN.map(k=>`<option>${esc(k)}</option>`).join('')}</select>
+    <div class="voet"><button class="knop vol" id="wMaak" onclick="nieuwAccount()">Account maken</button></div></div>
+   ${serverModus()?`<div class="kaart"><span class="eyebrow" style="color:var(--knop)">Terugkomen</span><h3 style="margin:6px 0 0">Ik heb al een account</h3>
+    <p class="zacht" style="margin:6px 0 0;font-size:15px">Nieuwe iPad, of de app opnieuw geopend? Vul je leerling-ID en herstelcode in. Je voortgang komt terug.</p>
+    <label class="label">Leerling-ID</label><input type="text" id="hId" autocapitalize="characters" placeholder="bijv. K1-K7QM">
+    <label class="label">Herstelcode (6 cijfers)</label><input type="text" id="hCode" inputmode="numeric" maxlength="6">
+    <div class="voet"><button class="knop zacht vol" onclick="herstelAccount()">Herstel mijn voortgang</button></div></div>`:
+    `<div class="kaart"><h3 style="margin-top:0">Testmodus</h3><p class="zacht" style="margin:0">Er is nog geen server ingesteld. De voortgang staat alleen op dit apparaat.</p></div>`}</div>
+   <p class="zacht mid" style="font-size:14px;margin-top:24px">Tip voor de iPad: open de link in Safari, tik op het deel-icoon en kies "Zet op beginscherm".</p></div>${VOET()}`;
+},
+code(){
+  return `<div class="wrap" style="max-width:560px"><div class="kaart mid"><div class="groot">🔐</div>
+   <h2 style="margin-top:0">Bewaar deze gegevens goed</h2><p>Hiermee haal je je voortgang terug op een andere iPad of als de app gewist is. <b>Maak nu een screenshot.</b></p>
+   <p class="zacht" style="margin-bottom:2px">Leerling-ID</p><div class="code">${esc(S.id)}</div>
+   <p class="zacht" style="margin-bottom:2px">Herstelcode</p><div class="code">${esc(S.code)}</div>
+   <p class="zacht" style="font-size:14px">Je vindt ze later ook onder Account. Je docent kan ze ook opzoeken.</p>
+   <div class="voet" style="justify-content:center"><button class="knop" onclick="go(S.niv?'home':'instapIntro')">Ik heb een screenshot gemaakt</button></div></div></div>`;
+},
+instapIntro(){
+  const opnieuw=!!S.plaatsing;
+  return `<section class="foto paginakop" style="${foto('instap')};border-radius:0;min-height:260px"><div class="wrap" style="width:100%;padding-bottom:0"><span class="eyebrow" style="color:var(--acc)">Instaptoets</span><h1>${opnieuw?'Instaptoets opnieuw maken':'Eerst kijken wat je al kunt'}</h1></div></section>
+   <div class="wrap smal"><div class="kaart">
+   <p>Deze toets bepaalt op welk niveau je begint. Je krijgt steeds vier opgaven, één uit elk domein: <b>Getallen</b>, <b>Verhoudingen</b>, <b>Meten en meetkunde</b> en <b>Verbanden</b>. Gaat het goed, dan worden de opgaven moeilijker. Gaat het minder, dan makkelijker.</p>
+   <ul class="lijst"><li>Het duurt ongeveer 10 tot 20 minuten.</li><li>Je krijgt tijdens de toets nog geen uitleg. Dat komt daarna, bij het oefenen.</li><li>Kies bij elk antwoord <b>Zeker (!)</b> of <b>Gok (?)</b>. Wees eerlijk: dan oefen je straks precies wat je nodig hebt.</li><li>Pak kladpapier. Een rekenmachine mag alleen als het icoontje 🧮 aan staat.</li></ul>
+   ${opnieuw?'<p class="zacht">Je huidige niveau wordt vervangen door de uitslag van deze toets. Je oefenvoortgang blijft bewaard.</p>':''}
+   <div class="voet"><button class="knop groot" onclick="startInstap()">Start de instaptoets</button></div></div></div>`;
+},
+home(){
+  if(!S.niv) return SCHERMEN.instapIntro();
+  const n=S.niv, N=NIVEAUS[n-1]; const totaal=nivB(n);
+  const due=fbDue().length, open=fbOpen().length, zf=fbOpen().filter(([k,f])=>f.zf).length;
+  const omlaagNu = S.omlaagMelding; if(omlaagNu){ S.omlaagMelding=false; bewaar(false) }
+  const domKaart=d=>{ const b=domB(n,d.id), st=domStatus(n,d.id), med=medaille(b), ap=aandachtspunten(n,d.id);
+    return `<div class="domkaart" style="--k:${d.k}"><div class="dkkop"><h3>${esc(d.naam)} <span>${b}%</span></h3>${med?`<span class="med" title="${med.n}">${med.e}</span>`:''}</div>
+      <div class="dkbody">${donutSvg(b,d.k)}<div><small class="ap">Aandachtspunten</small>${ap.length?`<ul class="aplijst">${ap.map(x=>`<li><button onclick="startOefen({modus:'sub',dom:'${d.id}',sub:'${x.s.id}'})">${esc(x.s.naam)}</button></li>`).join('')}</ul>`:`<p class="zacht klein">${st==='beheerst'?'Dit domein is beheerst.':'Geen: alles staat op zilver.'}</p>`}
+      ${st==='check'?'<span class="status check">Klaar voor de check</span>':st==='herkansing'?'<span class="status herk">Terug naar oefenen</span>':''}</div></div>
+      <div class="dkvoet"><button class="knop klein" style="background:${d.k}" onclick="go('domein',{dom:'${d.id}'})">Bekijk je voortgang</button><button class="knop zacht klein" onclick="startOefen({modus:'domein',dom:'${d.id}'})">Oefen</button></div></div>` };
+  const toets = S.diplomas[n] ? `<p>Je hebt de rekentoets van Niveau ${n} gehaald. 🎓</p>` :
+    toetsOpen(n) ? `<p>Alle domeinen staan op 80% of hoger. Je mag de rekentoets van Niveau ${n} maken.</p><button class="knop vol" onclick="go('toetsIntro',{niv:${n}})">Start de rekentoets</button>` :
+    `<p class="zacht klein">De rekentoets van Niveau ${n} gaat open als alle vier domeinen op 80% staan.</p>${DOMEINEN.map(d=>`<div class="minirij"><span>${d.kort}</span>${balk(domB(n,d.id),d.k)}<b>${domB(n,d.id)}%</b></div>`).join('')}`;
+  return `<section class="foto niveaukop" style="${foto('start',1800)}"><div class="in">
+     <div><span class="eyebrow">Niveau ${n} · ${esc(N.ref)}</span><h1>${esc(N.titel)}</h1><p>${esc(N.sub)}</p>
+     <div class="ladder">${NIVEAUS.map(x=>`<span class="${x.n<n||S.diplomas[x.n]?'af':x.n===n?'nu':''}" title="Niveau ${x.n}">${S.diplomas[x.n]?'✓':x.n}</span>`).join('')}</div></div>
+     <button class="knop groot" onclick="startOefen({modus:'slim'})">Verder oefenen</button></div></section>
+   <div class="wrap">
+   ${omlaagNu?`<div class="kaart melden"><b>We zijn een niveau teruggegaan.</b> De laatste opgaven op Niveau ${n+1} gingen nog lastig. Op Niveau ${n} maak je de basis eerst sterker. Haal de rekentoets van Niveau ${n} en je gaat weer omhoog.</div>`:''}
+   <div class="gotdash">
+    <aside class="kaart totaal"><h3 class="kaartkop">Totaaloverzicht</h3>
+      ${ringenSvg(DOMEINEN.map(d=>({b:domB(n,d.id),k:d.k})),totaal+'%')}
+      <div class="legenda">${DOMEINEN.map(d=>`<span><i style="background:${d.k}"></i>${d.kort} ${domB(n,d.id)}%</span>`).join('')}</div>
+      <div class="cijfers"><div><span class="getal">${S.aantal||0}</span><small>opgaven</small></div><div><span class="getal">${Object.keys(S.diplomas).length}</span><small>toetsen gehaald</small></div><div><span class="getal">${Math.round((S.tijd||0)/60)}</span><small>minuten</small></div></div>
+    </aside>
+    <div class="domgrid">${DOMEINEN.map(domKaart).join('')}</div>
+    <aside class="rechterkol">
+      <div class="kaart"><h3 class="kaartkop">Verder werken</h3>
+        <button class="verder" onclick="startOefen({modus:'slim'})"><b>Slim oefenen</b><small>10 opgaven, precies op wat je nodig hebt</small><span>›</span></button>
+        ${due?`<button class="verder rood" onclick="startOefen({modus:'fouten'})"><b>Herhaal je fouten (${due})</b><small>${zf?zf+' keer "Zeker én fout": die eerst':'Ze komen terug tot je ze 2× goed hebt'}</small><span>›</span></button>`:''}
+      </div>
+      <div class="kaart"><h3 class="kaartkop">Jouw rekentoets</h3>${toets}</div>
+      <div class="kaart"><h3 class="kaartkop">Foutenbank</h3><p class="klein" style="margin:0 0 10px">${open?`${open} onderdelen staan nog open${zf?`, waarvan ${zf} "Zeker én fout"`:''}.`:'Je foutenbank is leeg. Netjes!'}</p><button class="knop zacht klein vol" onclick="go('fouten')">Bekijk foutenbank</button></div>
+      <div class="kaart"><h3 class="kaartkop">Badges</h3><div class="badges">${BADGES.map(b=>`<span class="${S.badges.includes(b.id)?'':'nee'}" title="${esc(b.naam+': '+b.uit)}">${b.e}</span>`).join('')}</div></div>
+    </aside></div></div>${VOET()}`;
+},
+domein(p){
+  const d=DOM[p.dom]; const n=p.niv||S.niv; const subs=SUBDOMEINEN[p.dom]; const b=domB(n,p.dom);
+  const todo=subs.map(s=>{ const lds=ldsVan(n,p.dom,s.id); if(!lds.length) return '';
+    return `<div class="todo ${p.sub===s.id?'uit':''}"><h4>${esc(s.naam)} <span>${subB(n,p.dom,s.id)}%</span></h4>${lds.map(l=>{ const x=ldS(l.id); const fase=x.tr===0?'Nog niet gestart':x.b>=DREMPEL?'Beheerst':['','Fase 1 · voorbeeld','Fase 2 · invulsom','Fase 3 · zelf doen'][x.tr];
+      return `<button class="todoitem" onclick="startOefen({modus:'ld',ld:'${l.id}',niv:${n}})"><span class="vink ${x.b>=DREMPEL?'ja':x.n?'half':''}">${x.b>=DREMPEL?'✓':''}</span><span><b>${esc(l.naam)}</b><small>${fase}${x.n?` · ${Math.round(x.b)}%`:''}</small></span>${S.fb[l.id]&&!S.fb[l.id].opgelost?'<em title="In je foutenbank">!</em>':''}</button>` }).join('')}</div>` }).join('');
+  const nivKeuze=`<div class="nivkeuze">${NIVEAUS.map(x=>`<button class="${x.n===n?'aan':''}" ${x.n>S.niv?'disabled':''} onclick="go('domein',{dom:'${p.dom}',niv:${x.n}})">${x.n}</button>`).join('')}</div>`;
+  return `<section class="foto paginakop" style="${foto(p.dom)};border-radius:0;min-height:230px"><div class="wrap" style="width:100%;padding-bottom:0"><button class="terug" onclick="go('home')">← Dashboard</button><span class="eyebrow" style="color:${d.k};display:block;margin-top:10px">Niveau ${n} · ${b}%</span><h1>${esc(d.naam)}</h1></div></section>
+   <div class="wrap"><div class="domlayout">
+    <div class="kaart wielkaart"><div class="wielkop"><h3 class="kaartkop">Jouw voortgang per onderdeel</h3>${nivKeuze}</div>${wielSvg(p.dom,n)}
+      <div class="wiellegenda"><span><i style="background:${d.k}"></i>beheerst (80%+)</span><span><i style="background:${d.k};opacity:.62"></i>op weg (50%+)</span><span><i style="background:${d.k};opacity:.32"></i>gestart</span><span><i style="background:var(--ring-leeg)"></i>nog niet gestart</span></div>
+      <p class="zacht klein mid">Binnen is Niveau 1, buiten Niveau 8. Tik op een vakje om dat onderdeel en niveau te bekijken.</p>
+      <div class="voet" style="justify-content:center"><button class="knop" style="background:${d.k}" onclick="startOefen({modus:'domein',dom:'${p.dom}',niv:${n}})">Oefen ${esc(d.naam.toLowerCase())}${n!==S.niv?' (Niveau '+n+')':''}</button></div></div>
+    <aside class="kaart todokaart"><h3 class="kaartkop">To do · Niveau ${n}</h3>${todo||'<p class="zacht">Geen onderdelen op dit niveau.</p>'}</aside>
+   </div></div>${VOET()}`;
+},
+niveaus(){
+  return `<section class="foto paginakop" style="${foto('niveaus')};border-radius:0;min-height:210px"><div class="wrap" style="width:100%;padding-bottom:0"><span class="eyebrow" style="color:var(--acc)">Jouw route</span><h1>Niveau 1 tot en met 8</h1></div></section>
+   <div class="wrap"><div class="levels">${NIVEAUS.map(x=>{ const dicht=x.n>S.niv; const b=dicht?0:nivB(x.n); const dip=S.diplomas[x.n];
+    return `<div class="levelkaart ${dicht?'dicht':''}"><div class="boven"><span>Niveau ${x.n} · ${esc(x.ref)}</span><span>${dip?'🎓':x.n===S.niv?'📍':dicht?'🔒':''}</span></div><h3>${esc(x.titel)}</h3><p>${esc(x.sub)}</p>
+     ${dicht?'':`${DOMEINEN.map(d=>`<div class="minirij"><span>${d.kort}</span>${balk(domB(x.n,d.id),d.k)}<b>${domB(x.n,d.id)}%</b></div>`).join('')}`}
+     <div class="onder">${dicht?'<span class="zacht">Haal eerst de toets van het niveau ervoor</span>':`<button class="knop zacht klein" onclick="startOefen({modus:'slim',niv:${x.n}})">Oefen dit niveau</button>`}${dip?`<span class="zacht">${dip.score}%</span>`:''}</div></div>` }).join('')}</div>
+   <p class="zacht" style="margin-top:20px">Niveau 4 is het niveau van de rekentoets 2F. Niveau 8 is het 3F-eindniveau van het vwo.</p></div>${VOET()}`;
+},
+fouten(){
+  const open=fbOpen().sort((a,b)=>(b[1].zf-a[1].zf)||(b[1].t-a[1].t));
+  const opgelost=Object.entries(S.fb).filter(([k,f])=>f.opgelost&&LD[k]).length;
+  return `<section class="foto paginakop" style="${foto('fouten')};border-radius:0;min-height:210px"><div class="wrap" style="width:100%;padding-bottom:0"><span class="eyebrow" style="color:var(--acc)">Foutenbank</span><h1>Fouten zijn er om van te leren</h1></div></section>
+   <div class="wrap smal"><div class="kaart">
+   <p>Elke fout komt hier terug, met andere getallen. Na <b>2 keer achter elkaar goed</b> is hij opgelost. Bij <b>Zeker én fout</b> (je dacht dat je het wist) moet het 3 keer goed. ${opgelost?`Je hebt al ${opgelost} fouten opgelost.`:''}</p>
+   ${open.length?`<div class="voet" style="justify-content:flex-start"><button class="knop" onclick="startOefen({modus:'fouten'})">Herhaal nu (${Math.min(10,open.length)})</button></div>`:''}
+   ${open.map(([k,f])=>{ const l=LD[k]; return `<div class="rij"><span class="fbicoon ${f.zf?'zf':''}">${f.zf?'!':'?'}</span><div style="flex:1"><b>${esc(l.naam)}</b><br><small class="zacht">Niveau ${l.niv} · ${DOM[l.dom].naam} · jouw antwoord: ${esc(f.gegeven||'–')} · goed: ${esc(f.juist||'–')} · ${f.rij||0}/${f.nodig} keer goed</small></div><button class="knop zacht klein" onclick="startOefen({modus:'ld',ld:'${k}',niv:${l.niv}})">Oefen</button></div>` }).join('')||'<p class="zacht">Er staan geen open fouten in je foutenbank.</p>'}
+   </div></div>${VOET()}`;
+},
+account(){
+  return `<div class="wrap smal"><h1>Account</h1><div class="kaart">
+   <p><b>${esc(S.naam)}</b> · ${esc(S.klas)}</p>
+   <p class="zacht" style="margin-bottom:2px">Leerling-ID</p><div class="code">${esc(S.id||'–')}</div>
+   <p class="zacht" style="margin-bottom:2px">Herstelcode</p><div class="code">${esc(S.code||'–')}</div>
+   <p>${syncLabel()}</p>
+   <div class="voet" style="justify-content:flex-start"><button class="knop zacht" onclick="sync().then(()=>go('account'))">Nu opslaan</button><button class="knop zacht" onclick="go('instapIntro')">Instaptoets opnieuw</button><button class="knop zacht" onclick="document.body.classList.toggle('th-nacht');S.th=document.body.classList.contains('th-nacht')?'nacht':'';bewaar(false)">Donker thema</button><button class="knop rand" onclick="uitloggen()">Uitloggen</button></div></div></div>`;
+},
+quiz(){ return quizHtml() },
+uitslag(p){ return p.html },
+};
+
+// ===================================================================
+// Oefensessies, instaptoets en rekentoets (één quizscherm)
+// ===================================================================
+let SES=null;
+function startOefen(ctx){
+  ctx=Object.assign({niv:ctx.niv||S.niv},ctx);
+  const titel = ctx.modus==='fouten'?'Herhaal je fouten': ctx.modus==='ld'?LD[ctx.ld].naam : ctx.modus==='sub'?subVan(ctx.dom,ctx.sub).naam : ctx.modus==='domein'?DOM[ctx.dom].naam : 'Slim oefenen';
+  SES={soort:'oefen',ctx,titel,n:ctx.modus==='fouten'?Math.min(10,Math.max(1,fbOpen().length)):10,i:0,res:[],recent:[],start:{b:DOMEINEN.map(d=>domB(ctx.niv,d.id))}};
+  volgendeItem();
+}
+function volgendeItem(){
+  if(SES.i>=SES.n) return eindeSessie();
+  let it;
+  if(SES.soort==='oefen'){ it=volgende(Object.assign({},SES.ctx,{recent:SES.recent})); if(!it) return eindeSessie() }
+  else if(SES.soort==='instap') it=SES.blok[SES.bi];
+  else it=SES.items[SES.i];
+  toonItem(it);
+}
+function toonItem(it){ Q={it,keuze:null,klaar:false,start:Date.now()}; oefenActief=true; go('quiz') }
+function quizHtml(){
+  const it=Q.it, ld=LD[it.ld], d=DOM[it.dom];
+  const dots = SES.soort==='instap' ? '' : `<div class="voortgang">${Array.from({length:SES.n},(_,i)=>`<i class="${i<SES.res.length?(SES.res[i]?'g':'f'):i===SES.i?'nu':''}"></i>`).join('')}</div>`;
+  const label = it.bron==='spiegel'?'Spiegelvraag · zelfde denkstap, andere getallen':it.bron==='herhaal'?'Uit je foutenbank':TREDE_LABEL[it.vorm];
+  const fase = SES.soort==='oefen'&&it.bron!=='spiegel'&&it.bron!=='herhaal'?(it.trede===1?'Fase 1':it.trede===2?'Fase 2':'Fase 3'):'';
+  const rm = it.rm?`<button class="rmknop" onclick="toonRekenmachine()" title="Rekenmachine">🧮 Rekenmachine</button>`:`<span class="rmknop dicht" title="Rekenmachine niet toegestaan">🧮 Uit het hoofd of op kladpapier</span>`;
+  const knoppen = (it.vorm==='faded1'||it.vorm==='v3') ? `<button class="knop" id="kCheck" onclick="indienen(null)">Controleer</button>`
+     : `<button class="knop zekerknop" onclick="indienen(true)" title="Ik weet het zeker"><b>!</b> Zeker</button><button class="knop gokknop" onclick="indienen(false)" title="Ik gok"><b>?</b> Gok</button>`;
+  return `<div class="wrap" id="qz"><div class="top"><button class="terug" onclick="stopSessie()">← Stoppen</button><h1>${esc(SES.titel)}</h1>${SES.soort==='instap'?`<span class="chip">Niveau ${it.niv}</span>`:''}${SES.soort==='toets'?`<span class="chip">Vraag ${SES.i+1} van ${SES.n}</span>`:''}</div>${dots}
+   <div class="kaart" style="--k:${d.k}"><div class="qkop"><span class="eyebrow" style="color:${d.k}">${esc(d.naam)} · ${esc(subVan(it.dom,it.sub).naam)}</span><span class="zacht klein">${esc(label)}${fase?' · '+fase:''}</span>${rm}</div>
+   <div id="qbody">${itemHtml(it)}</div>
+   <div id="qfb"></div>
+   <div class="voet" id="qknoppen">${knoppen}</div></div></div><div id="rekenmachine" hidden></div>`;
+}
+function naRender(){
+  const a=$('#antw'); if(a&&!('ontouchstart' in window)) a.focus();
+  $$('#qbody input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); indienen(true) } }));
+  if(Q.it.vorm==='v3') $('#kCheck').textContent='Verder';
+}
+function stopSessie(){
+  if(SES&&SES.soort==='toets'&&!confirm('Wil je stoppen met de toets? Je antwoorden tellen dan niet.')) return;
+  if(SES&&SES.soort==='instap'&&!confirm('Wil je stoppen met de instaptoets? Je kunt hem later opnieuw starten.')) return;
+  bewaar(); go(S.niv?'home':'instapIntro');
+}
+
+function indienen(zeker){
+  if(!Q||Q.klaar) return;
+  const it=Q.it;
+  if(it.vorm==='v3') return v3Stap();
+  if(!heeftAntwoord()){ melding('Vul eerst je antwoord in.'); return }
+  Q.klaar=true; const res=nakijk(); res.zeker=zeker; Q.res=res;
+  $$('#qbody input,#qbody select,#qbody textarea').forEach(x=>x.disabled=true);
+  if(it.vorm==='sab'&&res.goed) S.sabGoed=(S.sabGoed||0)+1;
+  if(SES.soort==='instap') return instapAntwoord(res);
+  if(SES.soort==='toets'){ SES.res.push(res.goed); SES.antw.push({it,res}); SES.i++; return volgendeItem() }
+  // oefenen: verwerken + feedback
+  verwerk(it,res);
+  if(it.bron!=='spiegel'){ SES.res.push(res.goed); SES.recent.push(it.ld) }
+  toonFeedback(it,res);
+}
+function toonFeedback(it,res){
+  const fb=$('#qfb'), kn=$('#qknoppen');
+  if(res.goed){
+    const extra = it.bron==='spiegel'?'Het kwartje is gevallen. 👍': it.vorm==='faded1'?'Precies. Nu ga je het zelf proberen.': res.zeker===false?'Goed! Je gokte, maar het klopte. Volgende keer durf je vast "Zeker".':'Goed!';
+    fb.innerHTML=`<div class="fb goed"><b>${extra}</b>${res.fb&&it.vorm==='sab'?`<p>${res.fb}</p>`:''}${uitwerkingHtml(it)?`<details><summary>Bekijk de uitwerking</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
+    kn.innerHTML=`<button class="knop" onclick="naVraag()">Volgende →</button>`;
+  } else {
+    const zf=res.zeker===true?`<p class="zf">Je was zeker, maar het was fout. Juist deze vraag komt extra vaak terug.</p>`:'';
+    fb.innerHTML=`<div class="fb fout"><b>Nog niet goed.</b>${res.fb?`<p>${res.fb}</p>`:''}${it.vorm!=='sab'&&it.vorm!=='faded1'?`<p>Het goede antwoord is <b>${esc(res.juist)}</b>.</p>`:''}${zf}</div>
+      <div class="anders"><span class="eyebrow" style="color:var(--knop)">Andere uitleg</span>${andersHtml(it)}${uitwerkingHtml(it)?`<details ${it.vorm==='faded1'?'':'open'}><summary>Uitwerking stap voor stap</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
+    const spiegel = it.bron!=='spiegel' && it.vorm!=='faded1';
+    kn.innerHTML = spiegel?`<button class="knop" onclick="naarSpiegel()">Probeer een spiegelvraag →</button>`:`<button class="knop" onclick="naVraag()">Volgende →</button>`;
+    if(it.bron==='spiegel') fb.insertAdjacentHTML('beforeend','<p class="zacht klein">Geen zorgen: je oefent dit onderdeel straks nog eens met tussenstappen.</p>');
+  }
+  fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function naarSpiegel(){ const vorig=Q.it; const sp=spiegelVan(vorig); Q={it:sp,keuze:null,klaar:false,vorigeFout:vorig.key}; go('quiz') }
+function naVraag(){
+  SES.i=SES.res.length;
+  if(checkNiveauOmlaag()){ S.omlaagMelding=true; bewaar(); melding('We gaan een niveau terug om de basis sterker te maken.',5000); return go('home') }
+  volgendeItem();
+}
+function eindeSessie(){
+  oefenActief=false; const g=SES.res.filter(x=>x).length, n=SES.res.length; const niv=SES.ctx.niv;
+  const nu=DOMEINEN.map(d=>domB(niv,d.id));
+  const rijen=DOMEINEN.map((d,i)=>{ const v=SES.start.b[i], w=nu[i]; return w!==v?`<div class="minirij"><span>${d.kort}</span>${balk(w,d.k)}<b>${w}%</b><small class="${w>v?'plus':'min'}">${w>v?'+':''}${w-v}</small></div>`:'' }).join('');
+  const open=toetsOpen(S.niv);
+  go('uitslag',{html:`<div class="wrap smal"><div class="kaart mid"><div class="groot">${g/n>=.8?'🚀':g/n>=.5?'💪':'🧠'}</div><h2 style="margin-top:0">${g} van de ${n} goed</h2>
+    <p class="zacht">${g/n>=.8?'Sterk gewerkt!':g/n>=.5?'Goed bezig. De fouten komen later terug in je foutenbank.':'Lastige ronde. Juist hiervan leer je het meest: je fouten komen terug met uitleg.'}</p>
+    ${rijen?`<div style="text-align:left;margin:18px 0">${rijen}</div>`:''}
+    ${open?`<div class="kaart melden"><b>Alle domeinen staan op 80% of meer.</b> Je mag de rekentoets van Niveau ${S.niv} maken.</div>`:''}
+    <div class="voet" style="justify-content:center"><button class="knop zacht" onclick="go('home')">Naar dashboard</button>${open?`<button class="knop" onclick="go('toetsIntro',{niv:${S.niv}})">Naar de rekentoets</button>`:`<button class="knop" onclick="startOefen(SES.ctx)">Nog een ronde</button>`}</div></div></div>`});
+}
+
+// ---------- drie antwoorden vergelijken ----------
+function v3Stap(){
+  const it=Q.it; Q.v3fase=(Q.v3fase||0)+1;
+  if(Q.v3fase===1){
+    if(($('#eigen').value||'').trim().length<5){ Q.v3fase=0; melding('Schrijf eerst kort je eigen aanpak op.'); return }
+    $('#eigen').disabled=true; const a=[it.v3.goed,it.v3.bijna,it.v3.fout];
+    $('#v3deel2').hidden=false; $('#v3deel2').innerHTML=`<label class="label">Stap 2 · Beoordeel deze drie antwoorden</label>${it.v3volg.map((k,j)=>`<div class="v3ant"><p>${a[k]}</p><div class="segment" data-j="${j}">${['Goed','Bijna goed','Fout'].map((t,x)=>`<button onclick="kiesV3(${j},${x})" data-x="${x}">${t}</button>`).join('')}</div></div>`).join('')}`;
+    $('#kCheck').textContent='Controleer'; return;
+  }
+  if(Q.v3fase===2){
+    Q.v3k=Q.v3k||{}; if(Object.keys(Q.v3k).length<3){ Q.v3fase=1; melding('Beoordeel alle drie de antwoorden.'); return }
+    const goed=it.v3volg.every((k,j)=>Q.v3k[j]===k);
+    $$('.segment').forEach(s=>{ const j=+s.dataset.j; $$('button',s).forEach(b=>{ const x=+b.dataset.x; if(x===it.v3volg[j]) b.classList.add('goed'); else if(x===Q.v3k[j]) b.classList.add('fout'); b.disabled=true }) });
+    Q.v3goed=goed;
+    $('#qfb').innerHTML=`<div class="fb ${goed?'goed':'fout'}"><b>${goed?'Je hebt alle drie goed beoordeeld.':'Niet alle beoordelingen kloppen. Kijk naar de groene vakjes.'}</b><p><b>Kijkwijzer</b></p><ul>${it.v3.kijkwijzer.map(k=>`<li>${k}</li>`).join('')}</ul></div>
+      <label class="label">Stap 3 · Vergelijk met jouw aanpak. Hoe was die?</label><div class="segment" id="zelf">${['Goed','Bijna goed','Nog niet goed'].map((t,x)=>`<button onclick="Q.zelf=${x};$$('#zelf button').forEach((b,i)=>b.classList.toggle('kies',i===${x}))">${t}</button>`).join('')}</div>`;
+    $('#kCheck').textContent='Afronden'; return;
+  }
+  if(Q.zelf==null){ Q.v3fase=2; melding('Kies hoe jouw eigen aanpak was.'); return }
+  Q.klaar=true; const res={goed:Q.v3goed,zeker:null,gegeven:'Eigen aanpak: '+['goed','bijna','nog niet'][Q.zelf]+' · '+($('#eigen').value||'').slice(0,120),juist:'',mis:''};
+  if(SES.soort==='toets'){ SES.res.push(res.goed); SES.antw.push({it,res}); SES.i++; return volgendeItem() }
+  verwerk(it,res); SES.res.push(res.goed); SES.recent.push(it.ld);
+  $('#qknoppen').innerHTML=`<button class="knop" onclick="naVraag()">Volgende →</button>`;
+}
+function kiesV3(j,x){ Q.v3k=Q.v3k||{}; Q.v3k[j]=x; $$(`.segment[data-j="${j}"] button`).forEach(b=>b.classList.toggle('kies',+b.dataset.x===x)) }
+
+// ---------- opstart ----------
+function start(){
+  laad();
+  if(S&&S.th==='nacht') document.body.classList.add('th-nacht');
+  if(location.hash==='#docent') return go('docentLogin');
+  if(!S||!S.naam) return go('welkom');
+  if(!S.niv) return go('instapIntro');
+  go('home'); planSync(1500);
+}
+
+// ===== Instaptoets (plaatsing) en formatieve rekentoets per niveau =====
+const VAST = it => { const l=LD[it.ld]; return l.opties?'mc':(l.antw?(Math.random()<.65?'open':(l.fouten?'mc':'open')):null) };
+
+const nivMax=()=>Math.max(...LDS.map(l=>l.niv));
+// ---------- instaptoets: blokken van 4 (één per domein), trapsgewijs omhoog of omlaag ----------
+function instapBlok(k){
+  return DOMEINEN.map(d=>{ const l=ldsVan(k,d.id); const ld=l[Math.floor(Math.random()*l.length)]; const it=maakItem(ld.id,{trede:3,bron:'instap'}); if(!['open','mc'].includes(it.vorm)) return maakItem(ld.id,{trede:3,vorm:VAST(it),bron:'instap'}); return it });
+}
+function startInstap(){
+  const k=Math.min(STARTNIVEAU_KLAS[S.klas]||2,nivMax());
+  SES={soort:'instap',titel:'Instaptoets',k,P:[],F:[],blok:instapBlok(k),bi:0,bg:0,log:[],res:[],i:0,n:99,start:Date.now()};
+  volgendeItem();
+}
+function instapAntwoord(res){
+  const it=Q.it; SES.log.push({niv:it.niv,dom:it.dom,ld:it.ld,goed:res.goed,zeker:res.zeker});
+  if(res.goed) SES.bg++;
+  SES.bi++;
+  if(SES.bi<SES.blok.length) return volgendeItem();
+  // blok klaar → beslissen
+  const k=SES.k, g=SES.bg; let uit=null;
+  if(g>=3){ SES.P.push(k); if(k>=nivMax()) uit=k; else if(SES.F.includes(k+1)) uit=k+1; else SES.k=k+1 }
+  else if(g<=1){ SES.F.push(k); if(k===1) uit=1; else if(SES.P.includes(k-1)) uit=k; else SES.k=k-1 }
+  else uit=k;
+  if(uit===null&&SES.log.length>=40) uit=SES.k;
+  if(uit!==null) return instapKlaar(uit);
+  SES.blok=instapBlok(SES.k); SES.bi=0; SES.bg=0; volgendeItem();
+}
+function instapKlaar(niv){
+  oefenActief=false;
+  // goed beantwoorde leerdoelen hoeven niet met het uitgewerkte voorbeeld te beginnen
+  SES.log.forEach(x=>{ const s=ldS(x.ld); if(x.goed&&s.tr===0) S.ld[x.ld]=Object.assign({},s,{b:Math.max(s.b,x.zeker===false?20:35),n:1,tr:x.zeker===false?2:3,l:Date.now(),u:Date.now()}) });
+  const vorige=S.niv;
+  S.niv=niv; S.max=Math.max(S.max||0,niv); S.rec=[]; S.recNiv=niv;
+  S.plaatsing={niv,tijd:Date.now(),vragen:SES.log.length,goed:SES.log.filter(x=>x.goed).length};
+  DOMEINEN.forEach(d=>werkDomBij(niv,d.id));
+  const perNiv={}; SES.log.forEach(x=>{ perNiv[x.niv]=perNiv[x.niv]||[0,0]; perNiv[x.niv][1]++; if(x.goed) perNiv[x.niv][0]++ });
+  const perDom={}; DOMEINEN.forEach(d=>{ const l=SES.log.filter(x=>x.dom===d.id); perDom[d.id]=l.length?Math.round(100*l.filter(x=>x.goed).length/l.length):'' });
+  event({t:'toets',soort:'Instaptoets',niveau:niv,poging:1,totaal:Math.round(100*S.plaatsing.goed/S.plaatsing.vragen),perDomein:perDom,geslaagd:true,duurMin:Math.round((Date.now()-SES.start)/60000)});
+  badgesBijwerken(); bewaar();
+  const N=NIVEAUS[niv-1];
+  go('uitslag',{html:`<div class="wrap smal"><div class="kaart mid"><span class="eyebrow" style="color:var(--knop)">Uitslag instaptoets</span><div class="nivbadge">${niv}</div>
+   <h2 style="margin:6px 0">Je start op Niveau ${niv}</h2><p class="zacht">${esc(N.titel)} · ${esc(N.ref)}</p>
+   <p>Je maakte ${S.plaatsing.vragen} opgaven en had er ${S.plaatsing.goed} goed. ${vorige&&vorige!==niv?`Je stond eerst op Niveau ${vorige}.`:''}</p>
+   <div style="text-align:left;margin:16px auto;max-width:380px">${Object.keys(perNiv).sort().map(n=>`<div class="minirij"><span>Niveau ${n}</span>${balk(100*perNiv[n][0]/perNiv[n][1])}<b>${perNiv[n][0]}/${perNiv[n][1]}</b></div>`).join('')}</div>
+   <p>Vanaf nu oefen je op jouw niveau. Elk onderdeel begint met een uitgelegd voorbeeld, daarna doe je het steeds meer zelf. Staan alle vier domeinen op 80%, dan maak je de rekentoets en ga je naar het volgende niveau.</p>
+   <div class="voet" style="justify-content:center"><button class="knop groot" onclick="go('home')">Naar mijn dashboard</button></div></div></div>`});
+}
+
+// ---------- rekentoets ----------
+function toetsHerkDoms(n){ // domeinen die na een niet-gehaalde toets nog moeten
+  const laatste=[...S.toetsen].reverse().find(t=>t.niveau===n&&t.soort==='Rekentoets'); if(!laatste||laatste.geslaagd) return null;
+  return laatste.terug&&laatste.terug.length?laatste.terug:null;
+}
+SCHERMEN.toetsIntro=function(p){
+  const n=p.niv, herk=toetsHerkDoms(n); const doms=herk||DOMEINEN.map(d=>d.id); const per=herk?8:6;
+  return `<section class="foto paginakop" style="${foto('toets')};border-radius:0;min-height:240px"><div class="wrap" style="width:100%;padding-bottom:0"><button class="terug" onclick="go('home')">← Dashboard</button><span class="eyebrow" style="color:var(--acc);display:block;margin-top:10px">Formatieve rekentoets</span><h1>${herk?'Herkansing ':''}Niveau ${n}</h1></div></section>
+   <div class="wrap smal"><div class="kaart">
+   <p>${herk?`Je maakt alleen opgaven uit de domeinen die de vorige keer onder 80% bleven: <b>${doms.map(d=>DOM[d].naam).join(', ')}</b>.`:'Een gemengde toets over alle vier domeinen, met open en gesloten vragen en minstens één Saboteur.'}</p>
+   <ul class="lijst"><li>${doms.length*per} opgaven. Je krijgt pas na de toets te zien wat goed en fout was.</li><li>Gehaald als elk domein én het totaal op 80% of hoger staat.${n<8?` Dan ga je door naar Niveau ${n+1}.`:''}</li><li>Rekenmachine alleen bij opgaven met 🧮. Pak kladpapier.</li></ul>
+   <div class="voet"><button class="knop groot" onclick="startToets(${n})">Start de toets</button></div></div></div>`;
+};
+function startToets(n){
+  const herk=toetsHerkDoms(n); const doms=herk||DOMEINEN.map(d=>d.id); const per=herk?8:6; const items=[];
+  doms.forEach(d=>{ const lds=shuffle(ldsVan(n,d)); for(let i=0;i<per;i++){ const ld=lds[i%lds.length]; let it=maakItem(ld.id,{trede:3,bron:'toets'}); if(it.vorm==='volgorde'||it.vorm==='v3') it=maakItem(ld.id,{trede:3,vorm:VAST(it),bron:'toets'}); items.push(it) } });
+  if(!items.some(x=>x.vorm==='sab')){ const kan=items.map((x,i)=>i).filter(i=>LD[items[i].ld].sab); if(kan.length){ const i=kan[Math.floor(Math.random()*kan.length)]; items[i]=maakItem(items[i].ld,{trede:3,vorm:'sab',bron:'toets'}) } }
+  SES={soort:'toets',titel:'Rekentoets Niveau '+n,niv:n,herk,items:shuffle(items),antw:[],res:[],i:0,n:items.length,start:Date.now()};
+  volgendeItem();
+}
+function eindeToets(){
+  oefenActief=false; const n=SES.niv; const per={}; const doms=SES.herk||DOMEINEN.map(d=>d.id);
+  doms.forEach(d=>{ const l=SES.antw.filter(a=>a.it.dom===d); per[d]=Math.round(100*l.filter(a=>a.res.goed).length/Math.max(1,l.length)) });
+  const totaal=Math.round(100*SES.antw.filter(a=>a.res.goed).length/SES.antw.length);
+  const terug=doms.filter(d=>per[d]<DREMPEL); const geslaagd=!terug.length&&totaal>=DREMPEL;
+  const poging=S.toetsen.filter(t=>t.niveau===n&&t.soort==='Rekentoets').length+1;
+  const t={eid:eid(),tijd:Date.now(),soort:'Rekentoets',niveau:n,poging,totaal,perDomein:per,geslaagd,terug:geslaagd?[]:(terug.length?terug:doms),duurMin:Math.round((Date.now()-SES.start)/60000)};
+  S.toetsen=S.toetsen.concat([t]);
+  // foute toetsvragen gaan de foutenbank in; ook de leerdoelen worden bijgewerkt
+  SES.antw.forEach(a=>verwerkStil(a.it,a.res));
+  if(geslaagd){
+    S.diplomas[n]={tijd:Date.now(),score:totaal,poging};
+    doms.forEach(d=>{ const k=domKey(n,d); S.dom[k]=Object.assign({},S.dom[k]||{},{herk:false,st:'beheerst',u:Date.now()}) });
+    if(S.niv===n&&n<8){ S.niv=n+1; S.max=Math.max(S.max||0,n+1); S.rec=[]; S.recNiv=n+1 }
+  } else {
+    t.terug.forEach(d=>{ ldsVan(n,d).forEach(l=>{ const x=ldS(l.id); if(x.b>75) S.ld[l.id]=Object.assign({},x,{b:75,u:Date.now()}) }); const k=domKey(n,d); S.dom[k]=Object.assign({},S.dom[k]||{},{herk:true,u:Date.now()}); werkDomBij(n,d) });
+  }
+  event(Object.assign({t:'toets'},t));
+  badgesBijwerken(); bewaar();
+  SES.uitslag=t; toonToetsUitslag();
+}
+function verwerkStil(it,res){ // toetsvraag: beheersing en foutenbank bijwerken zonder feedbackscherm
+  const x=Object.assign({},ldS(it.ld)); x.b=rondaf(x.b+(res.goed?.15:.25)*((res.goed?100:0)-x.b),1); x.n++; x.u=Date.now(); if(x.tr===0) x.tr=res.goed?3:1; S.ld[it.ld]=x;
+  if(!res.goed){ foutenbank(it,res); event({t:'fout',niveau:it.niv,domein:it.dom,leerdoel:it.ld,opgave:it.key,type:'Toets: '+(TREDE_LABEL[it.vorm]||it.vorm),trede:3,gegeven:res.gegeven,juist:res.juist,zeker:res.zeker}) }
+  S.aantal=(S.aantal||0)+1; if(res.goed) S.goed=(S.goed||0)+1;
+}
+function toonToetsUitslag(){
+  const t=SES.uitslag, n=t.niveau; const fout=SES.antw.filter(a=>!a.res.goed).length;
+  go('uitslag',{html:`<div class="wrap smal"><div class="kaart mid"><span class="eyebrow" style="color:var(--knop)">Rekentoets Niveau ${n}</span>
+   <div class="cijfer ${t.geslaagd?'vold':''}">${t.totaal}%</div>
+   <h2>${t.geslaagd?(n<8?`Gehaald! Je gaat door naar Niveau ${n+1}.`:'Gehaald! Je hebt het 3F-eindniveau bereikt.'):'Nog niet gehaald'}</h2>
+   <div style="text-align:left;margin:16px auto;max-width:420px">${Object.keys(t.perDomein).map(d=>`<div class="minirij"><span>${DOM[d].kort}</span>${balk(t.perDomein[d],DOM[d].k)}<b>${t.perDomein[d]}%</b></div>`).join('')}</div>
+   ${t.geslaagd?'':`<p>Je gaat terug naar <b>${t.terug.map(d=>DOM[d].naam).join(', ')}</b>. Staat dat weer op 80%, dan maak je een herkansing met alleen die domeinen.</p>`}
+   ${fout?`<p>Je had ${fout} vragen fout. Bekijk ze nu: per vraag zie je de uitwerking en kies je zelf wat er misging.</p>`:''}
+   <div class="voet" style="justify-content:center">${fout?`<button class="knop" onclick="SES.ri=0;toonReview()">Bekijk je fouten</button>`:`<button class="knop" onclick="go('home')">Naar dashboard</button>`}</div></div></div>`});
+}
+// na de toets: per foute vraag de uitwerking, zelf het fouttype kiezen, daarna 2 spiegelopgaven uit het zwakste onderdeel
+function toonReview(){
+  const fout=SES.antw.filter(a=>!a.res.goed); const a=fout[SES.ri]; if(!a) return naReview();
+  const it=a.it; const d=DOM[it.dom];
+  go('uitslag',{html:`<div class="wrap" id="qz"><div class="top"><h1>Fout ${SES.ri+1} van ${fout.length}</h1></div><div class="kaart" style="--k:${d.k}">
+   <span class="eyebrow" style="color:${d.k}">${esc(d.naam)} · ${esc(LD[it.ld].naam)}</span>
+   <div class="vraag">${it.vorm==='sab'?it.sab.intro:it.vorm==='koppel'?it.kvraag:it.vraag}</div>${it.fig?`<div class="figuur">${it.fig}</div>`:''}
+   <div class="fb fout"><p>Jouw antwoord: <b>${esc(a.res.gegeven)}</b>${a.res.zeker===true?' (zeker)':a.res.zeker===false?' (gok)':''}</p>${a.res.juist?`<p>Goed antwoord: <b>${esc(a.res.juist)}</b></p>`:''}${a.res.fb?`<p>${a.res.fb}</p>`:''}</div>
+   <div class="anders"><span class="eyebrow" style="color:var(--knop)">Uitwerking (kijkwijzer)</span>${uitwerkingHtml(it)||andersHtml(it)}</div>
+   <label class="label">Wat ging er mis? Kies zelf.</label><div class="segment breed">${['Rekenfout','Begripsfout','Leesfout','Te snel gewerkt'].map(f=>`<button onclick="kiesFouttype('${f}')">${f}</button>`).join('')}</div></div></div>`});
+}
+function kiesFouttype(f){
+  const fout=SES.antw.filter(a=>!a.res.goed); const a=fout[SES.ri]; a.fouttype=f;
+  event({t:'fout',eid:a.it.key+'-ft',niveau:a.it.niv,domein:a.it.dom,leerdoel:a.it.ld,opgave:a.it.key,type:'Fouttypering na toets',trede:3,gegeven:a.res.gegeven,juist:a.res.juist,zeker:a.res.zeker,fouttype:f});
+  SES.ri++; toonReview();
+}
+function naReview(){
+  // zwakste onderdeel: domein met laagste toetsscore, daarbinnen leerdoel met laagste beheersing
+  const t=SES.uitslag; const d=Object.keys(t.perDomein).sort((a,b)=>t.perDomein[a]-t.perDomein[b])[0];
+  const ld=ldsVan(t.niveau,d).sort((a,b)=>ldS(a.id).b-ldS(b.id).b)[0];
+  const ctx={modus:'ld',ld:ld.id,niv:t.niveau};
+  SES={soort:'oefen',ctx,titel:'Gericht oefenen: '+ld.naam,n:2,i:0,res:[],recent:[],start:{b:DOMEINEN.map(x=>domB(t.niveau,x.id))}};
+  melding('Nu 2 gerichte opgaven uit je zwakste onderdeel.');
+  toonItem(maakItem(ld.id,{trede:3,vorm:LD[ld.id].opties?'mc':'open',bron:'oefen'}));
+}
+// toets: na de laatste vraag naar de uitslag
+const _volgendeItem=volgendeItem;
+volgendeItem=function(){ if(SES&&SES.soort==='toets'&&SES.i>=SES.n) return eindeToets(); return _volgendeItem() };
+
+// ===== Rekenmachine (alleen bij opgaven waar die in de rekentoets ook mag) =====
+let RM={uit:'',hist:''};
+function toonRekenmachine(){
+  if(!Q||!Q.it.rm) return; Q.it.rmGebruikt=true;
+  const el=$('#rekenmachine'); el.hidden=!el.hidden; if(el.hidden) return;
+  const t=['C','(',')','÷','7','8','9','×','4','5','6','−','1','2','3','+','0',',','%','='];
+  el.innerHTML=`<div class="rm"><div class="rmkop"><b>🧮 Rekenmachine</b><button onclick="$('#rekenmachine').hidden=true" aria-label="Sluiten">✕</button></div><div class="rmhist">${esc(RM.hist)}</div><div class="rmscherm" id="rmScherm">${esc(RM.uit)||'0'}</div>
+    <div class="rmtoetsen">${t.map(k=>`<button class="${/[÷×−+=]/.test(k)?'op':k==='C'?'wis':''}" onclick="rmToets('${k}')">${k}</button>`).join('')}<button onclick="rmToets('√')">√</button><button onclick="rmToets('^')">xʸ</button><button onclick="rmToets('⌫')">⌫</button><button class="op" onclick="rmNaarAntw()" title="Zet in antwoordvak">→ vak</button></div></div>`;
+}
+function rmToets(k){
+  if(k==='C'){RM.uit='';RM.hist=''} else if(k==='⌫') RM.uit=RM.uit.slice(0,-1);
+  else if(k==='='){ const r=rmReken(RM.uit); RM.hist=RM.uit+' ='; RM.uit=isFinite(r)?nl(r,8).replace(/\./g,''):'Fout' }
+  else { if(RM.uit==='Fout') RM.uit=''; RM.uit+=k }
+  $('#rmScherm').textContent=RM.uit||'0'; $('.rmhist').textContent=RM.hist;
+}
+function rmReken(s){
+  s=s.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/,/g,'.').replace(/(\d+(?:\.\d+)?)%/g,'($1/100)').replace(/√\(?(\d+(?:\.\d+)?)\)?/g,'Math.sqrt($1)').replace(/\^/g,'**');
+  if(!/^[\d+\-*/().\sMathsqrt]*$/.test(s)) return NaN;
+  try{ return Function('"use strict";return ('+s+')')() }catch(e){ return NaN }
+}
+function rmNaarAntw(){ const a=$('#antw'); if(a&&!a.disabled&&RM.uit&&RM.uit!=='Fout'){ a.value=RM.uit; $('#rekenmachine').hidden=true } }
+
+// ===== Docentendashboard: klassenoverzicht, leerlingdetail, hardnekkige fouten, klasinstellingen en export =====
+let DOC={code:'',data:null,klas:''};
+function metStaat(st,f){ const oud=S; S=Object.assign(nieuweStaat(),st); try{ return f() } finally { S=oud } }
+
+SCHERMEN.docentLogin=function(){
+  return `<div class="wrap" style="max-width:520px"><div class="kaart"><span class="eyebrow" style="color:var(--knop)">Docent</span><h2 style="margin:6px 0 10px">Docentendashboard</h2>
+   ${serverModus()?`<label class="label">Docentcode</label><input type="password" id="dCode" autocomplete="off"><div class="voet"><button class="knop vol" onclick="docentIn()">Inloggen</button></div>`:
+   `<p class="zacht">Testmodus: er is nog geen server ingesteld. Je ziet alleen de leerling op dit apparaat.</p><div class="voet"><button class="knop vol" onclick="docentLokaal()">Bekijk leerling op dit apparaat</button></div>`}
+   <div class="voet" style="justify-content:flex-start"><button class="terug" onclick="go(S&&S.naam?'home':'welkom')">← Terug</button></div></div></div>`;
+};
+async function docentIn(){
+  const code=$('#dCode').value.trim(); if(!code) return;
+  try{ const j=await api('overzicht',{docentcode:code}); DOC.code=code; DOC.data=j; go('docent') }catch(e){ melding(esc(e.message)) }
+}
+function docentLokaal(){
+  if(!S||!S.naam){ melding('Er staat geen leerling op dit apparaat.'); return }
+  const r={'Leerling-ID':S.id,'Naam':S.naam,'Klas':S.klas,'Herstelcode':S.code,'Laatst gezien':S.upd,'Huidig niveau':S.niv,'Hoogst ontgrendeld':S.max,'Oefentijd totaal (min)':Math.round(S.tijd/60),'Oefentijd deze week (min)':Math.round((S.week[weekId()]||0)/60),'Opgaven gemaakt':S.aantal,
+    'Getallen %':domB(S.niv,'G'),'Verhoudingen %':domB(S.niv,'V'),'Meten en meetkunde %':domB(S.niv,'M'),'Verbanden %':domB(S.niv,'B'),'Open fouten':fbOpen().length,'Zeker én fout (open)':fbOpen().filter(([k,f])=>f.zf).length,'Toetsen geslaagd':Object.keys(S.diplomas).length};
+  DOC.data={klassen:KLASSEN,leerlingen:[r],topfouten:[],klasinst:{},lokaal:true}; go('docent');
+}
+async function docentVernieuw(){ if(DOC.data&&DOC.data.lokaal) return docentLokaal(); try{ DOC.data=await api('overzicht',{docentcode:DOC.code}); go('docent') }catch(e){ melding(esc(e.message)) } }
+
+const KOLOM=['Getallen %','Verhoudingen %','Meten en meetkunde %','Verbanden %'];
+SCHERMEN.docent=function(){
+  if(!DOC.data) return SCHERMEN.docentLogin();
+  const d=DOC.data; const ll=d.leerlingen.filter(l=>!DOC.klas||l.Klas===DOC.klas).sort((a,b)=>String(a.Klas).localeCompare(String(b.Klas))||String(a.Naam).localeCompare(String(b.Naam)));
+  const pc=v=>v===''||v==null?'<td class="zacht">–</td>':`<td><span class="pctcel ${v>=80?'hoog':v<50?'laag':''}">${v}%</span></td>`;
+  const perNiv={}; ll.forEach(l=>{ const n=l['Huidig niveau']||0; perNiv[n]=(perNiv[n]||0)+1 });
+  const inst=DOC.klas&&d.klasinst?d.klasinst[DOC.klas]:null;
+  return `<div class="wrap"><div class="top"><h1>Docentendashboard</h1><button class="knop zacht klein" onclick="docentVernieuw()">↻ Vernieuwen</button><button class="knop zacht klein" onclick="exportCsv()">CSV</button><button class="knop zacht klein" onclick="exportJson()">JSON</button></div>
+   <div class="nivkeuze klassen"><button class="${!DOC.klas?'aan':''}" onclick="DOC.klas='';go('docent')">Alle klassen</button>${d.klassen.map(k=>`<button class="${DOC.klas===k?'aan':''}" onclick="DOC.klas='${esc(k)}';go('docent')">${esc(k)}</button>`).join('')}</div>
+   <div class="statstrook" style="margin:16px 0 22px"><div><small>Leerlingen</small><span class="getal">${ll.length}</span></div><div><small>Gemiddeld niveau</small><span class="getal">${ll.length?nl(ll.reduce((s,l)=>s+(+l['Huidig niveau']||0),0)/ll.length,1):'–'}</span></div><div><small>Opgaven deze selectie</small><span class="getal">${ll.reduce((s,l)=>s+(+l['Opgaven gemaakt']||0),0)}</span></div><div><small>Verdeling niveaus</small><span class="klein">${Object.keys(perNiv).sort().map(n=>`N${n}: ${perNiv[n]}`).join(' · ')||'–'}</span></div></div>
+   ${inst?`<div class="kaart" style="margin-bottom:18px"><b>Instellingen ${esc(DOC.klas)}</b> <label style="margin-left:16px"><input type="checkbox" ${inst.toetsVrij?'checked':''} onchange="klasInst('${esc(DOC.klas)}',this.checked)"> Rekentoets mag automatisch open</label></div>`:''}
+   <div class="kaart tabelwrap"><table><thead><tr><th>Naam</th><th>Klas</th><th>Niveau</th>${KOLOM.map(k=>`<th>${k.replace(' %','').replace('Meten en meetkunde','Meten')}</th>`).join('')}<th>Open fouten</th><th>Zeker&nbsp;én&nbsp;fout</th><th>Toetsen</th><th>Min. week</th><th>Laatst</th><th>ID / code</th></tr></thead><tbody>
+   ${ll.map(l=>`<tr class="klik" onclick="docentLeerling('${esc(l['Leerling-ID'])}')"><td><b>${esc(l.Naam)}</b></td><td>${esc(l.Klas)}</td><td><b>${l['Huidig niveau']||'–'}</b></td>${KOLOM.map(k=>pc(l[k])).join('')}<td>${l['Open fouten']||0}</td><td>${l['Zeker én fout (open)']?`<b style="color:var(--fout)">${l['Zeker én fout (open)']}</b>`:0}</td><td>${l['Toetsen geslaagd']||0}</td><td>${l['Oefentijd deze week (min)']||0}</td><td>${datumKort(l['Laatst gezien'])}</td><td class="zacht klein">${esc(l['Leerling-ID'])}<br>${esc(l.Herstelcode||'')}</td></tr>`).join('')||'<tr><td colspan="13" class="zacht">Nog geen leerlingen.</td></tr>'}
+   </tbody></table></div>
+   ${d.topfouten&&d.topfouten.length?`<h2 class="sectie">Hardnekkigste fouten${DOC.klas?' in '+esc(DOC.klas):''}</h2><div class="kaart tabelwrap"><table><thead><tr><th>Leerdoel</th><th>Niveau</th><th>Domein</th><th>Keer fout</th><th>Waarvan zeker</th><th>Leerlingen</th></tr></thead><tbody>${d.topfouten.map(t=>`<tr><td>${esc(LD[t.leerdoel]?LD[t.leerdoel].naam:t.leerdoel)}</td><td>${t.niveau}</td><td>${esc(t.domein)}</td><td>${t.keer}</td><td>${t.zeker}</td><td>${t.leerlingen}</td></tr>`).join('')}</tbody></table></div>`:''}
+   </div>`;
+};
+async function klasInst(klas,vrij){ try{ const j=await api('klasinstelling',{docentcode:DOC.code,klas,toetsVrij:vrij}); DOC.data.klasinst[klas]=j.klasinst; melding('Opgeslagen') }catch(e){ melding(esc(e.message)) } }
+async function docentLeerling(id){
+  let j;
+  if(DOC.data.lokaal) j={leerling:{id:S.id,naam:S.naam,klas:S.klas,code:S.code},staat:S,fouten:[],toetsen:S.toetsen.map(t=>({'Datum/tijd':t.tijd,'Niveau':t.niveau,'Poging':t.poging,'Totaal %':t.totaal,'Geslaagd':t.geslaagd?'ja':'nee','Terug naar domeinen':(t.terug||[]).map(d=>DOM[d].naam).join(', ')}))};
+  else try{ j=await api('leerling',{docentcode:DOC.code,id}) }catch(e){ melding(esc(e.message)); return }
+  DOC.detail=j; go('docentLeerling');
+}
+SCHERMEN.docentLeerling=function(){
+  const j=DOC.detail; const st=j.staat||{};
+  return metStaat(st,()=>{
+    const n=S.niv||1; const open=fbOpen().sort((a,b)=>(b[1].zf-a[1].zf)||(b[1].keer-a[1].keer));
+    return `<div class="wrap"><div class="top"><button class="terug" onclick="go('docent')">← Klassenoverzicht</button><h1>${esc(j.leerling.naam)}</h1><span class="chip">${esc(j.leerling.klas)}</span><span class="chip">Niveau ${S.niv||'–'}</span><button class="knop zacht klein" onclick="exportLeerling()">JSON</button></div>
+    <p class="zacht">ID ${esc(j.leerling.id)} · herstelcode ${esc(j.leerling.code)} · ${S.aantal||0} opgaven · ${Math.round((S.tijd||0)/60)} minuten · instaptoets: ${S.plaatsing?`Niveau ${S.plaatsing.niv} (${datumKort(S.plaatsing.tijd)})`:'nog niet gemaakt'}</p>
+    <div class="gotdash docent"><aside class="kaart totaal"><h3 class="kaartkop">Niveau ${n}</h3>${ringenSvg(DOMEINEN.map(d=>({b:domB(n,d.id),k:d.k})),nivB(n)+'%')}
+      <div class="legenda">${DOMEINEN.map(d=>`<span><i style="background:${d.k}"></i>${d.kort} ${domB(n,d.id)}%</span>`).join('')}</div></aside>
+     <div class="kaart"><h3 class="kaartkop">Voortgang per niveau</h3><div class="tabelwrap"><table><thead><tr><th>Niveau</th>${DOMEINEN.map(d=>`<th>${d.kort}</th>`).join('')}<th>Toets</th></tr></thead><tbody>${NIVEAUS.filter(x=>x.n<=Math.max(n,S.max||0)).map(x=>`<tr><td><b>${x.n}</b> <small class="zacht">${x.ref}</small></td>${DOMEINEN.map(d=>`<td>${domB(x.n,d.id)}%</td>`).join('')}<td>${S.diplomas[x.n]?'🎓 '+S.diplomas[x.n].score+'%':''}</td></tr>`).join('')}</tbody></table></div>
+      <h3 class="kaartkop" style="margin-top:18px">Onderdelen op Niveau ${n}</h3>${DOMEINEN.map(d=>`<p class="klein" style="margin:4px 0"><b style="color:${d.k}">${d.kort}:</b> ${SUBDOMEINEN[d.id].map(s=>{const b=subB(n,d.id,s.id);return b===null?'':`${esc(s.naam)} ${b}%`}).filter(x=>x).join(' · ')}</p>`).join('')}</div></div>
+    <h2 class="sectie">Foutenbank (open)</h2><div class="kaart tabelwrap"><table><thead><tr><th></th><th>Leerdoel</th><th>Niveau</th><th>Domein</th><th>Keer fout</th><th>Laatste antwoord</th><th>Goed</th><th>Herhaald goed</th></tr></thead><tbody>${open.map(([k,f])=>`<tr><td>${f.zf?'<b style="color:var(--fout)" title="Zeker én fout">!</b>':''}</td><td>${esc(LD[k].naam)}</td><td>${LD[k].niv}</td><td>${DOM[LD[k].dom].kort}</td><td>${f.keer||1}</td><td>${esc(f.gegeven||'')}</td><td>${esc(f.juist||'')}</td><td>${f.rij||0}/${f.nodig}</td></tr>`).join('')||'<tr><td colspan="8" class="zacht">Geen open fouten.</td></tr>'}</tbody></table></div>
+    <h2 class="sectie">Toetsen</h2><div class="kaart tabelwrap"><table><thead><tr><th>Datum</th><th>Soort</th><th>Niveau</th><th>Poging</th><th>Totaal</th><th>Geslaagd</th><th>Terug naar</th></tr></thead><tbody>${(j.toetsen||[]).slice().reverse().map(t=>`<tr><td>${datumKort(t['Datum/tijd'])}</td><td>${esc(t.Soort||'Rekentoets')}</td><td>${t.Niveau}</td><td>${t.Poging||''}</td><td>${t['Totaal %']}%</td><td>${t.Geslaagd}</td><td>${esc(t['Terug naar domeinen']||'')}</td></tr>`).join('')||'<tr><td colspan="7" class="zacht">Nog geen toetsen.</td></tr>'}</tbody></table></div>
+    ${(j.fouten||[]).length?`<h2 class="sectie">Laatste fouten</h2><div class="kaart tabelwrap"><table><thead><tr><th>Datum</th><th>Niveau</th><th>Leerdoel</th><th>Vraagtype</th><th>Antwoord</th><th>Goed</th><th>Zeker/gok</th><th>Fouttype</th></tr></thead><tbody>${j.fouten.slice(-40).reverse().map(f=>`<tr><td>${datumKort(f['Datum/tijd'])}</td><td>${f.Niveau}</td><td>${esc(LD[f.Leerdoel]?LD[f.Leerdoel].naam:f.Leerdoel)}</td><td>${esc(f.Vraagtype)}</td><td>${esc(f['Gegeven antwoord'])}</td><td>${esc(f['Juiste antwoord'])}</td><td>${esc(f['Zeker/gok'])}</td><td>${esc(f.Fouttype)}</td></tr>`).join('')}</tbody></table></div>`:''}
+    </div>`;
+  });
+};
+function download(naam,tekst,type){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([tekst],{type})); a.download=naam; document.body.appendChild(a); a.click(); setTimeout(()=>a.remove(),100) }
+function exportCsv(){
+  const ll=DOC.data.leerlingen.filter(l=>!DOC.klas||l.Klas===DOC.klas); if(!ll.length) return;
+  const kop=Object.keys(ll[0]); const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  download('rekentrainer-'+(DOC.klas||'alle')+'-'+vandaag()+'.csv','﻿'+[kop.map(q).join(';')].concat(ll.map(l=>kop.map(k=>q(l[k])).join(';'))).join('\n'),'text/csv');
+}
+function exportJson(){ download('rekentrainer-'+vandaag()+'.json',JSON.stringify(DOC.data,null,1),'application/json') }
+function exportLeerling(){ download('rekentrainer-'+DOC.detail.leerling.id+'.json',JSON.stringify(DOC.detail,null,1),'application/json') }
+
+start();
+</script>
+</body>
+</html>
