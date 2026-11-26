@@ -49,7 +49,7 @@ L({id:'V7.rentejaren',niv:7,dom:'V',sub:'groei',naam:'Na hoeveel jaar? (rente op
   fouten:v=>[[v.n-1,'Na '+(v.n-1)+' jaar is het nog net niet genoeg. Controleer met de rekenmachine.'],[v.lin,'Je rekende elk jaar met dezelfde rente. Maar je krijgt ook rente over de rente, dus het gaat sneller.'],[v.n+1,'Na '+v.n+' jaar is het al genoeg.']].filter(x=>x[0]>0),
   anders:v=>({tekst:'Maak een tabel en vermenigvuldig elk jaar met '+nl(v.g)+'.',tabel:{kop:['jaar','bedrag'],rijen:Array.from({length:Math.min(v.n+1,6)},(_,i)=>{ const j=i<5?i:v.n; return [j,eur(v.b*v.g**j)] })}})
 });
-L({id:'V7.index',niv:7,dom:'V',sub:'procent',naam:'Indexcijfers',rm:true,dec:1,verwar:['V7.procentpunt'],
+L({id:'V7.index',niv:7,dom:'V',sub:'procent',naam:'Indexcijfers',rm:true,dec:2,verwar:['V7.procentpunt'],
   uitleg:'Een indexcijfer vergelijkt met een basisjaar, dat altijd 100 is. Index 112 betekent: 112% van de prijs in het basisjaar, dus 12% duurder.',
   gen(r){ const P=r.pick([2,2.5,4,8,20,50,150,250]),I=r.pick([104,108,110,112.5,115,120,125,96,90]); return {P,I,N:rondaf(P*I/100,2),type:r.pick(['prijs','index']),j:r.pick([[2015,2024],[2020,2025],[2010,2023]]),d:r.pick(['een bioscoopkaartje','een liter melk','een voetbalshirt','een abonnement'])} },
   vraag:v=>v.type==='prijs'?`In ${v.j[0]} (index = 100) kostte ${v.d} ${eur(v.P,true)}. In ${v.j[1]} is het indexcijfer ${nl(v.I)}. Wat kost het in ${v.j[1]}?`:`In ${v.j[0]} (index = 100) kostte ${v.d} ${eur(v.P,true)}. In ${v.j[1]} kost het ${eur(v.N,true)}. Wat is het indexcijfer in ${v.j[1]}?`,
@@ -164,9 +164,8 @@ L({id:'B7.omvormen',niv:7,dom:'B',sub:'formules',naam:'Formule omvormen',verwar:
 });
 L({id:'B7.gemtoename',niv:7,dom:'B',sub:'grafieken',naam:'Gemiddelde toename per tijdseenheid',rm:true,verwar:['B5.helling'],
   uitleg:'Gemiddelde toename per jaar = (waarde aan het eind − waarde aan het begin) : aantal jaren ertussen. Let op: tel de jaren, niet de kolommen.',
-  gen(r){ const j0=r.pick([2000,2005,2010]),st5=5; const y=[r.int(20,60)*10]; for(let i=1;i<6;i++) y.push(y[i-1]+r.int(-2,8)*10); let i1,i2; do{ i1=r.int(0,3); i2=r.int(i1+2,5) }while(y[i2]<=y[i1]); return {j0,y,i1,i2,c:r.pick(['Aantal leden van een e-sportclub','Aantal bezoekers van een skatepark (per week)','Aantal laadpalen in een gemeente'])} },
+  gen(r){ const j0=r.pick([2000,2005,2010]),st5=5; let y,i1,i2; do{ y=[r.int(20,60)*10]; for(let i=1;i<6;i++) y.push(y[i-1]+r.int(-2,8)*10); i1=r.int(0,3); i2=r.int(i1+2,5) }while(y[i2]<=y[i1]); return {j0,y,i1,i2,c:r.pick(['Aantal leden van een e-sportclub','Aantal bezoekers van een skatepark (per week)','Aantal laadpalen in een gemeente'])} },
   vraag:v=>`${v.c}:<div class="vtabel">${vtabelHtml(['Jaar','Aantal'],v.y.map((x,i)=>[v.j0+5*i,x]))}</div>Wat is de gemiddelde toename per jaar tussen ${v.j0+5*v.i1} en ${v.j0+5*v.i2}? Rond af op 2 decimalen.`,
-  fig:v=>FIG.grafiek([{punten:v.y.map((x,i)=>[v.j0+5*i,x])}],{xmin:v.j0,xmax:v.j0+25,xs:5,ymax:Math.ceil(Math.max(...v.y)/100)*100,ys:100,xl:'jaar',yl:'aantal'}),
   antw:v=>rondaf((v.y[v.i2]-v.y[v.i1])/(5*(v.i2-v.i1)),2),
   stappen:v=>[st(`Toename: ${v.y[v.i2]} − ${v.y[v.i1]} = ${v.y[v.i2]-v.y[v.i1]}`,v.y[v.i2]-v.y[v.i1]),st(`Aantal jaren: ${v.j0+5*v.i2} − ${v.j0+5*v.i1} = ${5*(v.i2-v.i1)}`,5*(v.i2-v.i1)),st(`${v.y[v.i2]-v.y[v.i1]} : ${5*(v.i2-v.i1)} ≈ ${nl(rondaf((v.y[v.i2]-v.y[v.i1])/(5*(v.i2-v.i1)),2))} per jaar`,rondaf((v.y[v.i2]-v.y[v.i1])/(5*(v.i2-v.i1)),2))],
   fouten:v=>[[v.y[v.i2]-v.y[v.i1],'Dat is de totale toename. Deel nog door het aantal jaren.'],[rondaf((v.y[v.i2]-v.y[v.i1])/(v.i2-v.i1),2),'Je deelde door het aantal stappen in de tabel. Elke stap is 5 jaar.'],[rondaf((v.y[v.i2]-v.y[v.i1])/(5*(v.i2-v.i1)+5),2),'Tel het aantal jaren ertussen: eindjaar − beginjaar.']],
