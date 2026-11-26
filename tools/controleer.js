@@ -20,7 +20,7 @@ for(const ld of LDS){
       const v=it.v;
       if(vorm==='open'||vorm==='mc'){
         if(ld.antw){ const a=it.antw; if(typeof a!=='number'||!isFinite(a)) { meld(ld,'antwoord geen getal: '+a+' '+JSON.stringify(v)); break }
-          if(dec(a)>(ld.dec??2)) { meld(ld,'te veel decimalen: '+a+' '+JSON.stringify(v)); break }
+          if(!ld.toon&&dec(a)>(ld.dec??2)) { meld(ld,'te veel decimalen: '+a+' '+JSON.stringify(v)); break }
           if(a<0&&!ld.negatief) { meld(ld,'negatief antwoord: '+a); break } }
         if(/undefined|NaN|Infinity/.test(tekst(it.vraag))) { meld(ld,'vraagtekst: '+tekst(it.vraag)); break }
       }

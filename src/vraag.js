@@ -11,7 +11,7 @@ function L(def){
 const ldsVan = (niv,dom,sub) => LDS.filter(l=>l.niv===niv&&(!dom||l.dom===dom)&&(!sub||l.sub===sub));
 const subVan = (dom,id) => (SUBDOMEINEN[dom]||[]).find(s=>s.id===id)||{id,naam:id};
 const eenheidVan = (ld,v) => typeof ld.eenheid==='function'?ld.eenheid(v):(ld.eenheid||'');
-const antwTekst = (ld,v,x=ld.antw(v)) => { const e=eenheidVan(ld,v); if(typeof x!=='number') return String(x); return e==='€'?eur(x):nl(x)+(e?(e==='%'?'%':' '+e):'') };
+const antwTekst = (ld,v,x=ld.antw(v)) => { if(ld.toon) return ld.toon(x,v); const e=eenheidVan(ld,v); if(typeof x!=='number') return String(x); return e==='€'?eur(x):nl(x)+(e?(e==='%'?'%':' '+e):'') };
 
 // welke vraagvormen kan dit leerdoel op trede 3?
 function vormen(ld){
@@ -151,7 +151,7 @@ const zelfde = (a,b,tol=1e-6) => typeof a==='number'&&typeof b==='number'&&Math.
 
 // nakijken → {goed, gegeven, juist, fb (html), misconceptie}
 function nakijk(){
-  const it=Q.it, ld=LD[it.ld]; const tol=ld.tol||1e-6; let goed=false, gegeven='', fb='', mis='';
+  const it=Q.it, ld=LD[it.ld]; const tol=typeof ld.tol==='function'?ld.tol(it.v):(ld.tol||1e-6); let goed=false, gegeven='', fb='', mis='';
   switch(it.vorm){
     case 'open': {
       const x=parseGetal($('#antw').value); gegeven=$('#antw').value+(it.eenheden?' '+$('#eenh').value:'');

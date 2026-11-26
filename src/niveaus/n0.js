@@ -10,6 +10,8 @@ const CTX = {
 const prodPrijs = r => { const p=r.pick(CTX.product); return [p[0],r.pick(p[1])] };
 const st = (tekst,waarde,eenheid) => [tekst,waarde,eenheid];       // stap in een uitwerking
 const ggd = (a,b) => b?ggd(b,a%b):Math.abs(a);
-const breuk = (t,n) => `<span class="breuk"><sup>${t}</sup>⁄<sub>${n}</sub></span>`;
+const breuk = (t,n) => `<span class="breuk"><sup>${t}</sup><sub>${n}</sub></span>`;
 const tijdStr = m => { m=((m%1440)+1440)%1440; return Math.floor(m/60)+':'+String(m%60).padStart(2,'0') };
 const m2 = 'm²', cm2 = 'cm²', cm3='cm³', m3='m³', dm3='dm³', km2='km²';
+// kommagetal → breuk (voor antwoorden die als breuk getoond worden)
+function fr(x){ const neg=x<0; x=Math.abs(x); for(let n=1;n<=144;n++){ const t=Math.round(x*n); if(Math.abs(t/n-x)<1e-9){ const g=ggd(t,n)||1; return (neg?'−':'')+(n/g===1?String(t/g):`${t/g}/${n/g}`) } } return nl(x) }

@@ -14,7 +14,7 @@
  * Installatie (5 minuten):
  *   1. Maak een nieuwe Google Sheet, bijv. "Rekentrainer – resultaten".
  *   2. Extensies > Apps Script. Plak dit hele bestand in Code.gs en sla op.
- *   3. Pas hieronder DOCENT_CODE en KLASSEN aan.
+ *   3. Pas hieronder DOCENT_CODE aan (de code waarmee jij in het docentenscherm komt).
  *   4. Kies bovenaan de functie "setup" en klik Uitvoeren (geef toestemming).
  *   5. Implementeren > Nieuwe implementatie > Type: Web-app.
  *      Uitvoeren als: Ikzelf. Toegang: Iedereen. Kopieer de URL (eindigt op /exec).
@@ -23,8 +23,9 @@
  */
 const CFG = {
   DOCENT_CODE: 'VERANDER-MIJ',          // code voor het docentenscherm in de app (zelf wijzigen!)
-  KLASSEN: ['1A', '1B', '2A', '2B', 'Thuis'], // toegestane klassen (gelijk aan KLASSEN in de app)
-  START_NIVEAU: 3,                      // standaard startniveau voor een klas zonder eigen instelling
+  KLASSEN: ['1e klas', '2e klas', '3e klas', '4e klas', '5e klas', '6e klas', 'Thuis'], // gelijk aan KLASSEN in de app
+  // Het echte startniveau bepaalt de instaptoets in de app. Dit is alleen het startpunt van die toets.
+  START_NIVEAU: { '1e klas': 2, '2e klas': 3, '3e klas': 4, '4e klas': 5, '5e klas': 6, '6e klas': 6, 'Thuis': 2 },
   MAX_MISLUKT: 10                       // na zoveel foute herstelpogingen wordt herstellen geblokkeerd
 };
 
@@ -42,7 +43,7 @@ const KOP = {
   Foutenlog: ['Event-ID', 'Datum/tijd', 'Leerling-ID', 'Naam', 'Klas', 'Niveau', 'Domein', 'Leerdoel', 'Opgave-ID',
     'Vraagtype', 'Trede', 'Gegeven antwoord', 'Juiste antwoord', 'Zeker/gok', 'Fouttype', 'Rekenmachine gebruikt',
     'Spiegelvraag goed'],
-  Toetsen: ['Event-ID', 'Datum/tijd', 'Leerling-ID', 'Naam', 'Klas', 'Niveau', 'Poging', 'Totaal %',
+  Toetsen: ['Event-ID', 'Datum/tijd', 'Leerling-ID', 'Naam', 'Klas', 'Soort', 'Niveau', 'Poging', 'Totaal %',
     'Getallen %', 'Verhoudingen %', 'Meten en meetkunde %', 'Verbanden %', 'Geslaagd', 'Duur (min)', 'Terug naar domeinen'],
   Data: ['Leerling-ID', 'Bijgewerkt', 'Staat (deel 1)', 'Staat (deel 2)', 'Staat (deel 3)', 'Staat (deel 4)'],
   Logboek: ['Tijd', 'Leerling-ID', 'Naam', 'Klas', 'Actie', 'Details']
@@ -117,7 +118,7 @@ function nieuw_(d) {
   if (naam.length < 3) throw new Error('Vul je voor- en achternaam in');
   if (CFG.KLASSEN.indexOf(klas) < 0) throw new Error('Onbekende klas');
   const sp = sheet_('Leerlingen'); const ids = kolom_(sp, 1); const codes = kolom_(sp, 4).map(String);
-  const pre = klas.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5) || 'R';
+  const pre = klas === 'Thuis' ? 'TH' : 'K' + (klas.match(/\d/) || ['0'])[0];   // K1 … K6, TH
   let id; do { id = pre + '-' + rndTekst_(4); } while (ids.indexOf(id) >= 0);
   let code; do { code = String(Math.floor(100000 + Math.random() * 900000)); } while (codes.indexOf("'" + code) >= 0 || codes.indexOf(code) >= 0);
   const nu = new Date(); const ki = klasInst_(klas);
@@ -228,7 +229,7 @@ function leesKlasInst_() {
 }
 function klasInst_(klas) {
   const k = leesKlasInst_()[klas] || {};
-  return { start: k.start || CFG.START_NIVEAU, max: k.max || 8, toetsVrij: k.toetsVrij !== false };
+  return { start: k.start || CFG.START_NIVEAU[klas] || 2, max: k.max || 8, toetsVrij: k.toetsVrij !== false };
 }
 
 // =====================================================================
@@ -255,10 +256,15 @@ function verwerkEvents_(r, events) {
       ok.push(eid);
     } else if (ev.t === 'toets') {
       const p = ev.perDomein || {};
-      tRij.push([eid, tijd, r.id, r.naam, r.klas, num_(ev.niveau), num_(ev.poging), num_(ev.totaal),
+      tRij.push([eid, tijd, r.id, r.naam, r.klas, ev.soort === 'Instaptoets' ? 'Instaptoets' : 'Rekentoets', num_(ev.niveau), num_(ev.poging), num_(ev.totaal),
         num_(p.G), num_(p.V), num_(p.M), num_(p.B), ev.geslaagd ? 'ja' : 'nee', num_(ev.duurMin),
         (ev.terug || []).map(function (k) { return DOMEINEN[k] || k; }).join(', ')]);
       ok.push(eid);
+    } else if (ev.t === 'niveau') {
+      log_(r.id, r.naam, r.klas, 'niveau', 'van ' + num_(ev.van) + ' naar ' + num_(ev.naar) + (ev.reden ? ' (' + tekst_(ev.reden) + ')' : ''));
+      ok.push(eid);
+    } else {
+      ok.push(eid);   // onbekend soort event: bevestigen zodat het niet blijft hangen
     }
   });
   if (fRij.length) fl.getRange(fl.getLastRow() + 1, 1, fRij.length, fRij[0].length).setValues(fRij);
@@ -301,7 +307,7 @@ function schrijfVoortgang_(r, staat) {
 }
 
 function schrijfSamenvatting_(r, s) {
-  const niv = s.niv || CFG.START_NIVEAU;
+  const niv = s.niv || 1;
   const dom = s.dom || {};
   const pct = DOMEIN_IDS.map(function (d) { const x = dom[niv + '.' + d]; return x ? Math.round(x.b || 0) : ''; });
   const fb = s.fb || {}; let open = 0, zf = 0;
