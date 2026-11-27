@@ -470,7 +470,7 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekentrainer Vellesan · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = 'e05d5c27e2';
+const BOUW = '0e7667c4b8';
 const KLASSEN = ['1e klas','2e klas','3e klas','4e klas','5e klas','6e klas','Thuis'];
 const KEY = 'rekenvel-v1';
 const OUTBOX = 'rekenvel-outbox';
@@ -1002,7 +1002,7 @@ function verwerk(it,res){
   werkDomBij(it.niv,it.dom);
   // 5. log voor de Sheet
   if(!res.goed&&it.trede!==1) event({t:'fout',niveau:it.niv,domein:it.dom,leerdoel:it.ld,opgave:it.key,type:TREDE_LABEL[it.vorm]||it.vorm,trede:it.trede,
-    gegeven:res.gegeven,juist:res.juist,zeker:res.zeker,fouttype:res.fouttype||(res.mis?'Misconceptie: '+res.mis:''),rekenmachine:!!it.rmGebruikt});
+    gegeven:res.gegeven,juist:res.juist,zeker:res.zeker,fouttype:res.fouttype||(res.mis?'Misconceptie: '+res.mis:''),rekenmachine:!!it.rmGebruikt,misc:misTag(res.fb)});
   if(it.bron==='spiegel'&&Q&&Q.vorigeFout) event({t:'fout',eid:Q.vorigeFout+'-sp',niveau:it.niv,domein:it.dom,leerdoel:it.ld,opgave:it.key,type:'Spiegelvraag',trede:3,gegeven:res.gegeven,juist:res.juist,zeker:res.zeker,spiegelGoed:res.goed});
   badgesBijwerken();
   bewaar();
@@ -3100,7 +3100,7 @@ function eindeToets(){
 }
 function verwerkStil(it,res){ // toetsvraag: beheersing en foutenbank bijwerken zonder feedbackscherm
   const x=Object.assign({},ldS(it.ld)); x.b=rondaf(x.b+(res.goed?.15:.25)*((res.goed?100:0)-x.b),1); x.n++; x.u=Date.now(); if(x.tr===0) x.tr=res.goed?3:1; S.ld[it.ld]=x;
-  if(!res.goed){ foutenbank(it,res); event({t:'fout',niveau:it.niv,domein:it.dom,leerdoel:it.ld,opgave:it.key,type:'Toets: '+(TREDE_LABEL[it.vorm]||it.vorm),trede:3,gegeven:res.gegeven,juist:res.juist,zeker:res.zeker}) }
+  if(!res.goed){ foutenbank(it,res); event({t:'fout',niveau:it.niv,domein:it.dom,leerdoel:it.ld,opgave:it.key,type:'Toets: '+(TREDE_LABEL[it.vorm]||it.vorm),trede:3,gegeven:res.gegeven,juist:res.juist,zeker:res.zeker,misc:misTag(res.fb)}) }
   S.aantal=(S.aantal||0)+1; if(res.goed) S.goed=(S.goed||0)+1;
 }
 function toonToetsUitslag(){
@@ -3225,6 +3225,43 @@ function ordegrootteTip(it,res){
   return `<p class="schattip">🔎 <b>Controleer met een schatting:</b> jouw antwoord is ongeveer ${nl(k>=100?eenCijfer(k):k)} keer zo ${f>=5?'groot':'klein'} als het goede antwoord. Kan dat kloppen? Rond de getallen in de vraag af en reken het globaal na.</p>`;
 }
 
+// ===== Misconcepties: elke fout krijgt een denkfout-categorie (over leerdoelen heen) =====
+// De docent ziet per klas welke denkfouten het vaakst voorkomen, met een tip voor een korte instructie.
+const MISCONCEPTIES = [
+  {id:'geheel',naam:'Delen door het verkeerde geheel',re:/deel door de oude|deelde door|deel door het|niet door de nieuwe|niet door alle|verkeerde volgorde|omgekeerd|verkeerd om|van de meisjes|deelde oud/,
+   tip:'Laat leerlingen bij elke procent- of verhoudingsvraag eerst opschrijven: "… van wat?" (het geheel = 100%). Oefen met een strook waarop het geheel staat.'},
+  {id:'optellen',naam:'Percentages optellen of aftrekken in plaats van vermenigvuldigen',re:/telde de (kortingen|percentages)|percentages op|trok de percentages|procentpunt|niet zomaar aftrekken|niet optellen/,
+   tip:'Werk met een voorbeeldbedrag van € 100 en laat elke stap apart uitrekenen. Vergelijk daarna met het vermenigvuldigen van groeifactoren.'},
+  {id:'procentbedrag',naam:'Procent behandelen als bedrag',re:/procent is geen|percentage is geen|geen bedrag|trok \d+ euro af/,
+   tip:'Laat leerlingen procenten altijd eerst omzetten naar een deel van het geheel (50% = de helft, 1% = : 100) voordat ze met euro’s rekenen.'},
+  {id:'lineair',naam:'Lineair denken bij exponentiële groei',re:/rente op|over de rente|groeifactor|steeds hetzelfde|tot de macht|exponentieel|vermenigvuldigde met \d+\./,
+   tip:'Zet lineair en exponentieel naast elkaar in één tabel (erbij vs. keer). Laat leerlingen de tabel 4 stappen doortrekken en het verschil benoemen.'},
+  {id:'breuk',naam:'Breuken: teller, noemer en het geheel',re:/teller|noemer|breuk|1 deel|één deel/,
+   tip:'Gebruik stroken en "eerst 1 deel uitrekenen (delen door de noemer), dan keer de teller". Laat leerlingen de breuk in woorden zeggen.'},
+  {id:'eenheid',naam:'Eenheden en omrekenen',re:/eenheid|liter|cm³|m³|dm³|kilowatt|watt|seconde|minuten|per uur|km\/u|m\/s|1000 m|kg|gram|byte|bit|mb|gb/i,
+   tip:'Gebruik consequent het eenhedentrapje en laat leerlingen de eenheid bij elke tussenstap opschrijven.'},
+  {id:'komma',naam:'Komma en machten van 10',re:/komma|nullen|10 tot de macht|factor 10|plaatsen|exponent/,
+   tip:'Oefen "komma verschuiven" op een plaatswaardekaart (D H T E , t h d). Laat leerlingen eerst schatten hoe groot de uitkomst wordt.'},
+  {id:'stap',naam:'Stap vergeten (vast bedrag, korting, verzendkosten, ⅓, …)',re:/vergat|vergeet|vergeten|nog door|vermenigvuldig nog|trek er nog|nog omrekenen|nog met|niet vergeten/,
+   tip:'Laat leerlingen voor ze gaan rekenen een stappenplan opschrijven (wat weet ik, wat zoek ik, welke stappen). Controleer na afloop: heb ik alle gegevens gebruikt?'},
+  {id:'afronden',naam:'Afronden in een context',re:/afronden|naar boven|naar beneden|half bestand|niet vol|hele pakken|deel van een pak|rest/,
+   tip:'Bespreek: wat betekent de rest hier? Moet iedereen mee (naar boven) of tellen alleen volle groepjes (naar beneden)?'},
+  {id:'meetkunde',naam:'Oppervlakte en inhoud (straal/diameter, k² en k³)',re:/straal|diameter|oppervlakte|inhoud|kwadraten|schuine zijde|omtrek|drie richtingen|twee richtingen/,
+   tip:'Laat figuren tekenen en de formule met woorden uitspreken. Bij vergroten: leg blokjes neer (2 × 2 × 2).'},
+  {id:'volgorde',naam:'Rekenvolgorde en machten',re:/rekenvolgorde|keer gaat|vóór plus|vóór min|haakjes|eerst de macht|minteken/,
+   tip:'Gebruik de volgorde haakjes → machten → × : → + − en laat leerlingen haakjes zetten om wat eerst moet.'},
+  {id:'statistiek',naam:'Gemiddelde en statistiek',re:/gemiddeld|mediaan|kwartiel|weging|klassenmidden|spreidingsbreedte/,
+   tip:'Laat leerlingen de data eerst ordenen (op volgorde, of als frequentietabel) en hardop zeggen wat elke maat betekent.'},
+  {id:'tussen',naam:'Tussenantwoord of ander antwoord gegeven dan gevraagd',re:/^\s*dat is|^\s*dat zijn|de vraag is|de vraag gaat|alleen (de|het) |de vraag:/,
+   tip:'Laat leerlingen de vraag aan het eind opnieuw lezen en het antwoord in een hele zin opschrijven ("Je betaalt …").'},
+  {id:'bewerking',naam:'Verkeerde bewerking gekozen',re:/opgeteld|telde op|je telde|vermenigvuldigde|je deelde|in plaats van|afgetrokken|trok .* af|je deelt/,
+   tip:'Laat leerlingen eerst een schets of verhoudingstabel maken en dan pas de bewerking kiezen. Vraag: wordt het antwoord groter of kleiner?'},
+  {id:'tellen',naam:'Tel- en stapfouten',re:/tel de|tel opnieuw|tel het|hokje|stappen/,
+   tip:'Laat leerlingen hun tussenstappen nummeren en controleren door terug te rekenen.'},
+];
+function misTag(fb){ const t=String(fb||'').replace(/<[^>]+>/g,' ').toLowerCase(); if(!t.trim()) return ''; const m=MISCONCEPTIES.find(x=>x.re.test(t)); return m?m.naam:'Overige denkfout' }
+const misTip = naam => (MISCONCEPTIES.find(m=>m.naam===naam)||{}).tip||'';
+
 // ===== Rekenmachine (alleen bij opgaven waar die in de rekentoets ook mag) =====
 let RM={uit:'',hist:''};
 function toonRekenmachine(){
@@ -3283,6 +3320,7 @@ SCHERMEN.docent=function(){
    <div class="kaart tabelwrap"><table><thead><tr><th>Naam</th><th>Klas</th><th>Niveau</th>${KOLOM.map(k=>`<th>${k.replace(' %','').replace('Meten en meetkunde','Meten')}</th>`).join('')}<th>Open fouten</th><th>Zeker&nbsp;én&nbsp;fout</th><th>Toetsen</th><th>Min. week</th><th>Laatst</th><th>ID / code</th></tr></thead><tbody>
    ${ll.map(l=>`<tr class="klik" onclick="docentLeerling('${esc(l['Leerling-ID'])}')"><td><b>${esc(l.Naam)}</b></td><td>${esc(l.Klas)}</td><td><b>${l['Huidig niveau']||'–'}</b></td>${KOLOM.map(k=>pc(l[k])).join('')}<td>${l['Open fouten']||0}</td><td>${l['Zeker én fout (open)']?`<b style="color:var(--fout)">${l['Zeker én fout (open)']}</b>`:0}</td><td>${l['Toetsen geslaagd']||0}</td><td>${l['Oefentijd deze week (min)']||0}</td><td>${datumKort(l['Laatst gezien'])}</td><td class="zacht klein">${esc(l['Leerling-ID'])}<br>${esc(l.Herstelcode||'')}</td></tr>`).join('')||'<tr><td colspan="13" class="zacht">Nog geen leerlingen.</td></tr>'}
    </tbody></table></div>
+   ${d.topmisc&&d.topmisc.length?`<h2 class="sectie">Denkfouten${DOC.klas?' in '+esc(DOC.klas):''}</h2><p class="zacht klein">Fouten gegroepeerd per misconceptie, over alle leerdoelen heen. Begin bij de bovenste: die komt bij de meeste leerlingen voor.</p><div class="kaart tabelwrap"><table><thead><tr><th>Denkfout</th><th>Leerlingen</th><th>Keer</th><th>Waarvan zeker</th><th>Komt voor bij</th><th>Tip voor een mini-instructie</th></tr></thead><tbody>${d.topmisc.map(t=>`<tr><td><b>${esc(t.naam)}</b></td><td>${t.leerlingen}</td><td>${t.keer}</td><td>${t.zeker}</td><td class="klein">${t.leerdoelen.map(x=>esc(LD[x]?LD[x].naam:x)).join('<br>')}</td><td class="klein">${esc(misTip(t.naam))}</td></tr>`).join('')}</tbody></table></div>`:''}
    ${d.topfouten&&d.topfouten.length?`<h2 class="sectie">Hardnekkigste fouten${DOC.klas?' in '+esc(DOC.klas):''}</h2><div class="kaart tabelwrap"><table><thead><tr><th>Leerdoel</th><th>Niveau</th><th>Domein</th><th>Keer fout</th><th>Waarvan zeker</th><th>Leerlingen</th></tr></thead><tbody>${d.topfouten.map(t=>`<tr><td>${esc(LD[t.leerdoel]?LD[t.leerdoel].naam:t.leerdoel)}</td><td>${t.niveau}</td><td>${esc(t.domein)}</td><td>${t.keer}</td><td>${t.zeker}</td><td>${t.leerlingen}</td></tr>`).join('')}</tbody></table></div>`:''}
    </div>`;
 };

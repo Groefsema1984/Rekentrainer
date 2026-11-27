@@ -43,7 +43,7 @@ const KOP = {
     'Opgaven gemaakt', 'Laatst geoefend'],
   Foutenlog: ['Event-ID', 'Datum/tijd', 'Leerling-ID', 'Naam', 'Klas', 'Niveau', 'Domein', 'Leerdoel', 'Opgave-ID',
     'Vraagtype', 'Trede', 'Gegeven antwoord', 'Juiste antwoord', 'Zeker/gok', 'Fouttype', 'Rekenmachine gebruikt',
-    'Spiegelvraag goed'],
+    'Spiegelvraag goed', 'Misconceptie'],
   Toetsen: ['Event-ID', 'Datum/tijd', 'Leerling-ID', 'Naam', 'Klas', 'Soort', 'Niveau', 'Poging', 'Totaal %',
     'Getallen %', 'Verhoudingen %', 'Meten en meetkunde %', 'Verbanden %', 'Geslaagd', 'Duur (min)', 'Terug naar domeinen'],
   Data: ['Leerling-ID', 'Bijgewerkt', 'Staat (deel 1)', 'Staat (deel 2)', 'Staat (deel 3)', 'Staat (deel 4)'],
@@ -184,8 +184,9 @@ function overzicht_(d) {
     });
   // hardnekkigste fouten per klas: opgaven die het vaakst "zeker én fout" zijn
   const top = topFouten_(d.klas);
+  const topmisc = topMisc_(d.klas);
   const inst = {}; CFG.KLASSEN.forEach(function (k) { inst[k] = klasInst_(k); });
-  return { ok: true, klassen: CFG.KLASSEN, leerlingen: leerlingen, topfouten: top, klasinst: inst };
+  return { ok: true, klassen: CFG.KLASSEN, leerlingen: leerlingen, topfouten: top, topmisc: topmisc, klasinst: inst };
 }
 
 /** Detail van één leerling: volledige staat + zijn/haar fouten en toetsen uit de logs. */
@@ -239,6 +240,7 @@ function klasInst_(klas) {
 function verwerkEvents_(r, events) {
   if (!events.length) return [];
   const fl = sheet_('Foutenlog'), tt = sheet_('Toetsen');
+  const nk = KOP.Foutenlog.length; if (fl.getRange(1, nk).getValue() !== KOP.Foutenlog[nk - 1]) fl.getRange(1, nk).setValue(KOP.Foutenlog[nk - 1]).setFontWeight('bold').setBackground('#171c24').setFontColor('#ffffff');
   const gezien = {};
   laatsteIds_(fl, 3000).forEach(function (x) { gezien[x] = 1; });
   laatsteIds_(tt, 1000).forEach(function (x) { gezien[x] = 1; });
@@ -253,7 +255,7 @@ function verwerkEvents_(r, events) {
       fRij.push([eid, tijd, r.id, r.naam, r.klas, num_(ev.niveau), DOMEINEN[ev.domein] || ev.domein || '', tekst_(ev.leerdoel),
         tekst_(ev.opgave), tekst_(ev.type), num_(ev.trede), tekst_(ev.gegeven), tekst_(ev.juist),
         ev.zeker === true ? 'Zeker (!)' : ev.zeker === false ? 'Gok (?)' : '', tekst_(ev.fouttype),
-        ev.rekenmachine ? 'ja' : 'nee', ev.spiegelGoed === true ? 'ja' : ev.spiegelGoed === false ? 'nee' : '']);
+        ev.rekenmachine ? 'ja' : 'nee', ev.spiegelGoed === true ? 'ja' : ev.spiegelGoed === false ? 'nee' : '', tekst_(ev.misc)]);
       ok.push(eid);
     } else if (ev.t === 'toets') {
       const p = ev.perDomein || {};
@@ -317,6 +319,21 @@ function schrijfSamenvatting_(r, s) {
   const rij = [new Date(), niv, s.max || niv, Math.round((s.tijd || 0) / 60), Math.round(((s.week || {})[weekId_()] || 0) / 60),
     s.aantal || 0].concat(pct, [open, zf, toetsen]);
   sheet_('Leerlingen').getRange(r.rij, 6, 1, rij.length).setValues([rij]);
+}
+
+/** Denkfouten (misconcepties) per klas: hoe vaak, bij hoeveel leerlingen en in welke leerdoelen. */
+function topMisc_(klas) {
+  const fl = sheet_('Foutenlog'); if (fl.getLastRow() < 2) return [];
+  const nk = KOP.Foutenlog.length; const van = Math.max(2, fl.getLastRow() - 5000 + 1);
+  const v = fl.getRange(van, 1, fl.getLastRow() - van + 1, nk).getValues(); const tel = {};
+  v.forEach(function (x) {
+    if (klas && x[4] !== klas) return; const m = x[nk - 1]; if (!m) return;
+    const t = tel[m] || (tel[m] = { naam: m, keer: 0, zeker: 0, leerlingen: {}, leerdoelen: {} });
+    t.keer++; if (String(x[13]).indexOf('Zeker') === 0) t.zeker++; t.leerlingen[x[2]] = 1; t.leerdoelen[x[7]] = (t.leerdoelen[x[7]] || 0) + 1;
+  });
+  return Object.keys(tel).map(function (k) { const t = tel[k]; return { naam: t.naam, keer: t.keer, zeker: t.zeker, leerlingen: Object.keys(t.leerlingen).length,
+    leerdoelen: Object.keys(t.leerdoelen).sort(function (a, b) { return t.leerdoelen[b] - t.leerdoelen[a]; }).slice(0, 4) }; })
+    .sort(function (a, b) { return b.leerlingen * 3 + b.keer - (a.leerlingen * 3 + a.keer); }).slice(0, 12);
 }
 
 function topFouten_(klas) {

@@ -1,0 +1,36 @@
+// ===== Misconcepties: elke fout krijgt een denkfout-categorie (over leerdoelen heen) =====
+// De docent ziet per klas welke denkfouten het vaakst voorkomen, met een tip voor een korte instructie.
+const MISCONCEPTIES = [
+  {id:'geheel',naam:'Delen door het verkeerde geheel',re:/deel door de oude|deelde door|deel door het|niet door de nieuwe|niet door alle|verkeerde volgorde|omgekeerd|verkeerd om|van de meisjes|deelde oud/,
+   tip:'Laat leerlingen bij elke procent- of verhoudingsvraag eerst opschrijven: "… van wat?" (het geheel = 100%). Oefen met een strook waarop het geheel staat.'},
+  {id:'optellen',naam:'Percentages optellen of aftrekken in plaats van vermenigvuldigen',re:/telde de (kortingen|percentages)|percentages op|trok de percentages|procentpunt|niet zomaar aftrekken|niet optellen/,
+   tip:'Werk met een voorbeeldbedrag van € 100 en laat elke stap apart uitrekenen. Vergelijk daarna met het vermenigvuldigen van groeifactoren.'},
+  {id:'procentbedrag',naam:'Procent behandelen als bedrag',re:/procent is geen|percentage is geen|geen bedrag|trok \d+ euro af/,
+   tip:'Laat leerlingen procenten altijd eerst omzetten naar een deel van het geheel (50% = de helft, 1% = : 100) voordat ze met euro’s rekenen.'},
+  {id:'lineair',naam:'Lineair denken bij exponentiële groei',re:/rente op|over de rente|groeifactor|steeds hetzelfde|tot de macht|exponentieel|vermenigvuldigde met \d+\./,
+   tip:'Zet lineair en exponentieel naast elkaar in één tabel (erbij vs. keer). Laat leerlingen de tabel 4 stappen doortrekken en het verschil benoemen.'},
+  {id:'breuk',naam:'Breuken: teller, noemer en het geheel',re:/teller|noemer|breuk|1 deel|één deel/,
+   tip:'Gebruik stroken en "eerst 1 deel uitrekenen (delen door de noemer), dan keer de teller". Laat leerlingen de breuk in woorden zeggen.'},
+  {id:'eenheid',naam:'Eenheden en omrekenen',re:/eenheid|liter|cm³|m³|dm³|kilowatt|watt|seconde|minuten|per uur|km\/u|m\/s|1000 m|kg|gram|byte|bit|mb|gb/i,
+   tip:'Gebruik consequent het eenhedentrapje en laat leerlingen de eenheid bij elke tussenstap opschrijven.'},
+  {id:'komma',naam:'Komma en machten van 10',re:/komma|nullen|10 tot de macht|factor 10|plaatsen|exponent/,
+   tip:'Oefen "komma verschuiven" op een plaatswaardekaart (D H T E , t h d). Laat leerlingen eerst schatten hoe groot de uitkomst wordt.'},
+  {id:'stap',naam:'Stap vergeten (vast bedrag, korting, verzendkosten, ⅓, …)',re:/vergat|vergeet|vergeten|nog door|vermenigvuldig nog|trek er nog|nog omrekenen|nog met|niet vergeten/,
+   tip:'Laat leerlingen voor ze gaan rekenen een stappenplan opschrijven (wat weet ik, wat zoek ik, welke stappen). Controleer na afloop: heb ik alle gegevens gebruikt?'},
+  {id:'afronden',naam:'Afronden in een context',re:/afronden|naar boven|naar beneden|half bestand|niet vol|hele pakken|deel van een pak|rest/,
+   tip:'Bespreek: wat betekent de rest hier? Moet iedereen mee (naar boven) of tellen alleen volle groepjes (naar beneden)?'},
+  {id:'meetkunde',naam:'Oppervlakte en inhoud (straal/diameter, k² en k³)',re:/straal|diameter|oppervlakte|inhoud|kwadraten|schuine zijde|omtrek|drie richtingen|twee richtingen/,
+   tip:'Laat figuren tekenen en de formule met woorden uitspreken. Bij vergroten: leg blokjes neer (2 × 2 × 2).'},
+  {id:'volgorde',naam:'Rekenvolgorde en machten',re:/rekenvolgorde|keer gaat|vóór plus|vóór min|haakjes|eerst de macht|minteken/,
+   tip:'Gebruik de volgorde haakjes → machten → × : → + − en laat leerlingen haakjes zetten om wat eerst moet.'},
+  {id:'statistiek',naam:'Gemiddelde en statistiek',re:/gemiddeld|mediaan|kwartiel|weging|klassenmidden|spreidingsbreedte/,
+   tip:'Laat leerlingen de data eerst ordenen (op volgorde, of als frequentietabel) en hardop zeggen wat elke maat betekent.'},
+  {id:'tussen',naam:'Tussenantwoord of ander antwoord gegeven dan gevraagd',re:/^\s*dat is|^\s*dat zijn|de vraag is|de vraag gaat|alleen (de|het) |de vraag:/,
+   tip:'Laat leerlingen de vraag aan het eind opnieuw lezen en het antwoord in een hele zin opschrijven ("Je betaalt …").'},
+  {id:'bewerking',naam:'Verkeerde bewerking gekozen',re:/opgeteld|telde op|je telde|vermenigvuldigde|je deelde|in plaats van|afgetrokken|trok .* af|je deelt/,
+   tip:'Laat leerlingen eerst een schets of verhoudingstabel maken en dan pas de bewerking kiezen. Vraag: wordt het antwoord groter of kleiner?'},
+  {id:'tellen',naam:'Tel- en stapfouten',re:/tel de|tel opnieuw|tel het|hokje|stappen/,
+   tip:'Laat leerlingen hun tussenstappen nummeren en controleren door terug te rekenen.'},
+];
+function misTag(fb){ const t=String(fb||'').replace(/<[^>]+>/g,' ').toLowerCase(); if(!t.trim()) return ''; const m=MISCONCEPTIES.find(x=>x.re.test(t)); return m?m.naam:'Overige denkfout' }
+const misTip = naam => (MISCONCEPTIES.find(m=>m.naam===naam)||{}).tip||'';

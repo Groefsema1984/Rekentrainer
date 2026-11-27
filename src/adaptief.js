@@ -50,7 +50,7 @@ function verwerk(it,res){
   werkDomBij(it.niv,it.dom);
   // 5. log voor de Sheet
   if(!res.goed&&it.trede!==1) event({t:'fout',niveau:it.niv,domein:it.dom,leerdoel:it.ld,opgave:it.key,type:TREDE_LABEL[it.vorm]||it.vorm,trede:it.trede,
-    gegeven:res.gegeven,juist:res.juist,zeker:res.zeker,fouttype:res.fouttype||(res.mis?'Misconceptie: '+res.mis:''),rekenmachine:!!it.rmGebruikt});
+    gegeven:res.gegeven,juist:res.juist,zeker:res.zeker,fouttype:res.fouttype||(res.mis?'Misconceptie: '+res.mis:''),rekenmachine:!!it.rmGebruikt,misc:misTag(res.fb)});
   if(it.bron==='spiegel'&&Q&&Q.vorigeFout) event({t:'fout',eid:Q.vorigeFout+'-sp',niveau:it.niv,domein:it.dom,leerdoel:it.ld,opgave:it.key,type:'Spiegelvraag',trede:3,gegeven:res.gegeven,juist:res.juist,zeker:res.zeker,spiegelGoed:res.goed});
   badgesBijwerken();
   bewaar();

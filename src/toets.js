@@ -101,7 +101,7 @@ function eindeToets(){
 }
 function verwerkStil(it,res){ // toetsvraag: beheersing en foutenbank bijwerken zonder feedbackscherm
   const x=Object.assign({},ldS(it.ld)); x.b=rondaf(x.b+(res.goed?.15:.25)*((res.goed?100:0)-x.b),1); x.n++; x.u=Date.now(); if(x.tr===0) x.tr=res.goed?3:1; S.ld[it.ld]=x;
-  if(!res.goed){ foutenbank(it,res); event({t:'fout',niveau:it.niv,domein:it.dom,leerdoel:it.ld,opgave:it.key,type:'Toets: '+(TREDE_LABEL[it.vorm]||it.vorm),trede:3,gegeven:res.gegeven,juist:res.juist,zeker:res.zeker}) }
+  if(!res.goed){ foutenbank(it,res); event({t:'fout',niveau:it.niv,domein:it.dom,leerdoel:it.ld,opgave:it.key,type:'Toets: '+(TREDE_LABEL[it.vorm]||it.vorm),trede:3,gegeven:res.gegeven,juist:res.juist,zeker:res.zeker,misc:misTag(res.fb)}) }
   S.aantal=(S.aantal||0)+1; if(res.goed) S.goed=(S.goed||0)+1;
 }
 function toonToetsUitslag(){
