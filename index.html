@@ -538,6 +538,7 @@ body[data-fase=jong] .rmknop.dicht,body[data-fase=midden] .rmknop.dicht{display:
 body[data-fase=jong] .opties,body[data-fase=midden] .opties{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 body[data-fase=jong] .optie,body[data-fase=midden] .optie{min-height:76px;font-size:24px;font-weight:700;justify-content:center}
 @media (max-width:560px){body[data-fase=jong] .opties,body[data-fase=midden] .opties{grid-template-columns:1fr}}
+.contrast{margin:12px 0;padding:12px 14px;border-left:4px solid var(--fout);background:color-mix(in srgb,var(--fout) 6%,var(--kaart));border-radius:6px}.contrast p{margin:4px 0 0}
 
 </style>
 </head>
@@ -551,7 +552,7 @@ body[data-fase=jong] .optie,body[data-fase=midden] .optie{min-height:76px;font-s
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekenen op Niveau · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = '31d447cd69';
+const BOUW = 'be328d455c';
 // Groepen en klassen. Vanaf klas 1 met schooltype: dat bepaalt start van de instaptoets en het doelniveau.
 const GROEPEN = ['groep 3','groep 4','groep 5','groep 6','groep 7','groep 8'];
 const SCHOOLTYPEN = [{id:'vmbo',jaren:4,start:4,doel:8},{id:'havo',jaren:5,start:5,doel:11},{id:'vwo',jaren:6,start:6,doel:12}];
@@ -933,6 +934,11 @@ const spiegelVan = (it,bron='spiegel') => maakItem(it.ld,{trede:3,vorm:LD[it.ld]
 
 // ---------- tonen ----------
 const TREDE_LABEL={faded1:'Voorbeeld',faded2:'Invulsom',open:'Zelf doen',mc:'Kies het goede antwoord',sab:'De Saboteur',tabel:'Verhoudingstabel',volgorde:'Zet in de goede volgorde',koppel:'Koppel',v3:'Drie antwoorden vergelijken'};
+// Contrast bij het uitgewerkte voorbeeld: naast de goede aanpak ook de meest gemaakte denkfout laten zien (goed én fout voorbeeld vergelijken).
+function contrastHtml(it){
+  try{ const ld=LD[it.ld]; if(!ld.fouten||it.antw==null) return ''; const f=ld.fouten(it.v).find(x=>x&&isFinite(x[0])&&!zelfde(x[0],it.antw,1e-9)&&x[1]); if(!f) return '';
+    return `<div class="contrast"><span class="eyebrow">Zo gaat het vaak mis</span><p>Iemand anders komt uit op <b>${antwTekst(ld,it.v,f[0])}</b>. ${f[1]}</p></div>` }catch(e){ return '' }
+}
 function invoerVak(id,e,extra=''){
   const pre=e==='€'?'<span class="eh">€</span>':''; const post=e&&e!=='€'?`<span class="eh">${esc(e)}</span>`:'';
   return `<div class="reken">${pre}<input type="text" id="${id}" inputmode="decimal" autocomplete="off" autocorrect="off" spellcheck="false" ${extra}>${post}</div>`;
@@ -951,7 +957,7 @@ function itemHtml(it){
       break;
     case 'faded1':
       h=`<div class="uitlegblok"><span class="eyebrow">Zo werkt het</span><p>${ld.uitleg}</p>${modelHtml(it)||vormModel(it)}</div>`+vraag+
-        `<ol class="stappen">${it.stappen.map(s=>`<li>${s[0]}</li>`).join('')}</ol>`+
+        `<ol class="stappen">${it.stappen.map(s=>`<li>${s[0]}</li>`).join('')}</ol>`+contrastHtml(it)+
         `<div class="checkvraag"><b>Checkvraag:</b> ${esc(it.check.vraag)}</div><div class="opties">${it.check.opties.map((o,i)=>`<button class="optie" data-i="${i}" onclick="kiesOptie(${i})"><span class="l">${'ABC'[i]}</span><span>${esc(o.t)}</span></button>`).join('')}</div>`;
       break;
     case 'faded2':
@@ -2065,6 +2071,10 @@ L({id:'B04.staaf',niv:4,dom:'B',sub:'grafieken',naam:'Staafgrafiek met grote get
   fouten:v=>v.t==='weekend'?[[v.w[6],'Dat is alleen zondag. Tel zaterdag erbij.'],[v.w[5]+v.w[6]+100,'Lees precies af. Tussen twee strepen zit 50.']]:[[v.w[2]%100?v.w[2]-50:v.w[2]+50,'Kijk goed: halverwege twee strepen is 50.'],[v.w[3]===v.w[2]?v.w[2]+100:v.w[3],'Dat is donderdag.']],
   anders:v=>`Elke streep is 100 meer. Ligt de staaf tussen twee strepen in? Dan is het 50 meer dan de onderste.`
 });
+
+// interleaving: leerdoelen die kinderen makkelijk door elkaar halen, worden na een reeks afgewisseld
+[['G01.plusmin','V01.dubbel'],['V01.groepjes','V01.eerlijk'],['G02.tafels','V02.keerverdelen'],['V02.keerzoveel','G02.tafels'],['M02.klok','M03.tijdsduur'],['G03.keer','G03.rest'],['M03.omtrek','M04.opp'],['V03.perstuk','V03.recept'],['G04.breukvan','V04.korting'],['M04.eenheden','M03.gewicht']]
+  .forEach(([a,b])=>{ if(LD[a]&&LD[b]){ LD[a].verwar=[...new Set((LD[a].verwar||[]).concat(b))]; LD[b].verwar=[...new Set((LD[b].verwar||[]).concat(a))] } });
 
 // ===== Niveau 2 · 1S · ongeveer groep 8 =====
 const c2e = c => rondaf(c/100,2);   // centen → euro

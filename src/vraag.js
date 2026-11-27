@@ -71,6 +71,11 @@ const spiegelVan = (it,bron='spiegel') => maakItem(it.ld,{trede:3,vorm:LD[it.ld]
 
 // ---------- tonen ----------
 const TREDE_LABEL={faded1:'Voorbeeld',faded2:'Invulsom',open:'Zelf doen',mc:'Kies het goede antwoord',sab:'De Saboteur',tabel:'Verhoudingstabel',volgorde:'Zet in de goede volgorde',koppel:'Koppel',v3:'Drie antwoorden vergelijken'};
+// Contrast bij het uitgewerkte voorbeeld: naast de goede aanpak ook de meest gemaakte denkfout laten zien (goed én fout voorbeeld vergelijken).
+function contrastHtml(it){
+  try{ const ld=LD[it.ld]; if(!ld.fouten||it.antw==null) return ''; const f=ld.fouten(it.v).find(x=>x&&isFinite(x[0])&&!zelfde(x[0],it.antw,1e-9)&&x[1]); if(!f) return '';
+    return `<div class="contrast"><span class="eyebrow">Zo gaat het vaak mis</span><p>Iemand anders komt uit op <b>${antwTekst(ld,it.v,f[0])}</b>. ${f[1]}</p></div>` }catch(e){ return '' }
+}
 function invoerVak(id,e,extra=''){
   const pre=e==='€'?'<span class="eh">€</span>':''; const post=e&&e!=='€'?`<span class="eh">${esc(e)}</span>`:'';
   return `<div class="reken">${pre}<input type="text" id="${id}" inputmode="decimal" autocomplete="off" autocorrect="off" spellcheck="false" ${extra}>${post}</div>`;
@@ -89,7 +94,7 @@ function itemHtml(it){
       break;
     case 'faded1':
       h=`<div class="uitlegblok"><span class="eyebrow">Zo werkt het</span><p>${ld.uitleg}</p>${modelHtml(it)||vormModel(it)}</div>`+vraag+
-        `<ol class="stappen">${it.stappen.map(s=>`<li>${s[0]}</li>`).join('')}</ol>`+
+        `<ol class="stappen">${it.stappen.map(s=>`<li>${s[0]}</li>`).join('')}</ol>`+contrastHtml(it)+
         `<div class="checkvraag"><b>Checkvraag:</b> ${esc(it.check.vraag)}</div><div class="opties">${it.check.opties.map((o,i)=>`<button class="optie" data-i="${i}" onclick="kiesOptie(${i})"><span class="l">${'ABC'[i]}</span><span>${esc(o.t)}</span></button>`).join('')}</div>`;
       break;
     case 'faded2':

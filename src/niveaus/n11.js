@@ -532,3 +532,7 @@ L({id:'B04.staaf',niv:4,dom:'B',sub:'grafieken',naam:'Staafgrafiek met grote get
   fouten:v=>v.t==='weekend'?[[v.w[6],'Dat is alleen zondag. Tel zaterdag erbij.'],[v.w[5]+v.w[6]+100,'Lees precies af. Tussen twee strepen zit 50.']]:[[v.w[2]%100?v.w[2]-50:v.w[2]+50,'Kijk goed: halverwege twee strepen is 50.'],[v.w[3]===v.w[2]?v.w[2]+100:v.w[3],'Dat is donderdag.']],
   anders:v=>`Elke streep is 100 meer. Ligt de staaf tussen twee strepen in? Dan is het 50 meer dan de onderste.`
 });
+
+// interleaving: leerdoelen die kinderen makkelijk door elkaar halen, worden na een reeks afgewisseld
+[['G01.plusmin','V01.dubbel'],['V01.groepjes','V01.eerlijk'],['G02.tafels','V02.keerverdelen'],['V02.keerzoveel','G02.tafels'],['M02.klok','M03.tijdsduur'],['G03.keer','G03.rest'],['M03.omtrek','M04.opp'],['V03.perstuk','V03.recept'],['G04.breukvan','V04.korting'],['M04.eenheden','M03.gewicht']]
+  .forEach(([a,b])=>{ if(LD[a]&&LD[b]){ LD[a].verwar=[...new Set((LD[a].verwar||[]).concat(b))]; LD[b].verwar=[...new Set((LD[b].verwar||[]).concat(a))] } });

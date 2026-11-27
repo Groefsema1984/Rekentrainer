@@ -265,3 +265,4 @@ body[data-fase=jong] .rmknop.dicht,body[data-fase=midden] .rmknop.dicht{display:
 body[data-fase=jong] .opties,body[data-fase=midden] .opties{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 body[data-fase=jong] .optie,body[data-fase=midden] .optie{min-height:76px;font-size:24px;font-weight:700;justify-content:center}
 @media (max-width:560px){body[data-fase=jong] .opties,body[data-fase=midden] .opties{grid-template-columns:1fr}}
+.contrast{margin:12px 0;padding:12px 14px;border-left:4px solid var(--fout);background:color-mix(in srgb,var(--fout) 6%,var(--kaart));border-radius:6px}.contrast p{margin:4px 0 0}
