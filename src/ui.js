@@ -282,7 +282,7 @@ function indienen(zeker){
 function toonFeedback(it,res){
   const fb=$('#qfb'), kn=$('#qknoppen');
   if(res.goed){
-    const extra = it.bron==='spiegel'?'Het kwartje is gevallen. 👍': it.vorm==='faded1'?'Precies. Nu ga je het zelf proberen.': res.zeker===false?'Goed! Je gokte, maar het klopte. Volgende keer durf je vast "Zeker".':'Goed!';
+    const extra = it.bron==='spiegel'?'Het kwartje is gevallen. 👍': it.vorm==='faded1'?'Precies. Nu ga je het zelf proberen.': res.zeker===false?'Goed! Je gokte, maar het klopte. Volgende keer durf je vast "Zeker".':it.niv<=4?['Goed zo! ⭐','Knap gedaan! 🌟','Top, helemaal goed! ⭐'][Math.floor(Math.random()*3)]:'Goed!';
     fb.innerHTML=`<div class="fb goed"><b>${extra}</b>${res.fb&&it.vorm==='sab'?`<p>${res.fb}</p>`:''}${herhaalInfo(it,res)}${uitwerkingHtml(it)?`<details><summary>Bekijk de uitwerking</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
     kn.innerHTML=`<button class="knop" onclick="naVraag()">Volgende →</button>`;
   } else {

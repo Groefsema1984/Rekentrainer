@@ -525,6 +525,19 @@ body.devmodus{box-shadow:inset 0 4px 0 #7a4fd6}
 .devniv{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.devniv button{min-width:42px;padding:8px 10px;border:2px solid var(--lijn);border-radius:8px;background:var(--kaart);font:700 15px var(--kop)}.devniv button.aan{background:var(--ink);color:#fff;border-color:var(--ink)}
 .devtab{width:100%;border-collapse:collapse;margin-top:8px}.devtab td{padding:8px 6px;border-top:1px solid var(--lijn);vertical-align:top}.devtab td:last-child{text-align:right}.devtab .knop{margin:2px 0}
 @media (max-width:560px){.devtab td{display:block;text-align:left!important}}
+/* groep 3–6: grote cijfertoetsen (typen mag ook) */
+.cijferpad{display:grid;grid-template-columns:repeat(3,minmax(64px,92px));gap:10px;margin:14px 0 4px}
+.cijferpad button{height:64px;border:2px solid var(--lijn);border-radius:14px;background:var(--kaart);font:800 28px/1 var(--kop);color:var(--ink);cursor:pointer;touch-action:manipulation}
+.cijferpad button:active{transform:scale(.96);background:color-mix(in srgb,var(--acc) 14%,var(--kaart))}
+.cijferpad .wis{font-size:24px;color:var(--zacht)}
+#autoLeesKnop.aan{border-color:var(--acc);color:var(--acc)}
+#padTerug{margin-top:10px}
+body[data-fase=jong] .optie,body[data-fase=midden] .optie{min-height:64px}
+/* groep 3–6: rustiger kop, grote tegels om op te tikken */
+body[data-fase=jong] .rmknop.dicht,body[data-fase=midden] .rmknop.dicht{display:none}
+body[data-fase=jong] .opties,body[data-fase=midden] .opties{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+body[data-fase=jong] .optie,body[data-fase=midden] .optie{min-height:76px;font-size:24px;font-weight:700;justify-content:center}
+@media (max-width:560px){body[data-fase=jong] .opties,body[data-fase=midden] .opties{grid-template-columns:1fr}}
 
 </style>
 </head>
@@ -538,7 +551,7 @@ body.devmodus{box-shadow:inset 0 4px 0 #7a4fd6}
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekenen op Niveau · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = 'b99d9e21e1';
+const BOUW = '31d447cd69';
 // Groepen en klassen. Vanaf klas 1 met schooltype: dat bepaalt start van de instaptoets en het doelniveau.
 const GROEPEN = ['groep 3','groep 4','groep 5','groep 6','groep 7','groep 8'];
 const SCHOOLTYPEN = [{id:'vmbo',jaren:4,start:4,doel:8},{id:'havo',jaren:5,start:5,doel:11},{id:'vwo',jaren:6,start:6,doel:12}];
@@ -881,6 +894,7 @@ function maakItem(ldId,opt={}){
     const blok=k=>typeof sjGeblokkeerd==='function'&&sjGeblokkeerd(ldId+'|'+k);
     if(trede===1&&ld.stappen&&!blok('faded1')) vorm='faded1';
     else if(trede<=2&&ld.stappen&&!blok('faded2')) vorm='faded2';
+    else if(typeof invoerStap==='function'&&invoerStap(ld)==='tik'&&vormen(ld).includes('mc')&&!blok('mc')) vorm='mc';   // jonge leerlingen: eerst tikken, later typen
     else { let vs=vormen(ld); if(typeof sjabloonFilter==='function') vs=sjabloonFilter(ld,vs); vorm=vs[Math.floor(RNG(seed+7).f()*vs.length)] }
   }
   const it={ key:ldId+'#'+seed, ld:ldId, niv:ld.niv, dom:ld.dom, sub:ld.sub, seed, v, vorm, trede, bron:opt.bron||'oefen', rm:ld.rm, r:RNG(seed+99) };
@@ -3661,7 +3675,7 @@ function indienen(zeker){
 function toonFeedback(it,res){
   const fb=$('#qfb'), kn=$('#qknoppen');
   if(res.goed){
-    const extra = it.bron==='spiegel'?'Het kwartje is gevallen. 👍': it.vorm==='faded1'?'Precies. Nu ga je het zelf proberen.': res.zeker===false?'Goed! Je gokte, maar het klopte. Volgende keer durf je vast "Zeker".':'Goed!';
+    const extra = it.bron==='spiegel'?'Het kwartje is gevallen. 👍': it.vorm==='faded1'?'Precies. Nu ga je het zelf proberen.': res.zeker===false?'Goed! Je gokte, maar het klopte. Volgende keer durf je vast "Zeker".':it.niv<=4?['Goed zo! ⭐','Knap gedaan! 🌟','Top, helemaal goed! ⭐'][Math.floor(Math.random()*3)]:'Goed!';
     fb.innerHTML=`<div class="fb goed"><b>${extra}</b>${res.fb&&it.vorm==='sab'?`<p>${res.fb}</p>`:''}${herhaalInfo(it,res)}${uitwerkingHtml(it)?`<details><summary>Bekijk de uitwerking</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
     kn.innerHTML=`<button class="knop" onclick="naVraag()">Volgende →</button>`;
   } else {
@@ -3730,6 +3744,50 @@ function start(){
   if(!S.niv) return go('instapIntro');
   go('home'); planSync(1500); setTimeout(()=>{ try{ haalSjablonen() }catch(e){} },2500);
 }
+
+// ===== Groep 3 t/m 6 (niveau 1–4): eerst tikken, dan grote cijfertoetsen, daarna gewoon typen =====
+// Opbouw per leerdoel:  'tik'     – de eerste opgaven zijn meerkeuze (grote tegels om op te tikken)
+//                       'toetsen' – open vraag met grote cijfertoetsen in beeld (typen mag ook)
+//                       'typen'   – open vraag; de cijfertoetsen zijn met één tik terug te halen
+// Daarnaast: automatisch voorlezen op niveau 1–2 (uit te zetten), vriendelijke feedback.
+function invoerStap(ld){
+  if(!ld||ld.niv>4||typeof S==='undefined'||!S||!S.ld) return 'typen';
+  const x=S.ld[ld.id]||{n:0,b:0};
+  if(x.n<3) return 'tik';
+  if(x.n<12&&(x.b||0)<75) return 'toetsen';
+  return 'typen';
+}
+const autoLezen = () => !!(S&&S.autoLees!==false);
+function zetAutoLezen(aan){ S.autoLees=aan; bewaar(false); const b=$('#autoLeesKnop'); if(b){ b.textContent=aan?'🔊 Voorlezen: aan':'🔈 Voorlezen: uit'; b.classList.toggle('aan',aan) } if(!aan) try{ speechSynthesis.cancel() }catch(e){} }
+
+function cijferpadHtml(){
+  const k=['1','2','3','4','5','6','7','8','9',',','0','⌫'];
+  return `<div class="cijferpad" role="group" aria-label="Cijfertoetsen">${k.map(x=>`<button type="button" onclick="cijferTik('${x}')" ${x==='⌫'?'aria-label="Wissen" class="wis"':''}>${x}</button>`).join('')}</div>`;
+}
+function cijferTik(x){
+  const i=$('#antw'); if(!i||Q.klaar) return;
+  if(x==='⌫') i.value=i.value.slice(0,-1); else if(i.value.length<9) i.value+=x;
+  i.dispatchEvent(new Event('input',{bubbles:true}));
+}
+function toonCijferpad(){ const r=$('#antw')&&$('#antw').closest('.reken'); if(r&&!$('.cijferpad')){ r.insertAdjacentHTML('afterend',cijferpadHtml()); const t=$('#padTerug'); if(t) t.remove() } }
+
+const _naRenderJong=naRender;
+naRender=function(){
+  _naRenderJong();
+  try{
+    const it=Q&&Q.it; if(!it||it.niv>4) return;
+    // knop om automatisch voorlezen aan/uit te zetten
+    const kop=$('.qkop'); if(kop&&!$('#autoLeesKnop')) kop.insertAdjacentHTML('beforeend',`<button class="rmknop ${autoLezen()?'aan':''}" id="autoLeesKnop" onclick="zetAutoLezen(!autoLezen())">${autoLezen()?'🔊 Voorlezen: aan':'🔈 Voorlezen: uit'}</button>`);
+    // cijfertoetsen bij open vragen
+    if(['open','faded2','sab'].includes(it.vorm)&&$('#antw')){
+      const stap=invoerStap(LD[it.ld]);
+      if(stap==='typen') $('#antw').closest('.reken').insertAdjacentHTML('afterend','<button type="button" class="knop zacht klein" id="padTerug" onclick="toonCijferpad()">Cijfertoetsen tonen</button>');
+      else toonCijferpad();
+    }
+    // niveau 1–2: de vraag wordt vanzelf voorgelezen
+    if(it.niv<=2&&autoLezen()&&'speechSynthesis' in window){ speechSynthesis.cancel(); setTimeout(()=>{ try{ if(!speechSynthesis.speaking) voorlezen() }catch(e){} },350) }
+  }catch(e){ console.warn(e) }
+};
 
 // ===== Automatische kwaliteitscontrole van opgaven (itemanalyse per opgavesjabloon) =====
 // Een opgavesjabloon = leerdoel + vraagvorm (bv. "V4.terugrekenen|mc"). Na elke opgave stuurt de app

@@ -32,6 +32,7 @@ function maakItem(ldId,opt={}){
     const blok=k=>typeof sjGeblokkeerd==='function'&&sjGeblokkeerd(ldId+'|'+k);
     if(trede===1&&ld.stappen&&!blok('faded1')) vorm='faded1';
     else if(trede<=2&&ld.stappen&&!blok('faded2')) vorm='faded2';
+    else if(typeof invoerStap==='function'&&invoerStap(ld)==='tik'&&vormen(ld).includes('mc')&&!blok('mc')) vorm='mc';   // jonge leerlingen: eerst tikken, later typen
     else { let vs=vormen(ld); if(typeof sjabloonFilter==='function') vs=sjabloonFilter(ld,vs); vorm=vs[Math.floor(RNG(seed+7).f()*vs.length)] }
   }
   const it={ key:ldId+'#'+seed, ld:ldId, niv:ld.niv, dom:ld.dom, sub:ld.sub, seed, v, vorm, trede, bron:opt.bron||'oefen', rm:ld.rm, r:RNG(seed+99) };
