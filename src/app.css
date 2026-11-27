@@ -221,3 +221,7 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .gwijzer{position:absolute;top:22px;height:68px;border-left:3px solid var(--knop);transform:translateX(-1.5px)}
 .gwijzer b{position:absolute;left:0;transform:translateX(-50%);background:var(--knop);color:#fff;font-size:13px;padding:1px 7px;border-radius:10px;white-space:nowrap}.gwijzer b:first-child{top:-22px}.gwijzer b:last-child{bottom:-24px}
 .glijn:focus-visible .gwijzer{box-shadow:0 0 0 3px var(--acc)}
+/* schema bij verhaalsommen */
+.schema{border:2px solid var(--knop);border-radius:12px;padding:12px 14px;margin:0 0 14px;background:color-mix(in srgb,var(--knop) 6%,transparent)}
+.schema .vtab input{width:84px}.schema td.zoek{font:900 20px var(--kop);color:var(--knop)}
+.schvak.goed{border-color:var(--goed);background:color-mix(in srgb,var(--goed) 12%,transparent)}.schvak.fout{border-color:var(--fout);background:color-mix(in srgb,var(--fout) 10%,transparent)}

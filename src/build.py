@@ -4,7 +4,7 @@ r=lambda f:open(os.path.join(d,f),encoding='utf-8').read()
 # volgorde: kern, figuren, vraagmodel, engine, dan de vragenbanken per niveau, dan de schermen
 basis=['core.js','svg.js','vraag.js','adaptief.js','grafiek.js']
 niveaus=sorted(glob.glob(os.path.join(d,'niveaus','n*.js')))
-app=['ui.js','herhalen.js','toets.js','fit.js','schatten.js','model.js','misconcepties.js','taal.js','rekenmachine.js','docent.js']
+app=['ui.js','herhalen.js','toets.js','fit.js','schatten.js','model.js','schema.js','misconcepties.js','taal.js','rekenmachine.js','docent.js']
 js='\n'.join([r(f) for f in basis]+[open(f,encoding='utf-8').read() for f in niveaus]+[r(f) for f in app])
 css=r('app-basis.css')+'\n'+r('app.css')
 out=r('shell.html').replace('/*CSS*/',css).replace('/*JS*/',js)

@@ -197,7 +197,7 @@ function quizHtml(){
      : `<button class="knop zekerknop" onclick="indienen(true)" title="Ik weet het zeker"><b>!</b> Zeker</button><button class="knop gokknop" onclick="indienen(false)" title="Ik gok"><b>?</b> Gok</button>`;
   return `<div class="wrap" id="qz"><div class="top"><button class="terug" onclick="stopSessie()">← Stoppen</button><h1>${esc(SES.titel)}</h1>${SES.soort==='instap'?`<span class="chip">Niveau ${it.niv}</span>`:''}${SES.soort==='toets'?`<span class="chip">Vraag ${SES.i+1} van ${SES.n}</span>`:''}</div>${dots}
    <div class="kaart" style="--k:${d.k}"><div class="qkop"><span class="eyebrow" style="color:${d.k}">${esc(d.naam)} · ${esc(subVan(it.dom,it.sub).naam)}</span><span class="zacht klein">${esc(label)}${fase?' · '+fase:''}</span><button class="rmknop" onclick="voorlezen()" title="Lees de opgave voor">🔊 Lees voor</button>${SES.soort==='oefen'?'<button class="rmknop" onclick="toonModel()" title="Strook of getallenlijn om het uit te denken">✏️ Model</button>':''}${rm}</div>
-   <div id="qbody">${schatHtml(it)}${itemHtml(it)}</div>
+   <div id="qbody">${schatHtml(it)}${schemaHtml(it)}${itemHtml(it)}</div>
    <div id="modelpaneel" class="modelpaneel" hidden></div>
    <div id="qfb"></div>
    <div class="voet" id="qknoppen">${knoppen}</div></div></div><div id="rekenmachine" hidden></div>`;
@@ -205,6 +205,7 @@ function quizHtml(){
 function naRender(){
   try{ woordenMarkeren($('#qbody')) }catch(e){}
   schatNaRender();
+  try{ schemaNaRender() }catch(e){ console.warn(e) }
   const a=$('#antw'); if(a&&!('ontouchstart' in window)) a.focus();
   $$('#qbody input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); indienen(true) } }));
   if(Q.it.vorm==='v3') $('#kCheck').textContent='Verder';

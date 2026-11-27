@@ -63,7 +63,7 @@ function voorlezen(){
   if(!('speechSynthesis' in window)){ melding('Voorlezen werkt niet in deze browser.'); return }
   const s=window.speechSynthesis; if(s.speaking){ s.cancel(); return }
   const el=document.querySelector('#qbody'); if(!el) return;
-  const kloon=el.cloneNode(true); kloon.querySelectorAll('svg,input,select,.schat').forEach(x=>x.remove());
+  const kloon=el.cloneNode(true); kloon.querySelectorAll('svg,input,select,.schat,.schema,#modelpaneel').forEach(x=>x.remove());
   let t=kloon.innerText.replace(/×/g,' keer ').replace(/ : /g,' gedeeld door ').replace(/−/g,' min ').replace(/€\s?/g,'euro ').replace(/%/g,' procent').replace(/²/g,' kwadraat').replace(/³/g,' kubiek').replace(/≈/g,' ongeveer ').replace(/\s+/g,' ');
   const u=new SpeechSynthesisUtterance(t); u.lang='nl-NL'; u.rate=.92;
   const stem=s.getVoices().find(v=>/^nl/i.test(v.lang)); if(stem) u.voice=stem;

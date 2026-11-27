@@ -14,6 +14,9 @@
 - **Toetsopgaven in rekentoetsstijl:** contextopgaven met een bron (webshop, dienstregeling, tarieven) en overbodige informatie. Elke rekentoets bevat er minstens 3.
 - **Lees voor** en **woordenlijst:** tik op een onderstreept rekenwoord voor uitleg.
 - **Modellen:** bij uitgewerkte voorbeelden een dubbele getallenlijn of strook.
+- **Model-knop (✏️):** bij elke oefenopgave kan de leerling zelf een strook verdelen en inkleuren, of een wijzer over een dubbele getallenlijn schuiven (bv. bedrag boven, 0–100% onder).
+- **Schema bij verhaalsommen:** bij verhoudingsopgaven zet de leerling eerst de getallen uit de tekst in een verhoudingstabel (het ? is wat je zoekt). Daarna gaat het antwoordvak open.
+- **Herhaalplanning (menu Planning):** beheerste onderdelen komen terug na 2 dagen, 1 week, 2 weken, 1 maand en 2 maanden. De leerling ziet per dag wat er terugkomt en kan met *Herhaal nu* direct de herhaalmomenten van vandaag doen.
 
 ## Hoe het adaptief werkt
 - Elk leerdoel begint met een gewone opgave. Gaat die fout, dan krijgt de leerling een uitgewerkt voorbeeld (trede 1) en daarna een voorbeeld met één open stap (trede 2).

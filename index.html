@@ -493,6 +493,10 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .gwijzer{position:absolute;top:22px;height:68px;border-left:3px solid var(--knop);transform:translateX(-1.5px)}
 .gwijzer b{position:absolute;left:0;transform:translateX(-50%);background:var(--knop);color:#fff;font-size:13px;padding:1px 7px;border-radius:10px;white-space:nowrap}.gwijzer b:first-child{top:-22px}.gwijzer b:last-child{bottom:-24px}
 .glijn:focus-visible .gwijzer{box-shadow:0 0 0 3px var(--acc)}
+/* schema bij verhaalsommen */
+.schema{border:2px solid var(--knop);border-radius:12px;padding:12px 14px;margin:0 0 14px;background:color-mix(in srgb,var(--knop) 6%,transparent)}
+.schema .vtab input{width:84px}.schema td.zoek{font:900 20px var(--kop);color:var(--knop)}
+.schvak.goed{border-color:var(--goed);background:color-mix(in srgb,var(--goed) 12%,transparent)}.schvak.fout{border-color:var(--fout);background:color-mix(in srgb,var(--fout) 10%,transparent)}
 
 </style>
 </head>
@@ -506,7 +510,7 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekentrainer Vellesan · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = '0f1a060eb7';
+const BOUW = '56beada278';
 const KLASSEN = ['1e klas','2e klas','3e klas','4e klas','5e klas','6e klas','Thuis'];
 const KEY = 'rekenvel-v1';
 const OUTBOX = 'rekenvel-outbox';
@@ -2960,7 +2964,7 @@ function quizHtml(){
      : `<button class="knop zekerknop" onclick="indienen(true)" title="Ik weet het zeker"><b>!</b> Zeker</button><button class="knop gokknop" onclick="indienen(false)" title="Ik gok"><b>?</b> Gok</button>`;
   return `<div class="wrap" id="qz"><div class="top"><button class="terug" onclick="stopSessie()">← Stoppen</button><h1>${esc(SES.titel)}</h1>${SES.soort==='instap'?`<span class="chip">Niveau ${it.niv}</span>`:''}${SES.soort==='toets'?`<span class="chip">Vraag ${SES.i+1} van ${SES.n}</span>`:''}</div>${dots}
    <div class="kaart" style="--k:${d.k}"><div class="qkop"><span class="eyebrow" style="color:${d.k}">${esc(d.naam)} · ${esc(subVan(it.dom,it.sub).naam)}</span><span class="zacht klein">${esc(label)}${fase?' · '+fase:''}</span><button class="rmknop" onclick="voorlezen()" title="Lees de opgave voor">🔊 Lees voor</button>${SES.soort==='oefen'?'<button class="rmknop" onclick="toonModel()" title="Strook of getallenlijn om het uit te denken">✏️ Model</button>':''}${rm}</div>
-   <div id="qbody">${schatHtml(it)}${itemHtml(it)}</div>
+   <div id="qbody">${schatHtml(it)}${schemaHtml(it)}${itemHtml(it)}</div>
    <div id="modelpaneel" class="modelpaneel" hidden></div>
    <div id="qfb"></div>
    <div class="voet" id="qknoppen">${knoppen}</div></div></div><div id="rekenmachine" hidden></div>`;
@@ -2968,6 +2972,7 @@ function quizHtml(){
 function naRender(){
   try{ woordenMarkeren($('#qbody')) }catch(e){}
   schatNaRender();
+  try{ schemaNaRender() }catch(e){ console.warn(e) }
   const a=$('#antw'); if(a&&!('ontouchstart' in window)) a.focus();
   $$('#qbody input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); indienen(true) } }));
   if(Q.it.vorm==='v3') $('#kCheck').textContent='Verder';
@@ -3421,6 +3426,49 @@ function lijnKoppel(){
   l.addEventListener('keydown',e=>{ if(e.key==='ArrowLeft'||e.key==='ArrowRight'){ e.preventDefault(); MOD.pos=Math.max(0,Math.min(1,MOD.pos+(e.key==='ArrowRight'?.01:-.01))); lijnUit() } });
 }
 
+// ===== Schema bij verhaalsommen: eerst de gegevens ordenen, dan rekenen =====
+// Bij een verhaalsom met een verhoudingsstructuur zet de leerling eerst de getallen uit de tekst
+// in een verhoudingstabel (het schema). Het vraagteken is wat je zoekt. Pas daarna gaat het antwoordvak open.
+function schemaActief(it){
+  const ld=LD[it.ld];
+  return !!(SES&&SES.soort==='oefen'&&it.vorm==='open'&&ld.tabel&&!ld.toon&&it.bron!=='spiegel'&&(it.seed%3===0||(ld.ctx&&!schatActief(it))));
+}
+function schemaHtml(it){ Q.schema=null; return schemaActief(it)?'<div class="schema" id="schema" hidden></div>':'' }
+const tekstGetallen = t => (t.match(/\d+(?:\.\d{3})*(?:,\d+)?/g)||[]).map(s=>parseGetal(s)).filter(x=>x!==null&&isFinite(x));
+function schemaNaRender(){
+  const box=$('#schema'); if(!box||!Q) return;
+  const it=Q.it, ld=LD[it.ld]; let t; try{ t=ld.tabel(it.v) }catch(e){ t=null }
+  const kloon=$('#qbody').cloneNode(true); kloon.querySelectorAll('#schema,#schat,input,select').forEach(x=>x.remove());
+  const getallen=tekstGetallen(kloon.textContent||'');
+  const bekend=x=>typeof x==='number'&&getallen.some(g=>Math.abs(g-x)<1e-9);
+  if(!t||!t.rijen||!t.kop){ box.remove(); return }
+  let n=0;
+  const cellen=t.rijen.map((c,ci)=>c.map((x,ri)=>{ if(t.leeg.some(l=>l[0]===ci&&l[1]===ri)) return {s:'?'}; if(bekend(x)||(x===100&&/procent|%/i.test(t.kop[ri]))){ n++; return {s:'in',x} } return {s:'tus'} }));
+  if(n<2){ box.remove(); return }
+  Q.schema={t,cellen,klaar:false};
+  const cel=(c,ci,ri)=>c.s==='?'?'<td class="zoek">?</td>':c.s==='tus'?'<td class="leeg">…</td>':`<td><input class="schvak" data-r="${ri}" data-c="${ci}" inputmode="decimal" autocomplete="off" aria-label="${esc(t.kop[ri])}"></td>`;
+  box.innerHTML=`<b>Denkstap · maak eerst een schema</b><p class="klein">Welke getallen uit de opgave horen bij elkaar? Zet ze in de ${ld.dom==='B'?'tabel':'verhoudingstabel'}.${t.kop.some(k=>/procent|%/i.test(k))?' Denk ook aan het geheel: dat is 100%.':''} Het <b>?</b> is wat je zoekt.</p>
+    <div class="tabelwrap"><table class="vtab"><tbody>${t.kop.map((k,ri)=>`<tr><th>${esc(k)}</th>${cellen.map((c,ci)=>cel(c[ri],ci,ri)).join('')}</tr>`).join('')}</tbody></table></div>
+    <div class="voet" style="justify-content:flex-start;margin-top:8px"><button class="knop klein" onclick="schemaCheck()">Controleer schema</button></div><p class="klein" id="schemafb"></p>`;
+  box.hidden=false;
+  $$('.schvak',box).forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); e.stopImmediatePropagation(); schemaCheck() } }));
+  const a=$('#antw'); if(a){ a.disabled=true; let c=a; while(c.parentElement&&c.parentElement.id!=='qbody') c=c.parentElement; if(c.parentElement&&c!==box) c.parentElement.insertBefore(box,c) }
+}
+function schemaCheck(){
+  const sc=Q&&Q.schema; if(!sc||sc.klaar) return;
+  const vakken=$$('#schema .schvak'); if(vakken.some(x=>!x.value.trim())){ melding('Vul eerst alle lege vakjes van het schema in.'); return }
+  // per rij vergelijken; kolommen in een andere volgorde mag ook
+  let ok=true;
+  sc.t.kop.forEach((k,ri)=>{ const rij=vakken.filter(x=>+x.dataset.r===ri); const moet=rij.map(x=>sc.t.rijen[+x.dataset.c][ri]).sort((a,b)=>a-b);
+    const is=rij.map(x=>parseGetal(x.value)).sort((a,b)=>a-b); const rijOk=moet.every((m,i)=>is[i]!==null&&Math.abs(is[i]-m)<1e-6);
+    rij.forEach(x=>{ x.disabled=true; x.classList.add(rijOk?'goed':'fout'); if(!rijOk) x.value=nl(sc.t.rijen[+x.dataset.c][ri],6) }); if(!rijOk) ok=false });
+  sc.klaar=true; sc.ok=ok;
+  $('#schemafb').innerHTML=ok?'Goed geordend. Kijk nu: hoe kom je van een bekende kolom naar de kolom met het <b>?</b> '+(LD[Q.it.ld].dom==='B'?'Welk patroon of welke regel zie je?':'Wat je boven doet (× of :), doe je ook onder.')
+    :'Niet helemaal: de juiste getallen staan nu in het schema. Lees de zin bij elk getal nog eens: waar hoort het bij? Reken daarna verder vanuit het schema.';
+  $('#schema button').disabled=true;
+  const a=$('#antw'); if(a){ a.disabled=false; a.focus() }
+}
+
 // ===== Misconcepties: elke fout krijgt een denkfout-categorie (over leerdoelen heen) =====
 // De docent ziet per klas welke denkfouten het vaakst voorkomen, met een tip voor een korte instructie.
 const MISCONCEPTIES = [
@@ -3523,7 +3571,7 @@ function voorlezen(){
   if(!('speechSynthesis' in window)){ melding('Voorlezen werkt niet in deze browser.'); return }
   const s=window.speechSynthesis; if(s.speaking){ s.cancel(); return }
   const el=document.querySelector('#qbody'); if(!el) return;
-  const kloon=el.cloneNode(true); kloon.querySelectorAll('svg,input,select,.schat').forEach(x=>x.remove());
+  const kloon=el.cloneNode(true); kloon.querySelectorAll('svg,input,select,.schat,.schema,#modelpaneel').forEach(x=>x.remove());
   let t=kloon.innerText.replace(/×/g,' keer ').replace(/ : /g,' gedeeld door ').replace(/−/g,' min ').replace(/€\s?/g,'euro ').replace(/%/g,' procent').replace(/²/g,' kwadraat').replace(/³/g,' kubiek').replace(/≈/g,' ongeveer ').replace(/\s+/g,' ');
   const u=new SpeechSynthesisUtterance(t); u.lang='nl-NL'; u.rate=.92;
   const stem=s.getVoices().find(v=>/^nl/i.test(v.lang)); if(stem) u.voice=stem;
