@@ -196,11 +196,12 @@ function quizHtml(){
      : `<button class="knop zekerknop" onclick="indienen(true)" title="Ik weet het zeker"><b>!</b> Zeker</button><button class="knop gokknop" onclick="indienen(false)" title="Ik gok"><b>?</b> Gok</button>`;
   return `<div class="wrap" id="qz"><div class="top"><button class="terug" onclick="stopSessie()">← Stoppen</button><h1>${esc(SES.titel)}</h1>${SES.soort==='instap'?`<span class="chip">Niveau ${it.niv}</span>`:''}${SES.soort==='toets'?`<span class="chip">Vraag ${SES.i+1} van ${SES.n}</span>`:''}</div>${dots}
    <div class="kaart" style="--k:${d.k}"><div class="qkop"><span class="eyebrow" style="color:${d.k}">${esc(d.naam)} · ${esc(subVan(it.dom,it.sub).naam)}</span><span class="zacht klein">${esc(label)}${fase?' · '+fase:''}</span>${rm}</div>
-   <div id="qbody">${itemHtml(it)}</div>
+   <div id="qbody">${schatHtml(it)}${itemHtml(it)}</div>
    <div id="qfb"></div>
    <div class="voet" id="qknoppen">${knoppen}</div></div></div><div id="rekenmachine" hidden></div>`;
 }
 function naRender(){
+  schatNaRender();
   const a=$('#antw'); if(a&&!('ontouchstart' in window)) a.focus();
   $$('#qbody input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); indienen(true) } }));
   if(Q.it.vorm==='v3') $('#kCheck').textContent='Verder';
@@ -234,7 +235,7 @@ function toonFeedback(it,res){
     kn.innerHTML=`<button class="knop" onclick="naVraag()">Volgende →</button>`;
   } else {
     const zf=res.zeker===true?`<p class="zf">Je was zeker, maar het was fout. Juist deze vraag komt extra vaak terug.</p>`:'';
-    fb.innerHTML=`<div class="fb fout"><b>Nog niet goed.</b>${res.fb?`<p>${res.fb}</p>`:''}${it.vorm!=='sab'&&it.vorm!=='faded1'?`<p>Het goede antwoord is <b>${esc(res.juist)}</b>.</p>`:''}${zf}</div>
+    fb.innerHTML=`<div class="fb fout"><b>Nog niet goed.</b>${res.fb?`<p>${res.fb}</p>`:''}${it.vorm!=='sab'&&it.vorm!=='faded1'?`<p>Het goede antwoord is <b>${esc(res.juist)}</b>.</p>`:''}${zf}${ordegrootteTip(it,res)}</div>
       <div class="anders"><span class="eyebrow" style="color:var(--knop)">Andere uitleg</span>${andersHtml(it)}${uitwerkingHtml(it)?`<details ${it.vorm==='faded1'?'':'open'}><summary>Uitwerking stap voor stap</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
     const spiegel = it.bron!=='spiegel' && it.vorm!=='faded1';
     kn.innerHTML = spiegel?`<button class="knop" onclick="naarSpiegel()">Probeer een spiegelvraag →</button>`:`<button class="knop" onclick="naVraag()">Volgende →</button>`;

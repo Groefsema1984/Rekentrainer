@@ -451,6 +451,12 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .fitin:focus{outline:none;border-color:#F08A09}
 .fitfb{min-height:30px;margin-top:14px;font-weight:700;font-size:18px}
 .fitfb.g{color:#1f9d6b}.fitfb.f{color:#c0392b}
+/* schatten */
+.schat{background:#fff7ec;border:1px solid #f6d4a6;border-radius:12px;padding:12px 14px;margin:0 0 14px}
+.schatopties{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+.optie.mini{padding:8px 16px;min-height:0;width:auto;font-weight:700}
+.optie.mini.goed{border-color:#1f9d6b;background:#e8f6ef}.optie.mini.fout{border-color:#c0392b;background:#fbeceb}
+.schattip{background:#fff7ec;border-radius:8px;padding:8px 10px;margin-top:10px}
 
 </style>
 </head>
@@ -464,7 +470,7 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekentrainer Vellesan · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = '4376d6f2d0';
+const BOUW = 'e05d5c27e2';
 const KLASSEN = ['1e klas','2e klas','3e klas','4e klas','5e klas','6e klas','Thuis'];
 const KEY = 'rekenvel-v1';
 const OUTBOX = 'rekenvel-outbox';
@@ -2890,11 +2896,12 @@ function quizHtml(){
      : `<button class="knop zekerknop" onclick="indienen(true)" title="Ik weet het zeker"><b>!</b> Zeker</button><button class="knop gokknop" onclick="indienen(false)" title="Ik gok"><b>?</b> Gok</button>`;
   return `<div class="wrap" id="qz"><div class="top"><button class="terug" onclick="stopSessie()">← Stoppen</button><h1>${esc(SES.titel)}</h1>${SES.soort==='instap'?`<span class="chip">Niveau ${it.niv}</span>`:''}${SES.soort==='toets'?`<span class="chip">Vraag ${SES.i+1} van ${SES.n}</span>`:''}</div>${dots}
    <div class="kaart" style="--k:${d.k}"><div class="qkop"><span class="eyebrow" style="color:${d.k}">${esc(d.naam)} · ${esc(subVan(it.dom,it.sub).naam)}</span><span class="zacht klein">${esc(label)}${fase?' · '+fase:''}</span>${rm}</div>
-   <div id="qbody">${itemHtml(it)}</div>
+   <div id="qbody">${schatHtml(it)}${itemHtml(it)}</div>
    <div id="qfb"></div>
    <div class="voet" id="qknoppen">${knoppen}</div></div></div><div id="rekenmachine" hidden></div>`;
 }
 function naRender(){
+  schatNaRender();
   const a=$('#antw'); if(a&&!('ontouchstart' in window)) a.focus();
   $$('#qbody input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); indienen(true) } }));
   if(Q.it.vorm==='v3') $('#kCheck').textContent='Verder';
@@ -2928,7 +2935,7 @@ function toonFeedback(it,res){
     kn.innerHTML=`<button class="knop" onclick="naVraag()">Volgende →</button>`;
   } else {
     const zf=res.zeker===true?`<p class="zf">Je was zeker, maar het was fout. Juist deze vraag komt extra vaak terug.</p>`:'';
-    fb.innerHTML=`<div class="fb fout"><b>Nog niet goed.</b>${res.fb?`<p>${res.fb}</p>`:''}${it.vorm!=='sab'&&it.vorm!=='faded1'?`<p>Het goede antwoord is <b>${esc(res.juist)}</b>.</p>`:''}${zf}</div>
+    fb.innerHTML=`<div class="fb fout"><b>Nog niet goed.</b>${res.fb?`<p>${res.fb}</p>`:''}${it.vorm!=='sab'&&it.vorm!=='faded1'?`<p>Het goede antwoord is <b>${esc(res.juist)}</b>.</p>`:''}${zf}${ordegrootteTip(it,res)}</div>
       <div class="anders"><span class="eyebrow" style="color:var(--knop)">Andere uitleg</span>${andersHtml(it)}${uitwerkingHtml(it)?`<details ${it.vorm==='faded1'?'':'open'}><summary>Uitwerking stap voor stap</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
     const spiegel = it.bron!=='spiegel' && it.vorm!=='faded1';
     kn.innerHTML = spiegel?`<button class="knop" onclick="naarSpiegel()">Probeer een spiegelvraag →</button>`:`<button class="knop" onclick="naVraag()">Volgende →</button>`;
@@ -3189,6 +3196,34 @@ SCHERMEN.fit=()=>`<div class="wrap smal" id="fitScherm"><div class="top"><button
   <div class="voet" style="justify-content:center"><button class="knop groot" onclick="fitAntw()">OK</button></div>
   <div id="fitFb" class="fitfb"></div></div>
   <p class="klein zacht mid">Uit je hoofd, zonder kladpapier. Typ je antwoord en druk op Enter of OK. Komma's mag je typen als komma.</p></div>`;
+
+// ===== Eerst schatten, dan rekenen (bij rekenmachine-opgaven tijdens het oefenen) =====
+// Bij een open opgave waarbij de rekenmachine mag, kiest de leerling eerst de juiste ordegrootte.
+// Pas daarna gaan het antwoordvak en de rekenmachine open. Zo leert hij zijn uitkomst te controleren.
+const eenCijfer = x => { if(!x) return 0; const o=10**Math.floor(Math.log10(Math.abs(x))); return Math.round(x/o)*o };
+function schatActief(it){ const ld=LD[it.ld]; return !!(SES&&SES.soort==='oefen'&&it.vorm==='open'&&ld.rm&&!ld.toon&&Math.abs(it.antw)>=8&&it.bron!=='spiegel'&&(it.seed%3!==0)) }
+function schatHtml(it){
+  Q.schat=null;
+  if(!schatActief(it)) return '';
+  const g=eenCijfer(it.antw); const o=shuffle([[g,1],[g*10,0],[g/10,0]]);
+  Q.schat={g,klaar:false};
+  return `<div class="schat" id="schat"><b>Schat eerst:</b> ongeveer hoe groot wordt het antwoord?<div class="schatopties">${o.map(x=>`<button class="optie mini" onclick="kiesSchat(this,${x[1]})">± ${nl(x[0],6)}</button>`).join('')}</div><p class="klein zacht" id="schatfb">Rond de getallen af en reken uit je hoofd. Daarna mag je precies rekenen.</p></div>`;
+}
+function kiesSchat(el,ok){
+  if(!Q.schat||Q.schat.klaar) return; Q.schat.klaar=true; Q.schat.ok=!!ok;
+  $$('.schatopties .optie').forEach(b=>{ b.disabled=true }); el.classList.add(ok?'goed':'fout');
+  $('#schatfb').innerHTML=ok?'Goede schatting. Reken het nu precies uit en kijk of je uitkomst daar dichtbij ligt.':`Het antwoord ligt rond de <b>${nl(Q.schat.g,6)}</b>. Gebruik die schatting straks om je uitkomst te controleren.`;
+  const a=$('#antw'); if(a){ a.disabled=false; a.focus() }
+}
+function schatNaRender(){ if(Q&&Q.schat&&!Q.schat.klaar&&$('#schat')){ const a=$('#antw'); if(a) a.disabled=true } }
+// controle achteraf: zit het antwoord er een factor 5 of meer naast?
+function ordegrootteTip(it,res){
+  if(it.vorm!=='open'&&it.vorm!=='faded2') return '';
+  const juist=it.vorm==='open'?it.antw:it.stappen[it.leeg][1]; const x=parseGetal(String(res.gegeven).split(' ')[0]);
+  if(!isFinite(x)||!x||!juist) return ''; const f=x/juist; if(f<5&&f>0.2) return '';
+  const k=f>=5?Math.round(f):Math.round(1/f);
+  return `<p class="schattip">🔎 <b>Controleer met een schatting:</b> jouw antwoord is ongeveer ${nl(k>=100?eenCijfer(k):k)} keer zo ${f>=5?'groot':'klein'} als het goede antwoord. Kan dat kloppen? Rond de getallen in de vraag af en reken het globaal na.</p>`;
+}
 
 // ===== Rekenmachine (alleen bij opgaven waar die in de rekentoets ook mag) =====
 let RM={uit:'',hist:''};

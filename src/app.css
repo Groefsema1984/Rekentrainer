@@ -179,3 +179,9 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .fitin:focus{outline:none;border-color:#F08A09}
 .fitfb{min-height:30px;margin-top:14px;font-weight:700;font-size:18px}
 .fitfb.g{color:#1f9d6b}.fitfb.f{color:#c0392b}
+/* schatten */
+.schat{background:#fff7ec;border:1px solid #f6d4a6;border-radius:12px;padding:12px 14px;margin:0 0 14px}
+.schatopties{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+.optie.mini{padding:8px 16px;min-height:0;width:auto;font-weight:700}
+.optie.mini.goed{border-color:#1f9d6b;background:#e8f6ef}.optie.mini.fout{border-color:#c0392b;background:#fbeceb}
+.schattip{background:#fff7ec;border-radius:8px;padding:8px 10px;margin-top:10px}
