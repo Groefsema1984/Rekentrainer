@@ -1,6 +1,6 @@
-// RekenKracht © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
+// Rekenen op Niveau © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 /**
- * RekenKracht (De RekenLijn) – server (Google Apps Script)
+ * Rekenen op Niveau – server (Google Apps Script)
  * Zelfde opzet als de economie-apps: leerling maakt een account met naam + klas,
  * krijgt een leerling-ID + herstelcode (6 cijfers), de docent kijkt mee met een docentcode.
  *
@@ -40,7 +40,7 @@ const CFG = {
 
 const DOMEINEN = { G: 'Getallen', V: 'Verhoudingen', M: 'Meten en meetkunde', B: 'Verbanden' };
 const DOMEIN_IDS = ['G', 'V', 'M', 'B'];
-const NIVEAUS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];   // De RekenLijn: Niveau 1 (groep 3) t/m 12 (vwo-eindniveau)
+const NIVEAUS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];   // Niveau 1 (groep 3) t/m 12 (vwo-eindniveau)
 const VER = 2;
 // startniveau van de instaptoets per groep/klas (zelfde regel als in de app)
 function startNiveau_(klas) {
@@ -139,7 +139,7 @@ function doPost(e) {
       case 'herstel2': return uit_(herstel_(d));
       case 'sync2': return uit_(sync_(d));
       case 'nieuw': case 'herstel': case 'sync':   // oude app-versie (8 niveaus): niet meer mengen met de nieuwe niveaunummers
-        return uit_({ ok: false, fout: 'Er is een nieuwe versie van RekenKracht. Herlaad de pagina.' });
+        return uit_({ ok: false, fout: 'Er is een nieuwe versie van Rekenen op Niveau. Herlaad de pagina.' });
       case 'overzicht': return uit_(overzicht_(d));
       case 'leerling': return uit_(leerling_(d));
       case 'klasinstelling': return uit_(klasinstelling_(d));

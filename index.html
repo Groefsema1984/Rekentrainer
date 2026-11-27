@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- RekenKracht © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE. -->
+<!-- Rekenen op Niveau © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE. -->
 <html lang="nl">
 <head>
 <meta name="author" content="S. Groefsema">
@@ -8,15 +8,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="RekenKracht">
+<meta name="apple-mobile-web-app-title" content="Rekenen op Niveau">
 <meta name="theme-color" content="#f08a09">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500;600;700;800&display=swap" rel="stylesheet">
-<title>RekenKracht · De RekenLijn</title>
+<title>Rekenen op Niveau</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='4' y='4' width='92' height='92' rx='24' fill='%23f08a09'/><path d='M24 72 L42 54 L56 62 L76 30' fill='none' stroke='white' stroke-width='10' stroke-linejoin='round' stroke-linecap='round'/><circle cx='76' cy='30' r='8' fill='white'/></svg>">
 <style>
-/* ===== RekenKracht huisstijl: oranje #F08A09, antraciet #171C24, Raleway =====
+/* ===== Rekenen op Niveau huisstijl: oranje #F08A09, antraciet #171C24, Raleway =====
    Layout geïnspireerd op moderne nieuws-, shop- en sportdashboards: witte topnavigatie,
    grote fotokoppen met donkere overlay, fotokaarten en een dashboard in kolommen. */
 :root{--bg:#f4f4f2;--kaart:#ffffff;--ink:#171c24;--zacht:#626873;--lijn:#e5e3df;--acc:#f08a09;--knop:#e47f00;--donker:#171c24;--goed:#1f9e6e;--fout:#d6453d;--goud:#d9a521;--r:10px;
@@ -271,7 +271,7 @@ th{font:800 12px var(--kop);text-transform:uppercase;letter-spacing:.05em;color:
 @media print{.topnav,.terug,.voet,.voettekst{display:none}}
 
 
-/* ===== RekenKracht: dashboard-indeling in de oranje/antraciet-huisstijl ===== */
+/* ===== Rekenen op Niveau: dashboard-indeling in de oranje/antraciet-huisstijl ===== */
 :root{--ring:#ebe9e4;--ring-leeg:#f1efea}
 body.th-nacht{--ring:#2b323d;--ring-leeg:#232a33}
 .klein{font-size:14px}
@@ -499,7 +499,7 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .schema .vtab input{width:84px}.schema td.zoek{font:900 20px var(--kop);color:var(--knop)}
 .schvak.goed{border-color:var(--goed);background:color-mix(in srgb,var(--goed) 12%,transparent)}.schvak.fout{border-color:var(--fout);background:color-mix(in srgb,var(--fout) 10%,transparent)}
 .pols{animation:pols .5s ease 2}@keyframes pols{50%{transform:scale(1.08);box-shadow:0 0 0 4px var(--acc)}}
-/* ===== vormgeving per fase van De RekenLijn: jonger = groter, rustiger en visueler ===== */
+/* ===== vormgeving per fase van de leerlijn: jonger = groter, rustiger en visueler ===== */
 body[data-fase=jong] .vraag,body[data-fase=midden] .vraag{line-height:1.55}
 body[data-fase=jong] .vraag{font-size:27px;font-weight:600}
 body[data-fase=midden] .vraag{font-size:23px}
@@ -524,15 +524,15 @@ body[data-fase=jong] .figuur svg{min-height:120px}
 </head>
 <body>
 <header class="topnav"><div class="rij1">
- <button class="logo" onclick="if(S&&S.niv&&scherm!=='quiz')go('home')" aria-label="Naar het dashboard"><svg viewBox="0 0 42 42" aria-hidden="true"><rect x="1" y="1" width="40" height="40" rx="11" fill="#f08a09"/><path d="M10 30 L18 22 L24 26 L33 13" fill="none" stroke="#fff" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="33" cy="13" r="3.4" fill="#fff"/></svg><span class="lw"><b>Reken<i>Kracht</i></b><small>De RekenLijn</small></span><span class="vak">Eén leerlijn zonder klasgrenzen</span></button>
+ <button class="logo" onclick="if(S&&S.niv&&scherm!=='quiz')go('home')" aria-label="Naar het dashboard"><svg viewBox="0 0 42 42" aria-hidden="true"><rect x="1" y="1" width="40" height="40" rx="11" fill="#f08a09"/><path d="M10 30 L18 22 L24 26 L33 13" fill="none" stroke="#fff" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="33" cy="13" r="3.4" fill="#fff"/></svg><span class="lw"><b>Rekenen op <i>Niveau</i></b><small>Groep 3 tot vwo</small></span><span class="vak">Eén leerlijn zonder klasgrenzen</span></button>
  <div class="rechts" id="profiel"></div>
 </div><div class="rij2"><nav class="menu" id="menu"></nav></div></header>
 <div id="app"></div>
 <script>
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
-// ===== RekenKracht · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
+// ===== Rekenen op Niveau · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = 'd13f4ba47d';
+const BOUW = '6346b7bc9f';
 // Groepen en klassen. Vanaf klas 1 met schooltype: dat bepaalt start van de instaptoets en het doelniveau.
 const GROEPEN = ['groep 3','groep 4','groep 5','groep 6','groep 7','groep 8'];
 const SCHOOLTYPEN = [{id:'vmbo',jaren:4,start:4,doel:8},{id:'havo',jaren:5,start:5,doel:11},{id:'vwo',jaren:6,start:6,doel:12}];
@@ -1509,7 +1509,7 @@ L({id:'B6.misleidend',niv:10,dom:'B',sub:'grafieken',naam:'Misleidende grafieken
   anders:v=>`Kijk naar de as: hij begint bij ${v.y0}. Teken in gedachten de staven vanaf 0: dan zijn ze bijna even lang.`
 });
 
-// ===== Niveau 1 t/m 4 · De RekenLijn voor de jongste rekenaars (ongeveer groep 3 t/m 6) =====
+// ===== Niveau 1 t/m 4 · voor de jongste rekenaars (ongeveer groep 3 t/m 6) =====
 // Korte zinnen, kleine getallen, veel beeld: rekenrek, kralen, klok, munten, blokjes, getallenlijn en stroken.
 // Contexten uit de belevingswereld van 6 tot 10 jaar: speeltuin, dieren, snoep, knikkers, verjaardag, zwembad.
 
@@ -3374,7 +3374,7 @@ L({id:'X7.tweelijnen',niv:11,dom:'B',sub:'grafieken',naam:'Toetsopgave: twee gra
 const FOTO={start:'1509062522246-3755977927d7',G:'1635070041078-e363dbe005cb',V:'1554224155-6726b3ff858f',M:'1503387762-592deb58ef4e',B:'1551288049-bebda4e38f71',
   toets:'1606326608606-aa0b62935f2b',instap:'1522202176988-66273c2fd55f',fouten:'1456513080510-7bf3a84b82f8',niveaus:'1519389950473-47ba0277781c'};
 const foto=(k,w=1400)=>FOTO[k]?`background-image:url('https://images.unsplash.com/photo-${FOTO[k]}?w=${w}&q=70&auto=format&fit=crop')`:'';
-const VOET=()=>`<footer class="voettekst"><div class="in"><b>Reken<span class="o">Kracht</span></b><span>De RekenLijn · Niveau 1 t/m 12, van groep 3 tot vwo-eindniveau</span><span style="margin-left:auto">© 2026 S. Groefsema · Alle rechten voorbehouden · Foto's: Unsplash</span></div></footer>`;
+const VOET=()=>`<footer class="voettekst"><div class="in"><b>Rekenen op <span class="o">Niveau</span></b><span>Eén adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau.</span><span style="margin-left:auto">© 2026 S. Groefsema · Alle rechten voorbehouden · Foto's: Unsplash</span></div></footer>`;
 
 let scherm='welkom', param={};
 function go(naam,p={}){
@@ -3426,9 +3426,9 @@ function uitloggen(){ if(!confirm('Weet je zeker dat je wilt uitloggen? Schrijf 
 const SCHERMEN = {
 welkom(){
   return `<section class="foto held" style="${foto('start',1800)}"><div class="in"><div>
-    <span class="eyebrow">RekenKracht · De RekenLijn</span>
+    <span class="eyebrow">Rekenen op Niveau</span>
     <h1>Word sterker in rekenen, stap voor stap</h1>
-    <p>RekenKracht werkt volgens De RekenLijn: één adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau. Je start met een korte instaptoets op het niveau van je groep of klas. Daarna oefen je precies op jouw niveau, met uitleg bij elke fout.</p>
+    <p>Eén adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau. Je start met een korte instaptoets op het niveau van je groep of klas. Daarna oefen je precies op jouw niveau, met uitleg bij elke fout.</p>
     <button class="knop groot" onclick="document.getElementById('aanmelden').scrollIntoView({behavior:'smooth'});setTimeout(()=>$('#wNaam').focus(),400)">Start</button>
     <ul class="usp"><li>Op jouw niveau</li><li>Uitleg bij elke fout</li><li>Klaar voor de rekentoets</li></ul></div></div></section>
    <div class="wrap" id="aanmelden" style="max-width:1000px"><div class="welkom-grid">
@@ -3533,8 +3533,8 @@ fouten(){
    </div></div>${VOET()}`;
 },
 klasKiezen(){
-  return `<div class="wrap" style="max-width:560px"><div class="kaart"><span class="eyebrow" style="color:var(--knop)">Nieuw in RekenKracht</span><h2 style="margin-top:6px">In welke groep of klas zit je?</h2>
-   <p>RekenKracht loopt nu van groep 3 tot het eindniveau van het vwo. Kies je groep of klas. Je voortgang blijft gewoon bewaard.</p>${klasSelect('kKlas',S.klas)}
+  return `<div class="wrap" style="max-width:560px"><div class="kaart"><span class="eyebrow" style="color:var(--knop)">Nieuw in Rekenen op Niveau</span><h2 style="margin-top:6px">In welke groep of klas zit je?</h2>
+   <p>Rekenen op Niveau loopt nu van groep 3 tot het eindniveau van het vwo. Kies je groep of klas. Je voortgang blijft gewoon bewaard.</p>${klasSelect('kKlas',S.klas)}
    <div class="voet"><button class="knop vol" onclick="kiesKlas()">Opslaan</button></div></div></div>`;
 },
 account(){

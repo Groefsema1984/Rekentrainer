@@ -1,4 +1,4 @@
-// ===== Niveau 1 t/m 4 · De RekenLijn voor de jongste rekenaars (ongeveer groep 3 t/m 6) =====
+// ===== Niveau 1 t/m 4 · voor de jongste rekenaars (ongeveer groep 3 t/m 6) =====
 // Korte zinnen, kleine getallen, veel beeld: rekenrek, kralen, klok, munten, blokjes, getallenlijn en stroken.
 // Contexten uit de belevingswereld van 6 tot 10 jaar: speeltuin, dieren, snoep, knikkers, verjaardag, zwembad.
 

@@ -1,6 +1,6 @@
-# RekenKracht · De RekenLijn
+# Rekenen op Niveau
 
-RekenKracht werkt volgens De RekenLijn: één adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau.
+Eén adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau.
 Twaalf niveaus, voor de iPad:
 
 | Niveau | Doelgroep | Referentie |

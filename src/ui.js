@@ -3,7 +3,7 @@
 const FOTO={start:'1509062522246-3755977927d7',G:'1635070041078-e363dbe005cb',V:'1554224155-6726b3ff858f',M:'1503387762-592deb58ef4e',B:'1551288049-bebda4e38f71',
   toets:'1606326608606-aa0b62935f2b',instap:'1522202176988-66273c2fd55f',fouten:'1456513080510-7bf3a84b82f8',niveaus:'1519389950473-47ba0277781c'};
 const foto=(k,w=1400)=>FOTO[k]?`background-image:url('https://images.unsplash.com/photo-${FOTO[k]}?w=${w}&q=70&auto=format&fit=crop')`:'';
-const VOET=()=>`<footer class="voettekst"><div class="in"><b>Reken<span class="o">Kracht</span></b><span>De RekenLijn · Niveau 1 t/m 12, van groep 3 tot vwo-eindniveau</span><span style="margin-left:auto">© 2026 S. Groefsema · Alle rechten voorbehouden · Foto's: Unsplash</span></div></footer>`;
+const VOET=()=>`<footer class="voettekst"><div class="in"><b>Rekenen op <span class="o">Niveau</span></b><span>Eén adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau.</span><span style="margin-left:auto">© 2026 S. Groefsema · Alle rechten voorbehouden · Foto's: Unsplash</span></div></footer>`;
 
 let scherm='welkom', param={};
 function go(naam,p={}){
@@ -55,9 +55,9 @@ function uitloggen(){ if(!confirm('Weet je zeker dat je wilt uitloggen? Schrijf 
 const SCHERMEN = {
 welkom(){
   return `<section class="foto held" style="${foto('start',1800)}"><div class="in"><div>
-    <span class="eyebrow">RekenKracht · De RekenLijn</span>
+    <span class="eyebrow">Rekenen op Niveau</span>
     <h1>Word sterker in rekenen, stap voor stap</h1>
-    <p>RekenKracht werkt volgens De RekenLijn: één adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau. Je start met een korte instaptoets op het niveau van je groep of klas. Daarna oefen je precies op jouw niveau, met uitleg bij elke fout.</p>
+    <p>Eén adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau. Je start met een korte instaptoets op het niveau van je groep of klas. Daarna oefen je precies op jouw niveau, met uitleg bij elke fout.</p>
     <button class="knop groot" onclick="document.getElementById('aanmelden').scrollIntoView({behavior:'smooth'});setTimeout(()=>$('#wNaam').focus(),400)">Start</button>
     <ul class="usp"><li>Op jouw niveau</li><li>Uitleg bij elke fout</li><li>Klaar voor de rekentoets</li></ul></div></div></section>
    <div class="wrap" id="aanmelden" style="max-width:1000px"><div class="welkom-grid">
@@ -162,8 +162,8 @@ fouten(){
    </div></div>${VOET()}`;
 },
 klasKiezen(){
-  return `<div class="wrap" style="max-width:560px"><div class="kaart"><span class="eyebrow" style="color:var(--knop)">Nieuw in RekenKracht</span><h2 style="margin-top:6px">In welke groep of klas zit je?</h2>
-   <p>RekenKracht loopt nu van groep 3 tot het eindniveau van het vwo. Kies je groep of klas. Je voortgang blijft gewoon bewaard.</p>${klasSelect('kKlas',S.klas)}
+  return `<div class="wrap" style="max-width:560px"><div class="kaart"><span class="eyebrow" style="color:var(--knop)">Nieuw in Rekenen op Niveau</span><h2 style="margin-top:6px">In welke groep of klas zit je?</h2>
+   <p>Rekenen op Niveau loopt nu van groep 3 tot het eindniveau van het vwo. Kies je groep of klas. Je voortgang blijft gewoon bewaard.</p>${klasSelect('kKlas',S.klas)}
    <div class="voet"><button class="knop vol" onclick="kiesKlas()">Opslaan</button></div></div></div>`;
 },
 account(){

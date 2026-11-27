@@ -1,6 +1,6 @@
-# RekenKracht: handleiding voor de docent
+# Rekenen op Niveau: handleiding voor de docent
 
-RekenKracht werkt volgens **De RekenLijn**: één adaptieve leerlijn van 12 niveaus zonder klasgrenzen.
+Eén adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau. Twaalf niveaus.
 Niveau 1–4 = groep 3–6, niveau 5 = groep 7 (1F), niveau 6 = groep 8 (1S), niveau 7–12 = klas 1–6 vwo. Niveau 8 is 2F, niveau 12 is 3F.
 Het doel hangt af van het schooltype: vmbo tot niveau 8, havo tot niveau 11, vwo tot niveau 12.
 
