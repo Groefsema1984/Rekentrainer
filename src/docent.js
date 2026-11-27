@@ -27,7 +27,7 @@ SCHERMEN.docent=function(){
   const pc=v=>v===''||v==null?'<td class="zacht">–</td>':`<td><span class="pctcel ${v>=80?'hoog':v<50?'laag':''}">${v}%</span></td>`;
   const perNiv={}; ll.forEach(l=>{ const n=l['Huidig niveau']||0; perNiv[n]=(perNiv[n]||0)+1 });
   const inst=DOC.klas&&d.klasinst?d.klasinst[DOC.klas]:null;
-  return `<div class="wrap"><div class="top"><h1>Docentendashboard</h1><button class="knop zacht klein" onclick="docentVernieuw()">↻ Vernieuwen</button><button class="knop zacht klein" onclick="exportCsv()">CSV</button><button class="knop zacht klein" onclick="exportJson()">JSON</button></div>
+  return `<div class="wrap"><div class="top"><h1>Docentendashboard</h1><button class="knop zacht klein" onclick="docentVernieuw()">↻ Vernieuwen</button><button class="knop zacht klein" onclick="docAnalyse()">Analyse van de vragen</button><button class="knop zacht klein" onclick="exportCsv()">CSV</button><button class="knop zacht klein" onclick="exportJson()">JSON</button></div>
    <div class="nivkeuze klassen"><button class="${!DOC.klas?'aan':''}" onclick="DOC.klas='';go('docent')">Alle klassen</button>${d.klassen.map(k=>`<button class="${DOC.klas===k?'aan':''}" onclick="DOC.klas='${esc(k)}';go('docent')">${esc(k)}</button>`).join('')}</div>
    <div class="statstrook" style="margin:16px 0 22px"><div><small>Leerlingen</small><span class="getal">${ll.length}</span></div><div><small>Gemiddeld niveau</small><span class="getal">${ll.length?nl(ll.reduce((s,l)=>s+(+l['Huidig niveau']||0),0)/ll.length,1):'–'}</span></div><div><small>Opgaven deze selectie</small><span class="getal">${ll.reduce((s,l)=>s+(+l['Opgaven gemaakt']||0),0)}</span></div><div><small>Verdeling niveaus</small><span class="klein">${Object.keys(perNiv).sort().map(n=>`N${n}: ${perNiv[n]}`).join(' · ')||'–'}</span></div></div>
    ${inst?`<div class="kaart" style="margin-bottom:18px"><b>Instellingen ${esc(DOC.klas)}</b> <label style="margin-left:16px"><input type="checkbox" ${inst.toetsVrij?'checked':''} onchange="klasInst('${esc(DOC.klas)}',this.checked)"> Rekentoets mag automatisch open</label></div>`:''}
@@ -69,3 +69,19 @@ function exportCsv(){
 }
 function exportJson(){ download('rekentrainer-'+vandaag()+'.json',JSON.stringify(DOC.data,null,1),'application/json') }
 function exportLeerling(){ download('rekentrainer-'+DOC.detail.leerling.id+'.json',JSON.stringify(DOC.detail,null,1),'application/json') }
+
+// ---------- itemanalyse: welke leerdoelen zijn te makkelijk of te moeilijk? ----------
+async function docAnalyse(){
+  let items;
+  if(DOC.data.lokaal){ items=Object.keys(S.ld).filter(k=>S.ld[k].p3).map(k=>({ld:k,pogingen:S.ld[k].p3,goed:S.ld[k].g3||0,zekerFout:S.ld[k].zf3||0,leerlingen:1})) }
+  else try{ items=(await api('analyse',{docentcode:DOC.code,klas:DOC.klas})).items }catch(e){ melding(esc(e.message)); return }
+  DOC.analyse=items.filter(x=>LD[x.ld]).map(x=>Object.assign(x,{p:Math.round(100*x.goed/x.pogingen),zf:Math.round(100*x.zekerFout/x.pogingen)})); go('docentAnalyse');
+}
+const signaal = x => x.pogingen<10?['te weinig data','zacht']:x.p>=90?['erg makkelijk: eerder overslaan of naar een lager niveau','groen']:x.p<40?['erg moeilijk: extra instructie of later aanbieden','rood']:x.zf>=25?['veel zeker-fout: hardnekkige misconceptie','rood']:['passend','groen'];
+SCHERMEN.docentAnalyse=function(){
+  const a=(DOC.analyse||[]).slice().sort((x,y)=>LD[x.ld].niv-LD[y.ld].niv||x.p-y.p);
+  return `<div class="wrap"><div class="top"><button class="terug" onclick="go('docent')">← Dashboard</button><h1>Analyse van de vragen${DOC.klas?' · '+esc(DOC.klas):''}</h1><button class="knop zacht klein" onclick="analyseCsv()">CSV</button></div>
+   <p class="zacht">Per leerdoel: het percentage goed bij de <b>eerste zelfstandige poging</b> (p-waarde). Tussen 40% en 90% is een opgave goed op niveau. Gebruik dit om instructie te plannen en om de indeling van leerdoelen over niveaus bij te stellen.</p>
+   ${a.length?`<div class="kaart tabelwrap"><table><thead><tr><th>Leerdoel</th><th>Niveau</th><th>Pogingen</th><th>Leerlingen</th><th>% goed</th><th>% zeker-fout</th><th>Signaal</th></tr></thead><tbody>${a.map(x=>{ const [t,k]=signaal(x); return `<tr><td>${esc(LD[x.ld].naam)}</td><td>${LD[x.ld].niv}</td><td>${x.pogingen}</td><td>${x.leerlingen}</td><td>${balk(x.p)} ${x.p}%</td><td>${x.zf}%</td><td><span class="chip ${k}">${t}</span></td></tr>` }).join('')}</tbody></table></div>`:'<div class="kaart"><p>Nog geen gegevens. Zodra leerlingen oefenen, verschijnt hier per leerdoel hoe moeilijk het is.</p></div>'}</div>${VOET()}`;
+};
+function analyseCsv(){ download('itemanalyse-'+vandaag()+'.csv',['leerdoel;niveau;domein;pogingen;leerlingen;% goed;% zeker-fout'].concat((DOC.analyse||[]).map(x=>[x.ld,LD[x.ld].niv,LD[x.ld].dom,x.pogingen,x.leerlingen,x.p,x.zf].join(';'))).join('\n'),'text/csv') }

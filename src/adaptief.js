@@ -35,6 +35,8 @@ function verwerk(it,res){
   if(it.trede===1&&!res.goed) w=0;                 // checkvraag fout: geen straf, wel extra uitleg
   x.b = rondaf(x.b + w*((res.goed?100:0)-x.b),1);
   if(zelfstandig||it.bron==='spiegel') x.n++;
+  // itemanalyse: eerste zelfstandige pogingen (geen herhaling/spiegel) → p-waarde per leerdoel voor de docent
+  if(it.trede===3&&!['spiegel','herhaal','instap'].includes(it.bron)){ x.p3=(x.p3||0)+1; if(res.goed) x.g3=(x.g3||0)+1; else if(res.zeker===true) x.zf3=(x.zf3||0)+1 }
   // 2. treden (faded examples)
   if(it.bron==='spiegel'){ if(!res.goed) x.tr=Math.min(x.tr||3,2) }
   else if(x.tr===0){ x.tr = res.goed ? (res.zeker!==false?3:2) : 1 }      // instapvraag van een nieuw leerdoel

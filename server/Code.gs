@@ -102,6 +102,7 @@ function doPost(e) {
       case 'leerling': return uit_(leerling_(d));
       case 'klasinstelling': return uit_(klasinstelling_(d));
       case 'vrijgeven': return uit_(vrijgeven_(d));
+      case 'analyse': return uit_(analyse_(d));
       default: return uit_({ ok: false, fout: 'Onbekende actie' });
     }
   } catch (err) {
@@ -334,6 +335,23 @@ function topMisc_(klas) {
   return Object.keys(tel).map(function (k) { const t = tel[k]; return { naam: t.naam, keer: t.keer, zeker: t.zeker, leerlingen: Object.keys(t.leerlingen).length,
     leerdoelen: Object.keys(t.leerdoelen).sort(function (a, b) { return t.leerdoelen[b] - t.leerdoelen[a]; }).slice(0, 4) }; })
     .sort(function (a, b) { return b.leerlingen * 3 + b.keer - (a.leerlingen * 3 + a.keer); }).slice(0, 12);
+}
+
+/** Itemanalyse: per leerdoel hoeveel zelfstandige pogingen, % goed en % zeker-fout (uit de opgeslagen staat). */
+function analyse_(d) {
+  checkDocent_(d);
+  const sp = sheet_('Leerlingen'); const n = sp.getLastRow() - 1; const klasVan = {};
+  if (n > 0) sp.getRange(2, 1, n, 3).getValues().forEach(function (x) { klasVan[String(x[0]).toUpperCase()] = x[2]; });
+  const db = sheet_('Data'); const m = db.getLastRow() - 1; const tel = {};
+  if (m > 0) db.getRange(2, 1, m, 6).getValues().forEach(function (x) {
+    const id = String(x[0]).toUpperCase(); if (d.klas && klasVan[id] !== d.klas) return;
+    let st; try { st = JSON.parse([x[2], x[3], x[4], x[5]].join('')); } catch (e) { return; }
+    const ld = (st && st.ld) || {};
+    Object.keys(ld).forEach(function (k) { const o = ld[k]; if (!o || !o.p3) return;
+      const t = tel[k] || (tel[k] = { ld: k, pogingen: 0, goed: 0, zekerFout: 0, leerlingen: 0 });
+      t.pogingen += o.p3; t.goed += o.g3 || 0; t.zekerFout += o.zf3 || 0; t.leerlingen++; });
+  });
+  return { ok: true, items: Object.keys(tel).map(function (k) { return tel[k]; }) };
 }
 
 function topFouten_(klas) {
