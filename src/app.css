@@ -266,3 +266,6 @@ body[data-fase=jong] .opties,body[data-fase=midden] .opties{display:grid;grid-te
 body[data-fase=jong] .optie,body[data-fase=midden] .optie{min-height:76px;font-size:24px;font-weight:700;justify-content:center}
 @media (max-width:560px){body[data-fase=jong] .opties,body[data-fase=midden] .opties{grid-template-columns:1fr}}
 .contrast{margin:12px 0;padding:12px 14px;border-left:4px solid var(--fout);background:color-mix(in srgb,var(--fout) 6%,var(--kaart));border-radius:6px}.contrast p{margin:4px 0 0}
+.ouderlijst{list-style:none;padding:0;margin:6px 0 0}.ouderlijst li{padding:6px 0;border-bottom:1px solid var(--lijn)}
+@media print{header,.topnav,.voettekst,.voet,#menu{display:none!important}body{background:#fff}.kaart{box-shadow:none;border:1px solid #ccc;break-inside:avoid}}
+.ouders .statstrook b{display:block;font:800 28px/1.1 var(--kop)}.ouders .statstrook span{font-size:14px;color:var(--zacht)}
