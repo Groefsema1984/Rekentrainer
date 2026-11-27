@@ -1,3 +1,4 @@
+// Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekentrainer Vellesan · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
 const BOUW = '/*BOUW*/';
@@ -23,7 +24,8 @@ const SUBDOMEINEN = {
   M:[{id:'eenheden',naam:'Eenheden omrekenen'},{id:'tijd',naam:'Tijd en geld'},{id:'oppervlak',naam:'Omtrek en oppervlakte'},{id:'inhoud',naam:'Inhoud'},{id:'meetkunde',naam:'Meetkunde'}],
   B:[{id:'tabellen',naam:'Tabellen'},{id:'grafieken',naam:'Grafieken'},{id:'formules',naam:'Formules'},{id:'statistiek',naam:'Statistiek'}]
 };
-const STARTNIVEAU_KLAS = {'1e klas':2,'2e klas':3,'3e klas':4,'4e klas':5,'5e klas':6,'6e klas':6,'Thuis':2};
+// Startniveau van de instaptoets: Thuis = groep 7/8 (Niveau 1), daarna één niveau per leerjaar.
+const STARTNIVEAU_KLAS = {'Thuis':1,'1e klas':2,'2e klas':3,'3e klas':4,'4e klas':5,'5e klas':6,'6e klas':7};
 const DOMEINEN = [
   {id:'G',naam:'Getallen',kort:'Getallen',k:'#f08a09',ic:'🔢'},
   {id:'V',naam:'Verhoudingen',kort:'Verhoudingen',k:'#1b8fb0',ic:'⚖️'},

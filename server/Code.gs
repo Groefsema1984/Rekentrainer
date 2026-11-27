@@ -1,3 +1,4 @@
+// Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 /**
  * Rekentrainer Vellesan College – server (Google Apps Script)
  * Zelfde opzet als de economie-apps: leerling maakt een account met naam + klas,

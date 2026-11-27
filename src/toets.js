@@ -6,24 +6,33 @@ const nivMax=()=>Math.max(...LDS.map(l=>l.niv));
 function instapBlok(k){
   return DOMEINEN.map(d=>{ const l=ldsVan(k,d.id); const ld=l[Math.floor(Math.random()*l.length)]; const it=maakItem(ld.id,{trede:3,bron:'instap'}); if(!['open','mc'].includes(it.vorm)) return maakItem(ld.id,{trede:3,vorm:VAST(it),bron:'instap'}); return it });
 }
+// Per vraag adaptief (trap): start op het niveau van de klas. Fout → volgende vraag één niveau lager.
+// Twee keer achter elkaar goed op hetzelfde niveau → één niveau hoger. Zo komt de leerling uit op het
+// niveau waar hij ongeveer 70% goed heeft. Domeinen wisselen elke vraag (G, V, M, B), 16 vragen.
+const INSTAP_N = 16;
+function instapVraag(){
+  const d=DOMEINEN[SES.log.length%4].id; let l=ldsVan(SES.k,d).filter(x=>!SES.gebruikt.includes(x.id)); if(!l.length) l=ldsVan(SES.k,d);
+  const ld=l[Math.floor(Math.random()*l.length)]; SES.gebruikt.push(ld.id);
+  let it=maakItem(ld.id,{trede:3,bron:'instap'}); if(!['open','mc'].includes(it.vorm)) it=maakItem(ld.id,{trede:3,vorm:VAST(it),bron:'instap'});
+  SES.blok=[it]; SES.bi=0;
+}
 function startInstap(){
-  const k=Math.min(STARTNIVEAU_KLAS[S.klas]||2,nivMax());
-  SES={soort:'instap',titel:'Instaptoets',k,P:[],F:[],blok:instapBlok(k),bi:0,bg:0,log:[],res:[],i:0,n:99,start:Date.now()};
-  volgendeItem();
+  const k=Math.min(STARTNIVEAU_KLAS[S.klas]||1,nivMax());
+  SES={soort:'instap',titel:'Instaptoets',k,startK:k,reeks:0,gebruikt:[],log:[],res:[],i:0,n:INSTAP_N,start:Date.now()};
+  instapVraag(); volgendeItem();
+}
+function instapNiveau(log){
+  const st={}; log.forEach(x=>{ st[x.niv]=st[x.niv]||[0,0]; st[x.niv][1]++; if(x.goed) st[x.niv][0]++ });
+  const ok=Object.keys(st).map(Number).filter(n=>st[n][1]>=2&&st[n][0]/st[n][1]>=.6);
+  if(ok.length) return Math.max(...ok);
+  const laagste=Math.min(...log.map(x=>x.niv)); return Math.max(1,laagste-1);
 }
 function instapAntwoord(res){
-  const it=Q.it; SES.log.push({niv:it.niv,dom:it.dom,ld:it.ld,goed:res.goed,zeker:res.zeker});
-  if(res.goed) SES.bg++;
-  SES.bi++;
-  if(SES.bi<SES.blok.length) return volgendeItem();
-  // blok klaar → beslissen
-  const k=SES.k, g=SES.bg; let uit=null;
-  if(g>=3){ SES.P.push(k); if(k>=nivMax()) uit=k; else if(SES.F.includes(k+1)) uit=k+1; else SES.k=k+1 }
-  else if(g<=1){ SES.F.push(k); if(k===1) uit=1; else if(SES.P.includes(k-1)) uit=k; else SES.k=k-1 }
-  else uit=k;
-  if(uit===null&&SES.log.length>=40) uit=SES.k;
-  if(uit!==null) return instapKlaar(uit);
-  SES.blok=instapBlok(SES.k); SES.bi=0; SES.bg=0; volgendeItem();
+  const it=Q.it; SES.log.push({niv:it.niv,dom:it.dom,ld:it.ld,goed:res.goed,zeker:res.zeker}); SES.res.push(res.goed); SES.i++;
+  if(res.goed){ SES.reeks++; if(SES.reeks>=2&&SES.k<nivMax()){ SES.k++; SES.reeks=0 } }
+  else { SES.reeks=0; if(SES.k>1) SES.k--; }
+  if(SES.log.length>=INSTAP_N) return instapKlaar(instapNiveau(SES.log));
+  instapVraag(); volgendeItem();
 }
 function instapKlaar(niv){
   oefenActief=false;

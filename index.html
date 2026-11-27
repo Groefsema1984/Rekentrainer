@@ -1,6 +1,9 @@
 <!doctype html>
+<!-- Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE. -->
 <html lang="nl">
 <head>
+<meta name="author" content="S. Groefsema">
+<meta name="copyright" content="© 2026 S. Groefsema. Alle rechten voorbehouden.">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -438,9 +441,10 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 </div><div class="rij2"><nav class="menu" id="menu"></nav></div></header>
 <div id="app"></div>
 <script>
+// Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekentrainer Vellesan · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = 'fb4622fe93';
+const BOUW = '53292c2e61';
 const KLASSEN = ['1e klas','2e klas','3e klas','4e klas','5e klas','6e klas','Thuis'];
 const KEY = 'rekenvel-v1';
 const OUTBOX = 'rekenvel-outbox';
@@ -463,7 +467,8 @@ const SUBDOMEINEN = {
   M:[{id:'eenheden',naam:'Eenheden omrekenen'},{id:'tijd',naam:'Tijd en geld'},{id:'oppervlak',naam:'Omtrek en oppervlakte'},{id:'inhoud',naam:'Inhoud'},{id:'meetkunde',naam:'Meetkunde'}],
   B:[{id:'tabellen',naam:'Tabellen'},{id:'grafieken',naam:'Grafieken'},{id:'formules',naam:'Formules'},{id:'statistiek',naam:'Statistiek'}]
 };
-const STARTNIVEAU_KLAS = {'1e klas':2,'2e klas':3,'3e klas':4,'4e klas':5,'5e klas':6,'6e klas':6,'Thuis':2};
+// Startniveau van de instaptoets: Thuis = groep 7/8 (Niveau 1), daarna één niveau per leerjaar.
+const STARTNIVEAU_KLAS = {'Thuis':1,'1e klas':2,'2e klas':3,'3e klas':4,'4e klas':5,'5e klas':6,'6e klas':7};
 const DOMEINEN = [
   {id:'G',naam:'Getallen',kort:'Getallen',k:'#f08a09',ic:'🔢'},
   {id:'V',naam:'Verhoudingen',kort:'Verhoudingen',k:'#1b8fb0',ic:'⚖️'},
@@ -2459,7 +2464,7 @@ L({id:'B8.formulekiezen',niv:8,dom:'B',sub:'formules',naam:'Welke formule past b
 const FOTO={start:'1509062522246-3755977927d7',G:'1635070041078-e363dbe005cb',V:'1554224155-6726b3ff858f',M:'1503387762-592deb58ef4e',B:'1551288049-bebda4e38f71',
   toets:'1606326608606-aa0b62935f2b',instap:'1522202176988-66273c2fd55f',fouten:'1456513080510-7bf3a84b82f8',niveaus:'1519389950473-47ba0277781c'};
 const foto=(k,w=1400)=>FOTO[k]?`background-image:url('https://images.unsplash.com/photo-${FOTO[k]}?w=${w}&q=70&auto=format&fit=crop')`:'';
-const VOET=()=>`<footer class="voettekst"><div class="in"><b>vellesan <span class="o">college</span></b><span>Rekentrainer · Niveau 1 t/m 8 (1F tot en met 3F)</span><span style="margin-left:auto">Foto's: Unsplash</span></div></footer>`;
+const VOET=()=>`<footer class="voettekst"><div class="in"><b>vellesan <span class="o">college</span></b><span>Rekentrainer · Niveau 1 t/m 8 (1F tot en met 3F)</span><span style="margin-left:auto">© 2026 S. Groefsema · Alle rechten voorbehouden · Foto's: Unsplash</span></div></footer>`;
 
 let scherm='welkom', param={};
 function go(naam,p={}){
@@ -2536,8 +2541,8 @@ instapIntro(){
   const opnieuw=!!S.plaatsing;
   return `<section class="foto paginakop" style="${foto('instap')};border-radius:0;min-height:260px"><div class="wrap" style="width:100%;padding-bottom:0"><span class="eyebrow" style="color:var(--acc)">Instaptoets</span><h1>${opnieuw?'Instaptoets opnieuw maken':'Eerst kijken wat je al kunt'}</h1></div></section>
    <div class="wrap smal"><div class="kaart">
-   <p>Deze toets bepaalt op welk niveau je begint. Je krijgt steeds vier opgaven, één uit elk domein: <b>Getallen</b>, <b>Verhoudingen</b>, <b>Meten en meetkunde</b> en <b>Verbanden</b>. Gaat het goed, dan worden de opgaven moeilijker. Gaat het minder, dan makkelijker.</p>
-   <ul class="lijst"><li>Het duurt ongeveer 10 tot 20 minuten.</li><li>Je krijgt tijdens de toets nog geen uitleg. Dat komt daarna, bij het oefenen.</li><li>Kies bij elk antwoord <b>Zeker (!)</b> of <b>Gok (?)</b>. Wees eerlijk: dan oefen je straks precies wat je nodig hebt.</li><li>Pak kladpapier. Een rekenmachine mag alleen als het icoontje 🧮 aan staat.</li></ul>
+   <p>Deze toets bepaalt op welk niveau je begint. Je krijgt 16 opgaven uit de vier domeinen: <b>Getallen</b>, <b>Verhoudingen</b>, <b>Meten en meetkunde</b> en <b>Verbanden</b>. Je begint op het niveau van je klas. Na elke fout krijg je een opgave van een niveau lager, na twee goede antwoorden achter elkaar een niveau hoger. Zo vinden we precies jouw niveau.</p>
+   <ul class="lijst"><li>Het duurt ongeveer 15 minuten.</li><li>Je krijgt tijdens de toets nog geen uitleg. Dat komt daarna, bij het oefenen.</li><li>Kies bij elk antwoord <b>Zeker (!)</b> of <b>Gok (?)</b>. Wees eerlijk: dan oefen je straks precies wat je nodig hebt.</li><li>Pak kladpapier. Een rekenmachine mag alleen als het icoontje 🧮 aan staat.</li></ul>
    ${opnieuw?'<p class="zacht">Je huidige niveau wordt vervangen door de uitslag van deze toets. Je oefenvoortgang blijft bewaard.</p>':''}
    <div class="voet"><button class="knop groot" onclick="startInstap()">Start de instaptoets</button></div></div></div>`;
 },
@@ -2643,7 +2648,7 @@ function volgendeItem(){
 function toonItem(it){ Q={it,keuze:null,klaar:false,start:Date.now()}; oefenActief=true; go('quiz') }
 function quizHtml(){
   const it=Q.it, ld=LD[it.ld], d=DOM[it.dom];
-  const dots = SES.soort==='instap' ? '' : `<div class="voortgang">${Array.from({length:SES.n},(_,i)=>`<i class="${i<SES.res.length?(SES.res[i]?'g':'f'):i===SES.i?'nu':''}"></i>`).join('')}</div>`;
+  const dots = `<div class="voortgang">${Array.from({length:SES.n},(_,i)=>`<i class="${i<SES.res.length?(SES.res[i]?'g':'f'):i===SES.i?'nu':''}"></i>`).join('')}</div>`;
   const label = it.bron==='spiegel'?'Spiegelvraag · zelfde denkstap, andere getallen':it.bron==='herhaal'?'Uit je foutenbank':TREDE_LABEL[it.vorm];
   const fase = SES.soort==='oefen'&&it.bron!=='spiegel'&&it.bron!=='herhaal'?(it.trede===1?'Fase 1':it.trede===2?'Fase 2':'Fase 3'):'';
   const rm = it.rm?`<button class="rmknop" onclick="toonRekenmachine()" title="Rekenmachine">🧮 Rekenmachine</button>`:`<span class="rmknop dicht" title="Rekenmachine niet toegestaan">🧮 Uit het hoofd of op kladpapier</span>`;
@@ -2759,24 +2764,33 @@ const nivMax=()=>Math.max(...LDS.map(l=>l.niv));
 function instapBlok(k){
   return DOMEINEN.map(d=>{ const l=ldsVan(k,d.id); const ld=l[Math.floor(Math.random()*l.length)]; const it=maakItem(ld.id,{trede:3,bron:'instap'}); if(!['open','mc'].includes(it.vorm)) return maakItem(ld.id,{trede:3,vorm:VAST(it),bron:'instap'}); return it });
 }
+// Per vraag adaptief (trap): start op het niveau van de klas. Fout → volgende vraag één niveau lager.
+// Twee keer achter elkaar goed op hetzelfde niveau → één niveau hoger. Zo komt de leerling uit op het
+// niveau waar hij ongeveer 70% goed heeft. Domeinen wisselen elke vraag (G, V, M, B), 16 vragen.
+const INSTAP_N = 16;
+function instapVraag(){
+  const d=DOMEINEN[SES.log.length%4].id; let l=ldsVan(SES.k,d).filter(x=>!SES.gebruikt.includes(x.id)); if(!l.length) l=ldsVan(SES.k,d);
+  const ld=l[Math.floor(Math.random()*l.length)]; SES.gebruikt.push(ld.id);
+  let it=maakItem(ld.id,{trede:3,bron:'instap'}); if(!['open','mc'].includes(it.vorm)) it=maakItem(ld.id,{trede:3,vorm:VAST(it),bron:'instap'});
+  SES.blok=[it]; SES.bi=0;
+}
 function startInstap(){
-  const k=Math.min(STARTNIVEAU_KLAS[S.klas]||2,nivMax());
-  SES={soort:'instap',titel:'Instaptoets',k,P:[],F:[],blok:instapBlok(k),bi:0,bg:0,log:[],res:[],i:0,n:99,start:Date.now()};
-  volgendeItem();
+  const k=Math.min(STARTNIVEAU_KLAS[S.klas]||1,nivMax());
+  SES={soort:'instap',titel:'Instaptoets',k,startK:k,reeks:0,gebruikt:[],log:[],res:[],i:0,n:INSTAP_N,start:Date.now()};
+  instapVraag(); volgendeItem();
+}
+function instapNiveau(log){
+  const st={}; log.forEach(x=>{ st[x.niv]=st[x.niv]||[0,0]; st[x.niv][1]++; if(x.goed) st[x.niv][0]++ });
+  const ok=Object.keys(st).map(Number).filter(n=>st[n][1]>=2&&st[n][0]/st[n][1]>=.6);
+  if(ok.length) return Math.max(...ok);
+  const laagste=Math.min(...log.map(x=>x.niv)); return Math.max(1,laagste-1);
 }
 function instapAntwoord(res){
-  const it=Q.it; SES.log.push({niv:it.niv,dom:it.dom,ld:it.ld,goed:res.goed,zeker:res.zeker});
-  if(res.goed) SES.bg++;
-  SES.bi++;
-  if(SES.bi<SES.blok.length) return volgendeItem();
-  // blok klaar → beslissen
-  const k=SES.k, g=SES.bg; let uit=null;
-  if(g>=3){ SES.P.push(k); if(k>=nivMax()) uit=k; else if(SES.F.includes(k+1)) uit=k+1; else SES.k=k+1 }
-  else if(g<=1){ SES.F.push(k); if(k===1) uit=1; else if(SES.P.includes(k-1)) uit=k; else SES.k=k-1 }
-  else uit=k;
-  if(uit===null&&SES.log.length>=40) uit=SES.k;
-  if(uit!==null) return instapKlaar(uit);
-  SES.blok=instapBlok(SES.k); SES.bi=0; SES.bg=0; volgendeItem();
+  const it=Q.it; SES.log.push({niv:it.niv,dom:it.dom,ld:it.ld,goed:res.goed,zeker:res.zeker}); SES.res.push(res.goed); SES.i++;
+  if(res.goed){ SES.reeks++; if(SES.reeks>=2&&SES.k<nivMax()){ SES.k++; SES.reeks=0 } }
+  else { SES.reeks=0; if(SES.k>1) SES.k--; }
+  if(SES.log.length>=INSTAP_N) return instapKlaar(instapNiveau(SES.log));
+  instapVraag(); volgendeItem();
 }
 function instapKlaar(niv){
   oefenActief=false;

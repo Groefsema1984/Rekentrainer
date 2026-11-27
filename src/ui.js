@@ -3,7 +3,7 @@
 const FOTO={start:'1509062522246-3755977927d7',G:'1635070041078-e363dbe005cb',V:'1554224155-6726b3ff858f',M:'1503387762-592deb58ef4e',B:'1551288049-bebda4e38f71',
   toets:'1606326608606-aa0b62935f2b',instap:'1522202176988-66273c2fd55f',fouten:'1456513080510-7bf3a84b82f8',niveaus:'1519389950473-47ba0277781c'};
 const foto=(k,w=1400)=>FOTO[k]?`background-image:url('https://images.unsplash.com/photo-${FOTO[k]}?w=${w}&q=70&auto=format&fit=crop')`:'';
-const VOET=()=>`<footer class="voettekst"><div class="in"><b>vellesan <span class="o">college</span></b><span>Rekentrainer · Niveau 1 t/m 8 (1F tot en met 3F)</span><span style="margin-left:auto">Foto's: Unsplash</span></div></footer>`;
+const VOET=()=>`<footer class="voettekst"><div class="in"><b>vellesan <span class="o">college</span></b><span>Rekentrainer · Niveau 1 t/m 8 (1F tot en met 3F)</span><span style="margin-left:auto">© 2026 S. Groefsema · Alle rechten voorbehouden · Foto's: Unsplash</span></div></footer>`;
 
 let scherm='welkom', param={};
 function go(naam,p={}){
@@ -80,8 +80,8 @@ instapIntro(){
   const opnieuw=!!S.plaatsing;
   return `<section class="foto paginakop" style="${foto('instap')};border-radius:0;min-height:260px"><div class="wrap" style="width:100%;padding-bottom:0"><span class="eyebrow" style="color:var(--acc)">Instaptoets</span><h1>${opnieuw?'Instaptoets opnieuw maken':'Eerst kijken wat je al kunt'}</h1></div></section>
    <div class="wrap smal"><div class="kaart">
-   <p>Deze toets bepaalt op welk niveau je begint. Je krijgt steeds vier opgaven, één uit elk domein: <b>Getallen</b>, <b>Verhoudingen</b>, <b>Meten en meetkunde</b> en <b>Verbanden</b>. Gaat het goed, dan worden de opgaven moeilijker. Gaat het minder, dan makkelijker.</p>
-   <ul class="lijst"><li>Het duurt ongeveer 10 tot 20 minuten.</li><li>Je krijgt tijdens de toets nog geen uitleg. Dat komt daarna, bij het oefenen.</li><li>Kies bij elk antwoord <b>Zeker (!)</b> of <b>Gok (?)</b>. Wees eerlijk: dan oefen je straks precies wat je nodig hebt.</li><li>Pak kladpapier. Een rekenmachine mag alleen als het icoontje 🧮 aan staat.</li></ul>
+   <p>Deze toets bepaalt op welk niveau je begint. Je krijgt 16 opgaven uit de vier domeinen: <b>Getallen</b>, <b>Verhoudingen</b>, <b>Meten en meetkunde</b> en <b>Verbanden</b>. Je begint op het niveau van je klas. Na elke fout krijg je een opgave van een niveau lager, na twee goede antwoorden achter elkaar een niveau hoger. Zo vinden we precies jouw niveau.</p>
+   <ul class="lijst"><li>Het duurt ongeveer 15 minuten.</li><li>Je krijgt tijdens de toets nog geen uitleg. Dat komt daarna, bij het oefenen.</li><li>Kies bij elk antwoord <b>Zeker (!)</b> of <b>Gok (?)</b>. Wees eerlijk: dan oefen je straks precies wat je nodig hebt.</li><li>Pak kladpapier. Een rekenmachine mag alleen als het icoontje 🧮 aan staat.</li></ul>
    ${opnieuw?'<p class="zacht">Je huidige niveau wordt vervangen door de uitslag van deze toets. Je oefenvoortgang blijft bewaard.</p>':''}
    <div class="voet"><button class="knop groot" onclick="startInstap()">Start de instaptoets</button></div></div></div>`;
 },
@@ -187,7 +187,7 @@ function volgendeItem(){
 function toonItem(it){ Q={it,keuze:null,klaar:false,start:Date.now()}; oefenActief=true; go('quiz') }
 function quizHtml(){
   const it=Q.it, ld=LD[it.ld], d=DOM[it.dom];
-  const dots = SES.soort==='instap' ? '' : `<div class="voortgang">${Array.from({length:SES.n},(_,i)=>`<i class="${i<SES.res.length?(SES.res[i]?'g':'f'):i===SES.i?'nu':''}"></i>`).join('')}</div>`;
+  const dots = `<div class="voortgang">${Array.from({length:SES.n},(_,i)=>`<i class="${i<SES.res.length?(SES.res[i]?'g':'f'):i===SES.i?'nu':''}"></i>`).join('')}</div>`;
   const label = it.bron==='spiegel'?'Spiegelvraag · zelfde denkstap, andere getallen':it.bron==='herhaal'?'Uit je foutenbank':TREDE_LABEL[it.vorm];
   const fase = SES.soort==='oefen'&&it.bron!=='spiegel'&&it.bron!=='herhaal'?(it.trede===1?'Fase 1':it.trede===2?'Fase 2':'Fase 3'):'';
   const rm = it.rm?`<button class="rmknop" onclick="toonRekenmachine()" title="Rekenmachine">🧮 Rekenmachine</button>`:`<span class="rmknop dicht" title="Rekenmachine niet toegestaan">🧮 Uit het hoofd of op kladpapier</span>`;
