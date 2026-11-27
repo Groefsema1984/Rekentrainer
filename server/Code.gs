@@ -148,6 +148,7 @@ function doPost(e) {
       case 'sjablonen': return uit_(sjablonen_());
       case 'itemanalyse': return uit_(itemanalyse_(d));
       case 'sjabloonstatus': return uit_(sjabloonStatus_(d));
+      case 'effect': return uit_(effect_(d));
       default: return uit_({ ok: false, fout: 'Onbekende actie' });
     }
   } catch (err) {
@@ -460,6 +461,32 @@ function topMisc_(klas) {
     return { naam: t.naam, keer: t.keer, zeker: t.zeker, leerlingen: wie.length, wie: wie,
     leerdoelen: Object.keys(t.leerdoelen).sort(function (a, b) { return t.leerdoelen[b] - t.leerdoelen[a]; }).slice(0, 4) }; })
     .sort(function (a, b) { return b.leerlingen * 3 + b.keer - (a.leerlingen * 3 + a.keer); }).slice(0, 12);
+}
+
+/** Effectmeting: per leerling de eerste voormeting en de laatste nameting, met groepsstatistiek (gemiddelde winst en effectgrootte). */
+function effect_(d) {
+  checkDocent_(d);
+  const b = sheet_('Toetsen'); const n = b.getLastRow() - 1; if (n <= 0) return { ok: true, leerlingen: [], stat: null };
+  const v = b.getRange(2, 1, n, KOP.Toetsen.length).getValues(); const per = {};
+  v.forEach(function (x) {
+    const soort = String(x[5]); const vor = soort.indexOf('Voormeting') === 0, na = soort.indexOf('Nameting') === 0; if (!vor && !na) return;
+    if (d.klas && x[4] !== d.klas) return;
+    const id = String(x[2]); const o = per[id] || (per[id] = { id: id, naam: x[3], klas: x[4], voor: null, na: null });
+    const t = x[1] instanceof Date ? x[1].getTime() : x[1];
+    const m = { tijd: t, niveau: x[6], totaal: Number(x[8]), G: x[9], V: x[10], M: x[11], B: x[12] };
+    if (vor && !o.voor) o.voor = m; if (na) o.na = m;
+  });
+  const ll = Object.keys(per).map(function (k) { return per[k]; });
+  const paren = ll.filter(function (o) { return o.voor && o.na; }).map(function (o) { return o.na.totaal - o.voor.totaal; });
+  let stat = null;
+  if (paren.length) {
+    const gem = paren.reduce(function (a, b) { return a + b; }, 0) / paren.length;
+    const sd = Math.sqrt(paren.reduce(function (a, b) { return a + (b - gem) * (b - gem); }, 0) / Math.max(1, paren.length - 1));
+    const voor = ll.filter(function (o) { return o.voor && o.na; }).map(function (o) { return o.voor.totaal; });
+    stat = { n: paren.length, voor: voor.reduce(function (a, b) { return a + b; }, 0) / voor.length, winst: gem, sd: sd, d: sd > 0 ? gem / sd : null,
+      beter: paren.filter(function (x) { return x > 0; }).length };
+  }
+  return { ok: true, leerlingen: ll, stat: stat };
 }
 
 /** Itemanalyse: per leerdoel hoeveel zelfstandige pogingen, % goed en % zeker-fout (uit de opgeslagen staat). */

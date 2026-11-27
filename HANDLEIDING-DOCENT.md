@@ -68,3 +68,28 @@ Voor de maker en docent: alle 12 niveaus open en elke opgave direct bekijken.
 3. Via het menu **🛠 Ontwikkelaar** kies je een niveau. Je kunt dan de rekentoets of instaptoets van dat niveau starten, of per leerdoel elk vraagtype openen (Zelf doen, Meerkeuze, Voorbeeld, Invulsom, Saboteur, Koppel, …).
 
 Het ontwikkelaarsprofiel staat apart opgeslagen. Een leerlingaccount op hetzelfde apparaat blijft gewoon staan en komt terug zodra je *Ontwikkelaarsmodus verlaten* kiest. In de ontwikkelaarsmodus gaat er niets naar de Google Sheet: geen voortgang, geen foutenlog en niets in de vraagcontrole.
+
+## Groep 3 tot en met 6 (niveau 1–4)
+- Per onderwerp bouwt de invoer op: de eerste 3 opgaven zijn grote antwoordtegels om op te tikken, daarna een open vraag met grote cijfertoetsen in beeld (typen mag ook), en als het onderwerp goed gaat (75% of 12 opgaven) gewoon typen. De cijfertoetsen zijn met één tik terug te halen.
+- Op niveau 1–2 wordt elke vraag vanzelf voorgelezen (knop *Voorlezen: aan/uit*).
+
+## Uitgewerkte voorbeelden
+Bij elk uitgewerkt voorbeeld staat naast de goede aanpak ook de meest gemaakte denkfout ("Zo gaat het vaak mis"). Goed en fout vergelijken helpt leerlingen de kern te zien.
+
+## Voor ouders (menu Ouders)
+Een weekoverzicht: oefentijd, wat goed gaat, wat nog moeite kost en een concrete tip voor thuis. Te printen, als pdf te bewaren of als tekst te kopiëren. Er worden geen extra persoonsgegevens gevraagd.
+
+## Instructiegroepjes (docentendashboard)
+Onder *Denkfouten* staat een voorstel voor instructiegroepjes: leerlingen met dezelfde denkfout bij elkaar, met een tip voor de mini-instructie. Daaronder per leerling de eigen denkfouten.
+
+## Oefentoetsen (menu Oefentoets)
+Doorstroomtoets groep 8 (1F/1S, 24 opgaven, 45 min, zonder rekenmachine), rekentoets 2F (30 opgaven, 60 min) en 3F (30 opgaven, 75 min). Met klok en zonder uitleg tussendoor; daarna score per domein en de fouten nabespreken. Een oefentoets verandert het niveau niet.
+
+## Offline en rustige modus
+- Zet de app op het beginscherm: hij werkt dan ook zonder internet. Antwoorden worden bewaard en later verstuurd. Een nieuwe versie komt vanzelf door zodra er weer internet is.
+- *Account › Rustige modus*: meer ruimte tussen regels en woorden, geen bewegingen of foto's, en 50% extra tijd bij oefentoetsen en metingen. Bedoeld voor leerlingen met dyscalculie, dyslexie of die snel overprikkeld raken.
+
+## Effectmeting (voor de pilot)
+- Leerling: *Oefentoets › Voor- en nameting*. De voormeting meet op het huidige niveau (20 opgaven, 30 min). De nameting gebruikt precies dezelfde soorten opgaven met andere getallen, liefst na minstens 4 weken.
+- Docent: knop **Effectmeting** in het dashboard. Per leerling voor, na en verschil; voor de groep de gemiddelde winst en de effectgrootte (d). Export naar CSV.
+- Tip: laat een vergelijkingsklas dezelfde metingen maken zonder de app; dan zie je het effect van de app los van de gewone groei.

@@ -280,3 +280,4 @@ body.rustig .voortgang,body.rustig .med,body.rustig .badges{opacity:.55}
 body.rustig *,body.rustig *::before,body.rustig *::after{animation:none!important;transition:none!important}
 body.rustig .optie{line-height:1.5}
 body.rustig .woord{text-decoration-style:solid}
+.kaart .statstrook{margin:0 0 4px;box-shadow:none}.kaart .statstrook b{display:block;font:800 26px/1.15 var(--kop)}.kaart .statstrook span{display:block;font-size:14px;color:var(--zacht)}
