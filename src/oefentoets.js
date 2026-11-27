@@ -9,7 +9,7 @@ const EXAMENS=[
 SCHERMEN.oefentoets=function(){
   const laatste=id=>(S.toetsen||[]).filter(t=>t.soort==='Oefentoets'&&t.examen===id).slice(-1)[0];
   return `<div class="wrap smal"><div class="top"><h1>Oefentoets</h1></div><p class="zacht">Oefen onder toetsomstandigheden: met een klok, zonder uitleg tussendoor en zonder hulpmiddelen. Na afloop zie je je score per domein en bekijk je je fouten.</p>
-   ${EXAMENS.map(e=>{ const l=laatste(e.id); return `<div class="kaart" style="margin-top:14px"><span class="eyebrow" style="color:var(--knop)">${esc(e.voor)} · ${e.ref}</span><h2 style="margin:6px 0">${esc(e.naam)}</h2><p>${esc(e.info)}</p><p class="zacht klein">${e.n} opgaven · ${e.min} minuten${l?` · vorige keer ${l.totaal}% (${datumKort(l.tijd)})`:''}</p><div class="voet" style="justify-content:flex-start"><button class="knop" onclick="startOefentoets('${e.id}')">Start oefentoets</button></div></div>` }).join('')}</div>`;
+   ${EXAMENS.map(e=>{ const l=laatste(e.id); return `<div class="kaart" style="margin-top:14px"><span class="eyebrow" style="color:var(--knop)">${esc(e.voor)} · ${e.ref}</span><h2 style="margin:6px 0">${esc(e.naam)}</h2><p>${esc(e.info)}</p><p class="zacht klein">${e.n} opgaven · ${Math.round(e.min*(S.rustig?1.5:1))} minuten${S.rustig?' (met extra tijd)':''}${l?` · vorige keer ${l.totaal}% (${datumKort(l.tijd)})`:''}</p><div class="voet" style="justify-content:flex-start"><button class="knop" onclick="startOefentoets('${e.id}')">Start oefentoets</button></div></div>` }).join('')}</div>`;
 };
 function maakToetsItems(niveaus,n,bron,rmMag=true){
   const items=[], per=Math.ceil(n/4);
@@ -19,7 +19,7 @@ function maakToetsItems(niveaus,n,bron,rmMag=true){
 }
 function startOefentoets(id){
   const e=EXAMENS.find(x=>x.id===id); const items=maakToetsItems(e.niveaus,e.n,'toets',e.rm);
-  SES={soort:'toets',oefentoets:e,titel:'Oefentoets '+e.naam,niv:Math.max(...e.niveaus),herk:null,items,antw:[],res:[],i:0,n:items.length,start:Date.now(),eind:Date.now()+e.min*60000};
+  SES={soort:'toets',oefentoets:e,titel:'Oefentoets '+e.naam,niv:Math.max(...e.niveaus),herk:null,items,antw:[],res:[],i:0,n:items.length,start:Date.now(),eind:Date.now()+e.min*60000*(S.rustig?1.5:1)};
   toetsKlokStart(); volgendeItem();
 }
 let toetsKlokTimer=null;

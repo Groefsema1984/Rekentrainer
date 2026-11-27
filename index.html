@@ -10,6 +10,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Rekenen op Niveau">
 <meta name="theme-color" content="#f08a09">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -544,6 +546,15 @@ body[data-fase=jong] .optie,body[data-fase=midden] .optie{min-height:76px;font-s
 .ouders .statstrook b{display:block;font:800 28px/1.1 var(--kop)}.ouders .statstrook span{font-size:14px;color:var(--zacht)}
 .groepjes{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 .toetsklok{font-variant-numeric:tabular-nums;margin-left:auto}.toetsklok.bijna{background:var(--fout);color:#fff;border-color:var(--fout)}
+/* rustige modus: meer ruimte, minder prikkels, geen beweging */
+body.rustig{--rustig:1}
+body.rustig .vraag,body.rustig #qbody p,body.rustig .stappen li{font-size:1.12em;line-height:1.75;letter-spacing:.02em;word-spacing:.12em;max-width:60ch}
+body.rustig .eyebrow{letter-spacing:.06em}
+body.rustig .foto,body.rustig .held{background-image:none!important}
+body.rustig .voortgang,body.rustig .med,body.rustig .badges{opacity:.55}
+body.rustig *,body.rustig *::before,body.rustig *::after{animation:none!important;transition:none!important}
+body.rustig .optie{line-height:1.5}
+body.rustig .woord{text-decoration-style:solid}
 
 </style>
 </head>
@@ -557,7 +568,7 @@ body[data-fase=jong] .optie,body[data-fase=midden] .optie{min-height:76px;font-s
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekenen op Niveau · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = '588aac0f8c';
+const BOUW = '9b89c3ff6a';
 // Groepen en klassen. Vanaf klas 1 met schooltype: dat bepaalt start van de instaptoets en het doelniveau.
 const GROEPEN = ['groep 3','groep 4','groep 5','groep 6','groep 7','groep 8'];
 const SCHOOLTYPEN = [{id:'vmbo',jaren:4,start:4,doel:8},{id:'havo',jaren:5,start:5,doel:11},{id:'vwo',jaren:6,start:6,doel:12}];
@@ -3581,7 +3592,7 @@ account(){
    <p class="zacht" style="margin-bottom:2px">Leerling-ID</p><div class="code">${esc(S.id||'–')}</div>
    <p class="zacht" style="margin-bottom:2px">Herstelcode</p><div class="code">${esc(S.code||'–')}</div>
    <p>${syncLabel()}</p>
-   <div class="voet" style="justify-content:flex-start"><button class="knop zacht" onclick="sync().then(()=>go('account'))">Nu opslaan</button><button class="knop zacht" onclick="go('instapIntro')">Instaptoets opnieuw</button><button class="knop zacht" onclick="document.body.classList.toggle('th-nacht');S.th=document.body.classList.contains('th-nacht')?'nacht':'';bewaar(false)">Donker thema</button><button class="knop rand" onclick="uitloggen()">Uitloggen</button></div></div></div>`;
+   <div class="voet" style="justify-content:flex-start"><button class="knop zacht" onclick="sync().then(()=>go('account'))">Nu opslaan</button><button class="knop zacht" onclick="zetRustig(!S.rustig)">${S.rustig?'Rustige modus uitzetten':'Rustige modus aanzetten'}</button><button class="knop zacht" onclick="go('instapIntro')">Instaptoets opnieuw</button><button class="knop zacht" onclick="document.body.classList.toggle('th-nacht');S.th=document.body.classList.contains('th-nacht')?'nacht':'';bewaar(false)">Donker thema</button><button class="knop rand" onclick="uitloggen()">Uitloggen</button></div></div></div>`;
 },
 quiz(){ return quizHtml() },
 uitslag(p){ return p.html },
@@ -3753,12 +3764,16 @@ function kiesV3(j,x){ Q.v3k=Q.v3k||{}; Q.v3k[j]=x; $$(`.segment[data-j="${j}"] b
 function start(){
   laad();
   if(S&&S.th==='nacht') document.body.classList.add('th-nacht');
+  if(S&&S.rustig) document.body.classList.add('rustig');
   if(location.hash==='#docent') return go('docentLogin');
   if(!S||!S.naam) return go('welkom');
   if(!KLASSEN.includes(S.klas)) return go('klasKiezen');
   if(!S.niv) return go('instapIntro');
   go('home'); planSync(1500); setTimeout(()=>{ try{ haalSjablonen() }catch(e){} },2500);
 }
+
+// Rustige modus (dyscalculie, dyslexie, prikkelgevoelig): meer ruimte, rustiger beeld, geen bewegingen, 50% extra tijd bij oefentoetsen.
+function zetRustig(aan){ S.rustig=aan; bewaar(false); document.body.classList.toggle('rustig',aan); melding(aan?'Rustige modus staat aan.':'Rustige modus staat uit.'); if(scherm==='account') go('account') }
 
 // ===== Groep 3 t/m 6 (niveau 1–4): eerst tikken, dan grote cijfertoetsen, daarna gewoon typen =====
 // Opbouw per leerdoel:  'tik'     – de eerste opgaven zijn meerkeuze (grote tegels om op te tikken)
@@ -4558,7 +4573,7 @@ const EXAMENS=[
 SCHERMEN.oefentoets=function(){
   const laatste=id=>(S.toetsen||[]).filter(t=>t.soort==='Oefentoets'&&t.examen===id).slice(-1)[0];
   return `<div class="wrap smal"><div class="top"><h1>Oefentoets</h1></div><p class="zacht">Oefen onder toetsomstandigheden: met een klok, zonder uitleg tussendoor en zonder hulpmiddelen. Na afloop zie je je score per domein en bekijk je je fouten.</p>
-   ${EXAMENS.map(e=>{ const l=laatste(e.id); return `<div class="kaart" style="margin-top:14px"><span class="eyebrow" style="color:var(--knop)">${esc(e.voor)} · ${e.ref}</span><h2 style="margin:6px 0">${esc(e.naam)}</h2><p>${esc(e.info)}</p><p class="zacht klein">${e.n} opgaven · ${e.min} minuten${l?` · vorige keer ${l.totaal}% (${datumKort(l.tijd)})`:''}</p><div class="voet" style="justify-content:flex-start"><button class="knop" onclick="startOefentoets('${e.id}')">Start oefentoets</button></div></div>` }).join('')}</div>`;
+   ${EXAMENS.map(e=>{ const l=laatste(e.id); return `<div class="kaart" style="margin-top:14px"><span class="eyebrow" style="color:var(--knop)">${esc(e.voor)} · ${e.ref}</span><h2 style="margin:6px 0">${esc(e.naam)}</h2><p>${esc(e.info)}</p><p class="zacht klein">${e.n} opgaven · ${Math.round(e.min*(S.rustig?1.5:1))} minuten${S.rustig?' (met extra tijd)':''}${l?` · vorige keer ${l.totaal}% (${datumKort(l.tijd)})`:''}</p><div class="voet" style="justify-content:flex-start"><button class="knop" onclick="startOefentoets('${e.id}')">Start oefentoets</button></div></div>` }).join('')}</div>`;
 };
 function maakToetsItems(niveaus,n,bron,rmMag=true){
   const items=[], per=Math.ceil(n/4);
@@ -4568,7 +4583,7 @@ function maakToetsItems(niveaus,n,bron,rmMag=true){
 }
 function startOefentoets(id){
   const e=EXAMENS.find(x=>x.id===id); const items=maakToetsItems(e.niveaus,e.n,'toets',e.rm);
-  SES={soort:'toets',oefentoets:e,titel:'Oefentoets '+e.naam,niv:Math.max(...e.niveaus),herk:null,items,antw:[],res:[],i:0,n:items.length,start:Date.now(),eind:Date.now()+e.min*60000};
+  SES={soort:'toets',oefentoets:e,titel:'Oefentoets '+e.naam,niv:Math.max(...e.niveaus),herk:null,items,antw:[],res:[],i:0,n:items.length,start:Date.now(),eind:Date.now()+e.min*60000*(S.rustig?1.5:1)};
   toetsKlokStart(); volgendeItem();
 }
 let toetsKlokTimer=null;
@@ -4656,6 +4671,7 @@ if(DEV){
 }
 
 start();
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)) window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body>
 </html>

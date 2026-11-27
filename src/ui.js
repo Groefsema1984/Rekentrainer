@@ -173,7 +173,7 @@ account(){
    <p class="zacht" style="margin-bottom:2px">Leerling-ID</p><div class="code">${esc(S.id||'–')}</div>
    <p class="zacht" style="margin-bottom:2px">Herstelcode</p><div class="code">${esc(S.code||'–')}</div>
    <p>${syncLabel()}</p>
-   <div class="voet" style="justify-content:flex-start"><button class="knop zacht" onclick="sync().then(()=>go('account'))">Nu opslaan</button><button class="knop zacht" onclick="go('instapIntro')">Instaptoets opnieuw</button><button class="knop zacht" onclick="document.body.classList.toggle('th-nacht');S.th=document.body.classList.contains('th-nacht')?'nacht':'';bewaar(false)">Donker thema</button><button class="knop rand" onclick="uitloggen()">Uitloggen</button></div></div></div>`;
+   <div class="voet" style="justify-content:flex-start"><button class="knop zacht" onclick="sync().then(()=>go('account'))">Nu opslaan</button><button class="knop zacht" onclick="zetRustig(!S.rustig)">${S.rustig?'Rustige modus uitzetten':'Rustige modus aanzetten'}</button><button class="knop zacht" onclick="go('instapIntro')">Instaptoets opnieuw</button><button class="knop zacht" onclick="document.body.classList.toggle('th-nacht');S.th=document.body.classList.contains('th-nacht')?'nacht':'';bewaar(false)">Donker thema</button><button class="knop rand" onclick="uitloggen()">Uitloggen</button></div></div></div>`;
 },
 quiz(){ return quizHtml() },
 uitslag(p){ return p.html },
@@ -345,9 +345,13 @@ function kiesV3(j,x){ Q.v3k=Q.v3k||{}; Q.v3k[j]=x; $$(`.segment[data-j="${j}"] b
 function start(){
   laad();
   if(S&&S.th==='nacht') document.body.classList.add('th-nacht');
+  if(S&&S.rustig) document.body.classList.add('rustig');
   if(location.hash==='#docent') return go('docentLogin');
   if(!S||!S.naam) return go('welkom');
   if(!KLASSEN.includes(S.klas)) return go('klasKiezen');
   if(!S.niv) return go('instapIntro');
   go('home'); planSync(1500); setTimeout(()=>{ try{ haalSjablonen() }catch(e){} },2500);
 }
+
+// Rustige modus (dyscalculie, dyslexie, prikkelgevoelig): meer ruimte, rustiger beeld, geen bewegingen, 50% extra tijd bij oefentoetsen.
+function zetRustig(aan){ S.rustig=aan; bewaar(false); document.body.classList.toggle('rustig',aan); melding(aan?'Rustige modus staat aan.':'Rustige modus staat uit.'); if(scherm==='account') go('account') }
