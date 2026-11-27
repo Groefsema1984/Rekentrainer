@@ -185,3 +185,5 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .optie.mini{padding:8px 16px;min-height:0;width:auto;font-weight:700}
 .optie.mini.goed{border-color:#1f9d6b;background:#e8f6ef}.optie.mini.fout{border-color:#c0392b;background:#fbeceb}
 .schattip{background:#fff7ec;border-radius:8px;padding:8px 10px;margin-top:10px}
+.model{margin-top:12px;background:#fff;border:1px dashed #e0d8cc;border-radius:10px;padding:10px 12px}
+.model .figuur{margin:6px 0}

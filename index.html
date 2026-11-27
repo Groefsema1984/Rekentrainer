@@ -457,6 +457,8 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .optie.mini{padding:8px 16px;min-height:0;width:auto;font-weight:700}
 .optie.mini.goed{border-color:#1f9d6b;background:#e8f6ef}.optie.mini.fout{border-color:#c0392b;background:#fbeceb}
 .schattip{background:#fff7ec;border-radius:8px;padding:8px 10px;margin-top:10px}
+.model{margin-top:12px;background:#fff;border:1px dashed #e0d8cc;border-radius:10px;padding:10px 12px}
+.model .figuur{margin:6px 0}
 
 </style>
 </head>
@@ -470,7 +472,7 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekentrainer Vellesan · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = 'ee45c6c392';
+const BOUW = 'b0b96991e0';
 const KLASSEN = ['1e klas','2e klas','3e klas','4e klas','5e klas','6e klas','Thuis'];
 const KEY = 'rekenvel-v1';
 const OUTBOX = 'rekenvel-outbox';
@@ -724,6 +726,16 @@ const FIG = {
     return FIG.wrap(o,480,240);
   },
   // schaallijn: lijnstuk met label
+  // dubbele getallenlijn: twee grootheden boven elkaar, kolommen = [[waarde boven, waarde onder], ...]
+  dubbel(kop,kol){
+    const W=600,x0=120,x1=575; kol=kol.filter((c,i)=>kol.findIndex(d=>d[0]===c[0])===i);
+    const max=Math.max(...kol.map(c=>Math.abs(Number(c[0]))||0))||1; const X=v=>x0+(Number(v)/max)*(x1-x0);
+    const lab=v=>v===null?'?':typeof v==='number'?nl(v):String(v);
+    let o=`<line x1="${x0}" y1="44" x2="${x1}" y2="44" class="ax"/><line x1="${x0}" y1="96" x2="${x1}" y2="96" class="ax"/>`+FIG.t(8,49,kop[0],{a:'start',c:'zacht',fs:14})+FIG.t(8,101,kop[1],{a:'start',c:'zacht',fs:14});
+    o+=`<line x1="${x0}" y1="38" x2="${x0}" y2="102" class="lijn"/>`+FIG.t(x0,30,'0',{fs:14})+FIG.t(x0,122,'0',{fs:14});
+    kol.forEach((c,i)=>{ const x=X(c[0]); o+=`<line x1="${x}" y1="38" x2="${x}" y2="102" class="${i===kol.length-1?'dik':'lijn'}"/>`+FIG.t(x,30,lab(c[0]),{fs:15})+FIG.t(x,122,lab(c[1]),{fs:15}) });
+    return FIG.wrap(o,W,134);
+  },
   meetlat(cm,label){
     const w=Math.min(500,cm*40); let o=`<line x1="20" y1="30" x2="${20+w}" y2="30" class="dik"/>`;
     for(let i=0;i<=cm;i++) o+=`<line x1="${20+i*w/cm}" y1="22" x2="${20+i*w/cm}" y2="38" class="lijn"/>`;
@@ -825,7 +837,7 @@ function itemHtml(it){
       h=vraag+`<div class="opties">${it.opties.map((o,i)=>`<button class="optie" data-i="${i}" onclick="kiesOptie(${i})"><span class="l">${'ABCD'[i]}</span><span>${o.t}</span></button>`).join('')}</div>`;
       break;
     case 'faded1':
-      h=`<div class="uitlegblok"><span class="eyebrow">Zo werkt het</span><p>${ld.uitleg}</p></div>`+vraag+
+      h=`<div class="uitlegblok"><span class="eyebrow">Zo werkt het</span><p>${ld.uitleg}</p>${modelHtml(it)||vormModel(it)}</div>`+vraag+
         `<ol class="stappen">${it.stappen.map(s=>`<li>${s[0]}</li>`).join('')}</ol>`+
         `<div class="checkvraag"><b>Checkvraag:</b> ${esc(it.check.vraag)}</div><div class="opties">${it.check.opties.map((o,i)=>`<button class="optie" data-i="${i}" onclick="kiesOptie(${i})"><span class="l">${'ABC'[i]}</span><span>${esc(o.t)}</span></button>`).join('')}</div>`;
       break;
@@ -944,10 +956,20 @@ function uitwerkingHtml(it){
   if(!ld.stappen) return '';
   return `<ol class="stappen klein">${ld.stappen(it.v).map(s=>`<li>${s[0].replace(/\{\?\}/,s[1]!=null?nl(s[1]):'')}</li>`).join('')}</ol>`;
 }
+// in het uitgewerkte voorbeeld: het plaatje uit de andere uitleg (strook, balk, getallenlijn) als model
+function vormModel(it){ const ld=LD[it.ld]; if(!ld.anders) return ''; let a; try{ a=ld.anders(it.v) }catch(e){ return '' } return a&&a.svg?`<div class="model"><span class="eyebrow">Model</span><div class="figuur">${a.svg}</div></div>`:'' }
+// extra model bij de uitleg: een dubbele getallenlijn uit de verhoudingstabel van het leerdoel
+function modelHtml(it){
+  const ld=LD[it.ld]; if(!ld.tabel) return '';
+  let t; try{ t=ld.tabel(it.v) }catch(e){ return '' }
+  if(!t||!t.rijen||t.rijen.length<2||t.rijen[0].length!==2||!t.rijen.every(c=>typeof c[0]==='number'&&c[0]>=0)) return '';
+  const kol=t.rijen.slice().sort((a,b)=>a[0]-b[0]);
+  return `<div class="model"><span class="eyebrow">Model: dubbele getallenlijn</span><div class="figuur">${FIG.dubbel(t.kop,kol)}</div><p class="klein zacht">Boven en onder horen bij elkaar. Wat je boven doet (× of :), doe je ook onder.</p></div>`;
+}
 function andersHtml(it){
   const ld=LD[it.ld]; if(!ld.anders) return `<p>${ld.uitleg}</p>`;
   const a=ld.anders(it.v); const o=typeof a==='string'?{tekst:a}:a;
-  return `<p>${o.tekst}</p>${o.svg?`<div class="figuur">${o.svg}</div>`:''}${o.tabel?`<div class="tabelwrap">${vtabelHtml(o.tabel.kop,o.tabel.rijen)}</div>`:''}`;
+  return `<p>${o.tekst}</p>${o.svg?`<div class="figuur">${o.svg}</div>`:''}${o.tabel?`<div class="tabelwrap">${vtabelHtml(o.tabel.kop,o.tabel.rijen)}</div>`:''}${o.svg?'':modelHtml(it)}`;
 }
 
 // ===== Adaptieve engine: beheersing, treden, foutenbank (spaced repetition), vraagkeuze en niveau omhoog/omlaag =====

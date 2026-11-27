@@ -85,6 +85,16 @@ const FIG = {
     return FIG.wrap(o,480,240);
   },
   // schaallijn: lijnstuk met label
+  // dubbele getallenlijn: twee grootheden boven elkaar, kolommen = [[waarde boven, waarde onder], ...]
+  dubbel(kop,kol){
+    const W=600,x0=120,x1=575; kol=kol.filter((c,i)=>kol.findIndex(d=>d[0]===c[0])===i);
+    const max=Math.max(...kol.map(c=>Math.abs(Number(c[0]))||0))||1; const X=v=>x0+(Number(v)/max)*(x1-x0);
+    const lab=v=>v===null?'?':typeof v==='number'?nl(v):String(v);
+    let o=`<line x1="${x0}" y1="44" x2="${x1}" y2="44" class="ax"/><line x1="${x0}" y1="96" x2="${x1}" y2="96" class="ax"/>`+FIG.t(8,49,kop[0],{a:'start',c:'zacht',fs:14})+FIG.t(8,101,kop[1],{a:'start',c:'zacht',fs:14});
+    o+=`<line x1="${x0}" y1="38" x2="${x0}" y2="102" class="lijn"/>`+FIG.t(x0,30,'0',{fs:14})+FIG.t(x0,122,'0',{fs:14});
+    kol.forEach((c,i)=>{ const x=X(c[0]); o+=`<line x1="${x}" y1="38" x2="${x}" y2="102" class="${i===kol.length-1?'dik':'lijn'}"/>`+FIG.t(x,30,lab(c[0]),{fs:15})+FIG.t(x,122,lab(c[1]),{fs:15}) });
+    return FIG.wrap(o,W,134);
+  },
   meetlat(cm,label){
     const w=Math.min(500,cm*40); let o=`<line x1="20" y1="30" x2="${20+w}" y2="30" class="dik"/>`;
     for(let i=0;i<=cm;i++) o+=`<line x1="${20+i*w/cm}" y1="22" x2="${20+i*w/cm}" y2="38" class="lijn"/>`;

@@ -86,7 +86,7 @@ function itemHtml(it){
       h=vraag+`<div class="opties">${it.opties.map((o,i)=>`<button class="optie" data-i="${i}" onclick="kiesOptie(${i})"><span class="l">${'ABCD'[i]}</span><span>${o.t}</span></button>`).join('')}</div>`;
       break;
     case 'faded1':
-      h=`<div class="uitlegblok"><span class="eyebrow">Zo werkt het</span><p>${ld.uitleg}</p></div>`+vraag+
+      h=`<div class="uitlegblok"><span class="eyebrow">Zo werkt het</span><p>${ld.uitleg}</p>${modelHtml(it)||vormModel(it)}</div>`+vraag+
         `<ol class="stappen">${it.stappen.map(s=>`<li>${s[0]}</li>`).join('')}</ol>`+
         `<div class="checkvraag"><b>Checkvraag:</b> ${esc(it.check.vraag)}</div><div class="opties">${it.check.opties.map((o,i)=>`<button class="optie" data-i="${i}" onclick="kiesOptie(${i})"><span class="l">${'ABC'[i]}</span><span>${esc(o.t)}</span></button>`).join('')}</div>`;
       break;
@@ -205,8 +205,18 @@ function uitwerkingHtml(it){
   if(!ld.stappen) return '';
   return `<ol class="stappen klein">${ld.stappen(it.v).map(s=>`<li>${s[0].replace(/\{\?\}/,s[1]!=null?nl(s[1]):'')}</li>`).join('')}</ol>`;
 }
+// in het uitgewerkte voorbeeld: het plaatje uit de andere uitleg (strook, balk, getallenlijn) als model
+function vormModel(it){ const ld=LD[it.ld]; if(!ld.anders) return ''; let a; try{ a=ld.anders(it.v) }catch(e){ return '' } return a&&a.svg?`<div class="model"><span class="eyebrow">Model</span><div class="figuur">${a.svg}</div></div>`:'' }
+// extra model bij de uitleg: een dubbele getallenlijn uit de verhoudingstabel van het leerdoel
+function modelHtml(it){
+  const ld=LD[it.ld]; if(!ld.tabel) return '';
+  let t; try{ t=ld.tabel(it.v) }catch(e){ return '' }
+  if(!t||!t.rijen||t.rijen.length<2||t.rijen[0].length!==2||!t.rijen.every(c=>typeof c[0]==='number'&&c[0]>=0)) return '';
+  const kol=t.rijen.slice().sort((a,b)=>a[0]-b[0]);
+  return `<div class="model"><span class="eyebrow">Model: dubbele getallenlijn</span><div class="figuur">${FIG.dubbel(t.kop,kol)}</div><p class="klein zacht">Boven en onder horen bij elkaar. Wat je boven doet (× of :), doe je ook onder.</p></div>`;
+}
 function andersHtml(it){
   const ld=LD[it.ld]; if(!ld.anders) return `<p>${ld.uitleg}</p>`;
   const a=ld.anders(it.v); const o=typeof a==='string'?{tekst:a}:a;
-  return `<p>${o.tekst}</p>${o.svg?`<div class="figuur">${o.svg}</div>`:''}${o.tabel?`<div class="tabelwrap">${vtabelHtml(o.tabel.kop,o.tabel.rijen)}</div>`:''}`;
+  return `<p>${o.tekst}</p>${o.svg?`<div class="figuur">${o.svg}</div>`:''}${o.tabel?`<div class="tabelwrap">${vtabelHtml(o.tabel.kop,o.tabel.rijen)}</div>`:''}${o.svg?'':modelHtml(it)}`;
 }
