@@ -519,6 +519,12 @@ body[data-fase=jong] .figuur svg{min-height:120px}
   .aplijst button{font-size:12.5px;letter-spacing:0;hyphens:manual;-webkit-hyphens:manual;overflow-wrap:break-word}
   .ap{font-size:13px}
 }
+/* ontwikkelaarsmodus */
+body.devmodus{box-shadow:inset 0 4px 0 #7a4fd6}
+.devlabel{border:0;border-radius:999px;background:#7a4fd6;color:#fff;font:700 13px var(--kop);padding:6px 12px;margin-right:8px;cursor:pointer}
+.devniv{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.devniv button{min-width:42px;padding:8px 10px;border:2px solid var(--lijn);border-radius:8px;background:var(--kaart);font:700 15px var(--kop)}.devniv button.aan{background:var(--ink);color:#fff;border-color:var(--ink)}
+.devtab{width:100%;border-collapse:collapse;margin-top:8px}.devtab td{padding:8px 6px;border-top:1px solid var(--lijn);vertical-align:top}.devtab td:last-child{text-align:right}.devtab .knop{margin:2px 0}
+@media (max-width:560px){.devtab td{display:block;text-align:left!important}}
 
 </style>
 </head>
@@ -532,13 +538,15 @@ body[data-fase=jong] .figuur svg{min-height:120px}
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekenen op Niveau · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = '6346b7bc9f';
+const BOUW = 'b99d9e21e1';
 // Groepen en klassen. Vanaf klas 1 met schooltype: dat bepaalt start van de instaptoets en het doelniveau.
 const GROEPEN = ['groep 3','groep 4','groep 5','groep 6','groep 7','groep 8'];
 const SCHOOLTYPEN = [{id:'vmbo',jaren:4,start:4,doel:8},{id:'havo',jaren:5,start:5,doel:11},{id:'vwo',jaren:6,start:6,doel:12}];
 const KLASSEN = GROEPEN.concat(...SCHOOLTYPEN.map(t=>Array.from({length:t.jaren},(_,i)=>`klas ${i+1} ${t.id}`)));
 const VER = 2;                            // versie van de opgeslagen staat (2 = 12 niveaus)
-const KEY = 'rekenvel-v1';
+// Ontwikkelaarsmodus (ontgrendeld met de docentcode): eigen opslag, niets naar de server, telt niet mee in statistieken.
+const DEV_VLAG='rekenkracht-dev', DEV = (()=>{ try{ return localStorage.getItem(DEV_VLAG)==='1' }catch(e){ return false } })();
+const KEY = DEV ? 'rekenkracht-dev-staat' : 'rekenvel-v1';
 const OUTBOX = 'rekenvel-outbox';
 const IDLE_MS = 90*1000;
 
@@ -689,7 +697,7 @@ function event(ev){ if(!S||demoModus) return; ev.eid=ev.eid||eid(); ev.tijd=ev.t
 
 // ---------- server ----------
 const serverModus = ()=>!!DATA_ENDPOINT_URL;
-let syncStatus='lokaal', syncTimer=null, bezig=false, syncTijd=0, syncFout='', demoModus=false;
+let syncStatus='lokaal', syncTimer=null, bezig=false, syncTijd=0, syncFout='', demoModus=DEV;
 async function api(actie,data){
   const r=await fetch(DATA_ENDPOINT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({actie},data))});
   const j=await r.json(); if(!j.ok) throw new Error(j.fout||'Serverfout'); return j;
@@ -3388,6 +3396,7 @@ function menu(){
   const m=$('#menu'); if(!m) return;
   if(!S||!S.naam||!S.niv){ m.innerHTML=''; return }
   const items=[['home','Dashboard'],['niveaus','Niveaus'],['planning','Planning'],['fouten','Foutenbank'],['account','Account']];
+  if(DEV) items.push(['dev','🛠 Ontwikkelaar']);
   m.innerHTML=items.map(([k,t])=>`<button class="${scherm===k||(k==='home'&&scherm==='domein')?'aan':''}" onclick="go('${k}')">${t}</button>`).join('')+
     `<button onclick="go('docentLogin')" style="margin-left:auto">Docent</button>`;
 }
@@ -4311,7 +4320,7 @@ SCHERMEN.docent=function(){
   const pc=v=>v===''||v==null?'<td class="zacht">–</td>':`<td><span class="pctcel ${v>=80?'hoog':v<50?'laag':''}">${v}%</span></td>`;
   const perNiv={}; ll.forEach(l=>{ const n=l['Huidig niveau']||0; perNiv[n]=(perNiv[n]||0)+1 });
   const inst=DOC.klas&&d.klasinst?d.klasinst[DOC.klas]:null;
-  return `<div class="wrap"><div class="top"><h1>Docentendashboard</h1><button class="knop zacht klein" onclick="docentVernieuw()">↻ Vernieuwen</button><button class="knop zacht klein" onclick="docAnalyse()">Analyse van de vragen</button><button class="knop zacht klein" onclick="exportCsv()">CSV</button><button class="knop zacht klein" onclick="exportJson()">JSON</button></div>
+  return `<div class="wrap"><div class="top"><h1>Docentendashboard</h1><button class="knop zacht klein" onclick="docentVernieuw()">↻ Vernieuwen</button><button class="knop zacht klein" onclick="docAnalyse()">Analyse van de vragen</button><button class="knop zacht klein" onclick="exportCsv()">CSV</button><button class="knop zacht klein" onclick="exportJson()">JSON</button>${d.lokaal?'':(DEV?'<button class="knop zacht klein" onclick="go(\'dev\')">🛠 Ontwikkelaar</button>':'<button class="knop zacht klein" onclick="devAan()">🛠 Ontwikkelaarsmodus</button>')}</div>
    <div class="nivkeuze klassen"><button class="${!DOC.klas?'aan':''}" onclick="DOC.klas='';go('docent')">Alle klassen</button>${d.klassen.map(k=>`<button class="${DOC.klas===k?'aan':''}" onclick="DOC.klas='${esc(k)}';go('docent')">${esc(k)}</button>`).join('')}</div>
    <div class="statstrook" style="margin:16px 0 22px"><div><small>Leerlingen</small><span class="getal">${ll.length}</span></div><div><small>Gemiddeld niveau</small><span class="getal">${ll.length?nl(ll.reduce((s,l)=>s+(+l['Huidig niveau']||0),0)/ll.length,1):'–'}</span></div><div><small>Opgaven deze selectie</small><span class="getal">${ll.reduce((s,l)=>s+(+l['Opgaven gemaakt']||0),0)}</span></div><div><small>Verdeling niveaus</small><span class="klein">${Object.keys(perNiv).sort().map(n=>`N${n}: ${perNiv[n]}`).join(' · ')||'–'}</span></div></div>
    ${inst?`<div class="kaart" style="margin-bottom:18px"><b>Instellingen ${esc(DOC.klas)}</b> <label style="margin-left:16px"><input type="checkbox" ${inst.toetsVrij?'checked':''} onchange="klasInst('${esc(DOC.klas)}',this.checked)"> Rekentoets mag automatisch open</label></div>`:''}
@@ -4389,6 +4398,55 @@ function sjabloonHtml(){
 }
 async function zetSjabloon(sj,status){
   try{ await api('sjabloonstatus',{docentcode:DOC.code,sj,status}); const j=await api('itemanalyse',{docentcode:DOC.code}); DOC.sj=j.sjablonen||[]; SJ.t=0; melding(status==='vrijgegeven'?'Sjabloon hersteld: hij wordt weer aangeboden.':status==='geblokkeerd'?'Sjabloon geblokkeerd.':'Sjabloon staat weer op automatisch.'); go('docentAnalyse') }catch(e){ melding(esc(e.message)) }
+}
+
+// ===== Ontwikkelaarsmodus: alle niveaus open, elke opgave en elk vraagtype direct bekijken =====
+// Ontgrendelen: Docent › inloggen met de docentcode (de server controleert die) › Ontwikkelaarsmodus.
+// Het ontwikkelaarsprofiel staat apart opgeslagen; het gewone leerlingaccount op dit apparaat blijft onaangeroerd.
+// In deze modus gaat er niets naar de server: geen synchronisatie, geen foutenlog, niet in de vraagcontrole.
+function devStaat(niv){ return Object.assign(nieuweStaat(),{naam:'Ontwikkelaar',klas:'klas 6 vwo',niv:niv||12,max:NIVEAUS.length,plaatsing:{niv:niv||12},ver:VER,dev:true}) }
+function devAan(){
+  if(!DOC.data||DOC.data.lokaal||!DOC.code){ melding('Log eerst in met de docentcode.'); return }
+  try{ localStorage.setItem(DEV_VLAG,'1'); if(!localStorage.getItem('rekenkracht-dev-staat')) localStorage.setItem('rekenkracht-dev-staat',JSON.stringify(devStaat(12))) }catch(e){ melding('Opslaan lukt niet op dit apparaat.'); return }
+  location.hash=''; location.reload();
+}
+function devUit(){ try{ localStorage.removeItem(DEV_VLAG) }catch(e){} location.hash=''; location.reload() }
+function devReset(){ if(!confirm('Voortgang van het ontwikkelaarsprofiel wissen?')) return; S=devStaat(S.niv||12); bewaar(false); melding('Voortgang gewist.'); go('dev') }
+function devNiveau(n){ S.niv=n; S.max=NIVEAUS.length; bewaar(false); go('dev') }
+function devKlas(k){ S.klas=k; bewaar(false); go('dev') }
+const devVormen=ld=>[...new Set(vormen(ld).concat(ld.stappen?['faded1','faded2']:[]))];
+function devItem(id,vorm){
+  const ld=LD[id];
+  SES={soort:'oefen',ctx:{modus:'ld',ld:id,niv:ld.niv},titel:'Ontwikkelaar · '+ld.naam,n:1,i:0,res:[],recent:[],start:{b:DOMEINEN.map(d=>domB(ld.niv,d.id))}};
+  try{ toonItem(maakItem(id,{vorm,trede:vorm==='faded1'?1:vorm==='faded2'?2:3,bron:'oefen'})) }catch(e){ melding('Fout bij maken van '+id+'|'+vorm+': '+esc(e.message)) }
+}
+function devToets(){ startToets(S.niv) }
+function devInstap(){ go('instapIntro'); startInstap() }
+SCHERMEN.dev=function(){
+  if(!DEV) return SCHERMEN.home();
+  const n=S.niv, N=NIVEAUS[n-1];
+  const lds=d=>LDS.filter(l=>l.niv===n&&l.dom===d.id);
+  return `<div class="wrap"><div class="top"><h1>🛠 Ontwikkelaar</h1><span class="chip">Niets gaat naar de server</span></div>
+   <div class="kaart"><span class="eyebrow" style="color:var(--knop)">Niveau kiezen</span>
+    <div class="devniv">${NIVEAUS.map((x,i)=>`<button class="${i+1===n?'aan':''}" onclick="devNiveau(${i+1})">${i+1}</button>`).join('')}</div>
+    <p class="zacht" style="margin:8px 0 0">Niveau ${n}${N&&N.ref?' · '+esc(N.ref):''}${N&&N.titel?' · '+esc(N.titel):''}</p>
+    <div class="voet" style="justify-content:flex-start;flex-wrap:wrap">
+     <button class="knop" onclick="go('home')">Dashboard van niveau ${n}</button>
+     <button class="knop zacht" onclick="devToets()">Rekentoets niveau ${n} starten</button>
+     <button class="knop zacht" onclick="devInstap()">Instaptoets starten</button>
+     <button class="knop zacht" onclick="startFit()">Rekenfit</button>
+    </div>
+    <label class="label">Groep of klas (bepaalt waar de instaptoets begint)</label>${klasSelect('devKlasSel',S.klas)}
+    <div class="voet" style="justify-content:flex-start"><button class="knop zacht klein" onclick="devKlas($('#devKlasSel').value)">Klas opslaan</button><button class="knop zacht klein" onclick="devReset()">Voortgang wissen</button><button class="knop zacht klein" onclick="devUit()">Ontwikkelaarsmodus verlaten</button></div></div>
+   ${DOMEINEN.map(d=>`<div class="kaart" style="--k:${d.k};margin-top:14px"><span class="eyebrow" style="color:${d.k}">${esc(d.naam)} · niveau ${n} · ${lds(d).length} leerdoelen</span>
+    <table class="devtab">${lds(d).map(l=>`<tr><td><b>${esc(l.naam)}</b><br><small class="zacht">${esc(l.id)} · ${esc(subVan(l.dom,l.sub).naam)}</small></td><td>${devVormen(l).map(v=>`<button class="knop zacht klein" onclick="devItem('${l.id}','${v}')">${esc(TREDE_LABEL[v]||v)}</button>`).join(' ')}</td></tr>`).join('')}</table></div>`).join('')}
+  </div>`;
+};
+// zichtbaar label en waarschuwing bij het vangnet
+if(DEV){
+  document.body.classList.add('devmodus');
+  const _profiel=profiel; profiel=function(){ _profiel(); const p=$('#profiel'); if(p&&!p.querySelector('.devlabel')) p.insertAdjacentHTML('afterbegin','<button class="devlabel" onclick="go(\'dev\')">🛠 Ontwikkelaar</button>') };
+  const _over=opgaveOverslaan; opgaveOverslaan=function(){ try{ melding('Vangnet: '+Q.it.ld+'|'+Q.it.vorm+' rendert niet goed en is overgeslagen.') }catch(e){} return _over() };
 }
 
 start();

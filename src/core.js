@@ -7,7 +7,9 @@ const GROEPEN = ['groep 3','groep 4','groep 5','groep 6','groep 7','groep 8'];
 const SCHOOLTYPEN = [{id:'vmbo',jaren:4,start:4,doel:8},{id:'havo',jaren:5,start:5,doel:11},{id:'vwo',jaren:6,start:6,doel:12}];
 const KLASSEN = GROEPEN.concat(...SCHOOLTYPEN.map(t=>Array.from({length:t.jaren},(_,i)=>`klas ${i+1} ${t.id}`)));
 const VER = 2;                            // versie van de opgeslagen staat (2 = 12 niveaus)
-const KEY = 'rekenvel-v1';
+// Ontwikkelaarsmodus (ontgrendeld met de docentcode): eigen opslag, niets naar de server, telt niet mee in statistieken.
+const DEV_VLAG='rekenkracht-dev', DEV = (()=>{ try{ return localStorage.getItem(DEV_VLAG)==='1' }catch(e){ return false } })();
+const KEY = DEV ? 'rekenkracht-dev-staat' : 'rekenvel-v1';
 const OUTBOX = 'rekenvel-outbox';
 const IDLE_MS = 90*1000;
 
@@ -158,7 +160,7 @@ function event(ev){ if(!S||demoModus) return; ev.eid=ev.eid||eid(); ev.tijd=ev.t
 
 // ---------- server ----------
 const serverModus = ()=>!!DATA_ENDPOINT_URL;
-let syncStatus='lokaal', syncTimer=null, bezig=false, syncTijd=0, syncFout='', demoModus=false;
+let syncStatus='lokaal', syncTimer=null, bezig=false, syncTijd=0, syncFout='', demoModus=DEV;
 async function api(actie,data){
   const r=await fetch(DATA_ENDPOINT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({actie},data))});
   const j=await r.json(); if(!j.ok) throw new Error(j.fout||'Serverfout'); return j;

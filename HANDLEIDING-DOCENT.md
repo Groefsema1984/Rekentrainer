@@ -60,3 +60,11 @@ Vanaf 30 pogingen beoordeelt het systeem elk sjabloon:
 In het docentscherm › *Analyse van de vragen* zie je de lijst met reden. Met **Herstel** geef je een sjabloon weer vrij, met **Blokkeer** zet je hem zelf uit. De grenzen staan bovenaan in Code.gs (CFG.ITEM_…) en kun je daar aanpassen.
 
 Ook nieuw: Enter in het antwoordvak telt niet meer als "Zeker". De leerling kiest altijd zelf Zeker of Gok, zodat "Zeker én fout" betrouwbaar is.
+
+## Ontwikkelaarsmodus
+Voor de maker en docent: alle 12 niveaus open en elke opgave direct bekijken.
+1. Klik op **Docent** en log in met de docentcode.
+2. Klik op **🛠 Ontwikkelaarsmodus**. De app herlaadt met een paars label *Ontwikkelaar*.
+3. Via het menu **🛠 Ontwikkelaar** kies je een niveau. Je kunt dan de rekentoets of instaptoets van dat niveau starten, of per leerdoel elk vraagtype openen (Zelf doen, Meerkeuze, Voorbeeld, Invulsom, Saboteur, Koppel, …).
+
+Het ontwikkelaarsprofiel staat apart opgeslagen. Een leerlingaccount op hetzelfde apparaat blijft gewoon staan en komt terug zodra je *Ontwikkelaarsmodus verlaten* kiest. In de ontwikkelaarsmodus gaat er niets naar de Google Sheet: geen voortgang, geen foutenlog en niets in de vraagcontrole.

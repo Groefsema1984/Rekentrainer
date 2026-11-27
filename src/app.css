@@ -246,3 +246,9 @@ body[data-fase=jong] .figuur svg{min-height:120px}
   .aplijst button{font-size:12.5px;letter-spacing:0;hyphens:manual;-webkit-hyphens:manual;overflow-wrap:break-word}
   .ap{font-size:13px}
 }
+/* ontwikkelaarsmodus */
+body.devmodus{box-shadow:inset 0 4px 0 #7a4fd6}
+.devlabel{border:0;border-radius:999px;background:#7a4fd6;color:#fff;font:700 13px var(--kop);padding:6px 12px;margin-right:8px;cursor:pointer}
+.devniv{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.devniv button{min-width:42px;padding:8px 10px;border:2px solid var(--lijn);border-radius:8px;background:var(--kaart);font:700 15px var(--kop)}.devniv button.aan{background:var(--ink);color:#fff;border-color:var(--ink)}
+.devtab{width:100%;border-collapse:collapse;margin-top:8px}.devtab td{padding:8px 6px;border-top:1px solid var(--lijn);vertical-align:top}.devtab td:last-child{text-align:right}.devtab .knop{margin:2px 0}
+@media (max-width:560px){.devtab td{display:block;text-align:left!important}}

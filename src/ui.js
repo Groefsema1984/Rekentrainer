@@ -17,6 +17,7 @@ function menu(){
   const m=$('#menu'); if(!m) return;
   if(!S||!S.naam||!S.niv){ m.innerHTML=''; return }
   const items=[['home','Dashboard'],['niveaus','Niveaus'],['planning','Planning'],['fouten','Foutenbank'],['account','Account']];
+  if(DEV) items.push(['dev','🛠 Ontwikkelaar']);
   m.innerHTML=items.map(([k,t])=>`<button class="${scherm===k||(k==='home'&&scherm==='domein')?'aan':''}" onclick="go('${k}')">${t}</button>`).join('')+
     `<button onclick="go('docentLogin')" style="margin-left:auto">Docent</button>`;
 }
