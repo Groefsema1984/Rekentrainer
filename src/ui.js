@@ -3,11 +3,12 @@
 const FOTO={start:'1509062522246-3755977927d7',G:'1635070041078-e363dbe005cb',V:'1554224155-6726b3ff858f',M:'1503387762-592deb58ef4e',B:'1551288049-bebda4e38f71',
   toets:'1606326608606-aa0b62935f2b',instap:'1522202176988-66273c2fd55f',fouten:'1456513080510-7bf3a84b82f8',niveaus:'1519389950473-47ba0277781c'};
 const foto=(k,w=1400)=>FOTO[k]?`background-image:url('https://images.unsplash.com/photo-${FOTO[k]}?w=${w}&q=70&auto=format&fit=crop')`:'';
-const VOET=()=>`<footer class="voettekst"><div class="in"><b>Rekenen op <span class="o">Niveau</span></b><span>Eén adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau.</span><span style="margin-left:auto">© 2026 S. Groefsema · Alle rechten voorbehouden · Foto's: Unsplash</span></div></footer>`;
+const VOET=()=>`<footer class="voettekst"><div class="in"><b>Rekenen op <span class="o">Niveau</span></b><span>Eén adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau.</span><span style="margin-left:auto">© 2026 S. Groefsema · Alle rechten voorbehouden · Foto's: Unsplash${typeof STEM!=='undefined'&&STEM.actief?' · Voorleesstem: ElevenLabs':''}</span></div></footer>`;
 
 let scherm='welkom', param={};
 function go(naam,p={}){
   if(naam!=='quiz') oefenActief=false;
+  try{ if(typeof stopVoorlezen==='function') stopVoorlezen() }catch(e){}
   scherm=naam; param=p; document.body.dataset.scherm=naam;
   { const n=(naam==='quiz'&&typeof Q!=='undefined'&&Q&&Q.it)?Q.it.niv:(S&&S.niv)||0; document.body.dataset.fase=!n?'':n<=2?'jong':n<=4?'midden':n<=6?'po':'vo' }   // vormgeving past zich aan het niveau aan
   const f=SCHERMEN[naam]||SCHERMEN.home; $('#app').innerHTML=f(p); menu(); profiel(); window.scrollTo(0,0);

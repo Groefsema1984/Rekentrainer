@@ -58,14 +58,60 @@ function woordenMarkeren(root){
     const s=document.createElement('button'); s.type='button'; s.className='term'; s.textContent=m[1]; s.title=WOORDEN[k]; s.onclick=e=>{ e.preventDefault(); toonWoord(k) }; r.deleteContents(); r.insertNode(s) });
 }
 function toonWoord(k){ melding(`<b>${esc(k)}</b>: ${esc(WOORDEN[k])}`) }
-// voorlezen met de Nederlandse stem van het apparaat
+// voorlezen: met de stem "Roos" (ElevenLabs, via de server) als die aan staat, anders met de Nederlandse stem van het apparaat.
+// Alleen de opgavetekst gaat naar de server, nooit gegevens van de leerling. Elke zin wordt op het apparaat bewaard, zodat hij maar één keer tekens kost.
+let STEM={uit:false,audio:null,bezig:false,actief:(()=>{ try{ return localStorage.getItem('ron-stem-actief')==='1' }catch(e){ return false } })()};
+function voorleesTekst(){
+  const el=document.querySelector('#qbody'); if(!el) return '';
+  const kloon=el.cloneNode(true); kloon.querySelectorAll('svg,input,select,.schat,.schema,#modelpaneel,.cijferpad,#padTerug,.l').forEach(x=>x.remove());
+  kloon.querySelectorAll('.optie,.sabstap,li').forEach(o=>{ o.textContent=' '+o.textContent.trim().replace(/[.?!]?$/,'. ') }); kloon.querySelectorAll('p,div,h2,h3').forEach(e=>e.append(' '));
+  return kloon.textContent.replace(/×/g,' keer ').replace(/ : /g,' gedeeld door ').replace(/−/g,' min ').replace(/€\s?/g,'euro ').replace(/%/g,' procent').replace(/²/g,' kwadraat').replace(/³/g,' kubiek').replace(/≈/g,' ongeveer ').replace(/\s+/g,' ').trim();
+}
+function stopVoorlezen(){ try{ if(STEM.audio){ STEM.audio.pause(); STEM.audio=null } }catch(e){} try{ speechSynthesis.cancel() }catch(e){} STEM.bezig=false }
+const bezigMetVoorlezen=()=>STEM.bezig||!!(window.speechSynthesis&&speechSynthesis.speaking);
 function voorlezen(){
+  if(bezigMetVoorlezen()){ stopVoorlezen(); return }
+  const t=voorleesTekst(); if(!t) return;
+  STEM.bezig=true;
+  stemRoos(t).then(ok=>{ if(!ok){ STEM.bezig=false; apparaatStem(t) } });
+}
+function apparaatStem(t){
   if(!('speechSynthesis' in window)){ melding('Voorlezen werkt niet in deze browser.'); return }
-  const s=window.speechSynthesis; if(s.speaking){ s.cancel(); return }
-  const el=document.querySelector('#qbody'); if(!el) return;
-  const kloon=el.cloneNode(true); kloon.querySelectorAll('svg,input,select,.schat,.schema,#modelpaneel').forEach(x=>x.remove());
-  let t=kloon.innerText.replace(/×/g,' keer ').replace(/ : /g,' gedeeld door ').replace(/−/g,' min ').replace(/€\s?/g,'euro ').replace(/%/g,' procent').replace(/²/g,' kwadraat').replace(/³/g,' kubiek').replace(/≈/g,' ongeveer ').replace(/\s+/g,' ');
+  const s=window.speechSynthesis; s.cancel();
   const u=new SpeechSynthesisUtterance(t); u.lang='nl-NL'; u.rate=.92;
   const stem=s.getVoices().find(v=>/^nl/i.test(v.lang)); if(stem) u.voice=stem;
   s.speak(u);
 }
+async function stemSleutel(t){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('roos|'+t)); return [...new Uint8Array(b)].slice(0,16).map(x=>x.toString(16).padStart(2,'0')).join('') }
+async function stemRoos(t){
+  if(STEM.uit||!serverModus()||t.length>400||!window.crypto||!crypto.subtle) return false;
+  try{
+    const k=await stemSleutel(t), url='https://stem.rekenen-op-niveau.local/'+k; let blob=null, cache=null;
+    try{ cache=await caches.open('ron-stem'); const hit=await cache.match(url); if(hit) blob=await hit.blob() }catch(e){}
+    if(!blob){
+      const j=await fetch(DATA_ENDPOINT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({actie:'tts',tekst:t})}).then(r=>r.json());
+      if(!j.ok||!j.audio){ if(j.uit||j.op||/Onbekende actie/i.test(j.fout||'')){ STEM.uit=true; if(j.uit){ STEM.actief=false; try{ localStorage.removeItem('ron-stem-actief') }catch(e){} } } return false }
+      const bin=atob(j.audio), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+      blob=new Blob([u8],{type:j.mime||'audio/mpeg'});
+      try{ if(cache) await cache.put(url,new Response(blob.slice(0),{headers:{'Content-Type':blob.type}})) }catch(e){}
+    }
+    if(!STEM.bezig) return true;   // intussen gestopt
+    const a=new Audio(URL.createObjectURL(blob)); STEM.audio=a; a.onended=()=>{ STEM.bezig=false; STEM.audio=null };
+    await a.play(); if(!STEM.actief){ STEM.actief=true; try{ localStorage.setItem('ron-stem-actief','1') }catch(e){} } return true;
+  }catch(e){ return false }
+}
+// ----- docent: voorleesstem aan/uit en verbruik -----
+async function docStem(aan){
+  if(DOC.data&&DOC.data.lokaal){ melding('Dit werkt alleen met de server.'); return }
+  try{ DOC.stem=await api('steminstelling',Object.assign({docentcode:DOC.code},aan===undefined?{}:{aan})); if(aan!==undefined){ STEM.uit=!aan } go('docentStem') }
+  catch(e){ melding(/Onbekende actie/i.test(e.message)?'Implementeer eerst de nieuwe versie van Code.gs.':esc(e.message)) }
+}
+SCHERMEN.docentStem=function(){
+  const s=DOC.stem||{}; const pct=s.max?Math.round(100*s.gebruikt/s.max):0;
+  return `<div class="wrap smal"><div class="top"><h1>Voorleesstem</h1><button class="knop zacht klein" onclick="go('docent')">← Terug</button></div><div class="kaart">
+   <p style="margin-top:0">Status: <b>${!s.ingesteld?'nog niet ingesteld':s.aan?'aan (stem van ElevenLabs)':'uit (stem van het apparaat)'}</b></p>
+   ${s.ingesteld?`<p>Verbruik deze maand: <b>${s.gebruikt} van ${s.max}</b> tekens (${pct}%).</p>${balk(pct,'var(--knop)')}<p class="zacht klein">Is het maximum bereikt, dan leest de app voor met de stem van het apparaat. Een zin die al eens is voorgelezen, kost op hetzelfde apparaat geen tekens meer.</p>`:
+   `<p class="zacht">Vul in Apps Script bij Projectinstellingen › Scripteigenschappen <b>ELEVENLABS_KEY</b> en <b>ELEVENLABS_VOICE</b> in en implementeer opnieuw.</p>`}
+   ${s.fout?`<p class="zacht klein">Laatste melding van ElevenLabs: ${esc(s.fout)}</p>`:''}
+   <div class="voet" style="justify-content:flex-start">${s.ingesteld?(s.aan?`<button class="knop zacht" onclick="docStem(false)">Stem uitzetten</button>`:`<button class="knop" onclick="docStem(true)">Stem aanzetten</button>`):''}<button class="knop zacht" onclick="docStem()">Vernieuwen</button></div></div></div>`;
+};

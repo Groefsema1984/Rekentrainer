@@ -93,3 +93,11 @@ Doorstroomtoets groep 8 (1F/1S, 24 opgaven, 45 min, zonder rekenmachine), rekent
 - Leerling: *Oefentoets › Voor- en nameting*. De voormeting meet op het huidige niveau (20 opgaven, 30 min). De nameting gebruikt precies dezelfde soorten opgaven met andere getallen, liefst na minstens 4 weken.
 - Docent: knop **Effectmeting** in het dashboard. Per leerling voor, na en verschil; voor de groep de gemiddelde winst en de effectgrootte (d). Export naar CSV.
 - Tip: laat een vergelijkingsklas dezelfde metingen maken zonder de app; dan zie je het effect van de app los van de gewone groei.
+
+## Voorleesstem Roos (ElevenLabs)
+De app kan voorlezen met de stem Roos van ElevenLabs in plaats van de stem van het apparaat. Alleen de opgavetekst gaat naar ElevenLabs, nooit gegevens van leerlingen. De sleutel staat alleen in Apps Script (Scripteigenschappen), nooit in de app of op GitHub.
+- Instellen: Scripteigenschappen `ELEVENLABS_KEY` en `ELEVENLABS_VOICE` (optioneel `STEM_MAX_TEKENS`, standaard 9500 per maand), daarna een nieuwe versie implementeren.
+- Docentendashboard › **Voorleesstem**: aan/uit, verbruik deze maand en de laatste foutmelding van ElevenLabs.
+- Is de stem uit, het maximum bereikt of ElevenLabs onbereikbaar, dan leest de app voor met de stem van het apparaat.
+- Een zin die al eens is voorgelezen, wordt op het apparaat bewaard en kost geen tekens meer.
+- Gratis versie van ElevenLabs: niet voor commercieel gebruik en met bronvermelding. Die staat onderaan de app zolang de stem actief is.

@@ -11,7 +11,7 @@ function invoerStap(ld){
   return 'typen';
 }
 const autoLezen = () => !!(S&&S.autoLees!==false);
-function zetAutoLezen(aan){ S.autoLees=aan; bewaar(false); const b=$('#autoLeesKnop'); if(b){ b.textContent=aan?'🔊 Voorlezen: aan':'🔈 Voorlezen: uit'; b.classList.toggle('aan',aan) } if(!aan) try{ speechSynthesis.cancel() }catch(e){} }
+function zetAutoLezen(aan){ S.autoLees=aan; bewaar(false); const b=$('#autoLeesKnop'); if(b){ b.textContent=aan?'🔊 Voorlezen: aan':'🔈 Voorlezen: uit'; b.classList.toggle('aan',aan) } if(!aan) try{ stopVoorlezen() }catch(e){} }
 
 function cijferpadHtml(){
   const k=['1','2','3','4','5','6','7','8','9',',','0','⌫'];
@@ -38,6 +38,6 @@ naRender=function(){
       else toonCijferpad();
     }
     // niveau 1–2: de vraag wordt vanzelf voorgelezen
-    if(it.niv<=2&&autoLezen()&&'speechSynthesis' in window){ speechSynthesis.cancel(); setTimeout(()=>{ try{ if(!speechSynthesis.speaking) voorlezen() }catch(e){} },350) }
+    if(it.niv<=2&&autoLezen()){ stopVoorlezen(); setTimeout(()=>{ try{ if(!bezigMetVoorlezen()) voorlezen() }catch(e){} },350) }
   }catch(e){ console.warn(e) }
 };

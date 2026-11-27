@@ -130,6 +130,8 @@ function blad_(naam, kop) {
 // =====================================================================
 function doGet() { return uit_({ ok: true, app: 'rekentrainer', versie: 1 }); }
 function doPost(e) {
+  // voorlezen met de ElevenLabs-stem: buiten de lock, zodat andere leerlingen niet hoeven te wachten
+  try { const t = JSON.parse(e.postData.contents); if (t.actie === 'tts') return uit_(tts_(t)); } catch (x) {}
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(20000);
@@ -149,6 +151,7 @@ function doPost(e) {
       case 'itemanalyse': return uit_(itemanalyse_(d));
       case 'sjabloonstatus': return uit_(sjabloonStatus_(d));
       case 'effect': return uit_(effect_(d));
+      case 'steminstelling': return uit_(stemInstelling_(d));
       default: return uit_({ ok: false, fout: 'Onbekende actie' });
     }
   } catch (err) {
@@ -461,6 +464,46 @@ function topMisc_(klas) {
     return { naam: t.naam, keer: t.keer, zeker: t.zeker, leerlingen: wie.length, wie: wie,
     leerdoelen: Object.keys(t.leerdoelen).sort(function (a, b) { return t.leerdoelen[b] - t.leerdoelen[a]; }).slice(0, 4) }; })
     .sort(function (a, b) { return b.leerlingen * 3 + b.keer - (a.leerlingen * 3 + a.keer); }).slice(0, 12);
+}
+
+// =====================================================================
+// Voorleesstem (ElevenLabs). Sleutel en stem-ID staan in Projectinstellingen > Scripteigenschappen:
+//   ELEVENLABS_KEY   = je API-sleutel (nooit in de code of in de app zetten)
+//   ELEVENLABS_VOICE = de voice-ID van de stem (bijv. Roos)
+// Optioneel: STEM_MAX_TEKENS (standaard 9500 per maand). STEM_AAN = 'nee' zet de stem uit.
+// Alleen opgavetekst komt hier binnen; er gaan geen leerlinggegevens naar ElevenLabs.
+// =====================================================================
+function tts_(d) {
+  const P = PropertiesService.getScriptProperties();
+  const key = P.getProperty('ELEVENLABS_KEY'), voice = P.getProperty('ELEVENLABS_VOICE');
+  if (!key || !voice || P.getProperty('STEM_AAN') === 'nee') return { ok: false, uit: true };
+  const tekst = String(d.tekst || '').replace(/\s+/g, ' ').trim().slice(0, 400); if (!tekst) return { ok: false, fout: 'Geen tekst' };
+  const hash = Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, voice + '|' + tekst)).slice(0, 40);
+  const cache = CacheService.getScriptCache(); const hit = cache.get('tts' + hash);
+  if (hit) return { ok: true, audio: hit, mime: 'audio/mpeg', cache: true };
+  const maand = Utilities.formatDate(new Date(), 'Europe/Amsterdam', 'yyyy-MM'); const tk = 'STEM_TEKENS_' + maand;
+  const max = Number(P.getProperty('STEM_MAX_TEKENS') || 9500), gebruikt = Number(P.getProperty(tk) || 0);
+  if (gebruikt + tekst.length > max) return { ok: false, op: true };
+  const r = UrlFetchApp.fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(voice) + '?output_format=mp3_22050_32', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { 'xi-api-key': key, 'Accept': 'audio/mpeg' },
+    payload: JSON.stringify({ text: tekst, model_id: 'eleven_multilingual_v2', voice_settings: { stability: 0.6, similarity_boost: 0.8 } })
+  });
+  if (r.getResponseCode() !== 200) {
+    P.setProperty('STEM_LAATSTE_FOUT', new Date().toISOString() + ' ' + r.getResponseCode() + ' ' + r.getContentText().slice(0, 300));
+    return { ok: false, op: r.getResponseCode() === 401 || r.getResponseCode() === 402 || r.getResponseCode() === 429, fout: 'Stem niet beschikbaar' };
+  }
+  P.setProperty(tk, String(gebruikt + tekst.length));
+  const b64 = Utilities.base64Encode(r.getContent());
+  if (b64.length < 95000) cache.put('tts' + hash, b64, 21600);
+  return { ok: true, audio: b64, mime: 'audio/mpeg' };
+}
+/** Docent: stem aan/uit en verbruik deze maand bekijken. { docentcode, aan?: true|false } */
+function stemInstelling_(d) {
+  checkDocent_(d); const P = PropertiesService.getScriptProperties();
+  if (d.aan === true) P.setProperty('STEM_AAN', 'ja'); if (d.aan === false) P.setProperty('STEM_AAN', 'nee');
+  const maand = Utilities.formatDate(new Date(), 'Europe/Amsterdam', 'yyyy-MM');
+  return { ok: true, ingesteld: !!(P.getProperty('ELEVENLABS_KEY') && P.getProperty('ELEVENLABS_VOICE')), aan: P.getProperty('STEM_AAN') !== 'nee',
+    gebruikt: Number(P.getProperty('STEM_TEKENS_' + maand) || 0), max: Number(P.getProperty('STEM_MAX_TEKENS') || 9500), fout: P.getProperty('STEM_LAATSTE_FOUT') || '' };
 }
 
 /** Effectmeting: per leerling de eerste voormeting en de laatste nameting, met groepsstatistiek (gemiddelde winst en effectgrootte). */
