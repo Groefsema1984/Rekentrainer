@@ -220,6 +220,32 @@ function naRender(){
   const a=$('#antw'); if(a&&!('ontouchstart' in window)) a.focus();
   $$('#qbody input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); enterGedrukt() } }));
   if(Q.it.vorm==='v3') $('#kCheck').textContent='Verder';
+  if(!rendertGoed()) return opgaveOverslaan(); _overslaan=0;
+}
+// Vangnet: rendert een opgave niet goed (lege kolom, onzichtbare knoppen, NaN in de tekst),
+// dan krijgt de leerling een vervangende opgave in plaats van vast te lopen.
+let _overslaan=0;
+function rendertGoed(){
+  try{ const it=Q.it, b=$('#qbody'); if(!b) return false;
+    const zicht=e=>!!e&&e.getClientRects().length>0&&e.offsetWidth>0&&e.offsetHeight>0;
+    if(/undefined|NaN|\[object Object\]/.test(b.textContent)) return false;
+    if(it.vorm==='koppel'){ const k=$$('#qbody .kp'); return k.length===2*it.paren.length&&k.every(zicht) }
+    if(it.vorm==='mc'||it.vorm==='faded1'){ const o=$$('#qbody .optie'); return o.length>=2&&o.every(zicht) }
+    if(it.vorm==='open'||it.vorm==='faded2'){ const i=$$('#qbody input'); return !i.length||i.some(zicht) }
+    return true }catch(e){ return true }
+}
+function opgaveOverslaan(){
+  const it=Q.it; _overslaan++;
+  try{ if(typeof SJ!=='undefined'&&SJ.blok&&!SJ.blok.includes(it.ld+'|'+it.vorm)) SJ.blok.push(it.ld+'|'+it.vorm) }catch(e){}
+  try{ event({t:'item',sj:it.ld+'|'+it.vorm,ld:it.ld,vorm:it.vorm,niv:it.niv,skip:true,render:false}) }catch(e){}
+  if(_overslaan>5){ _overslaan=0; melding('Deze opgave kon niet worden getoond. Probeer het zo nog eens.'); return go('home') }
+  if(SES.soort==='oefen') return setTimeout(volgendeItem,0);
+  // instap of toets: vervang door een opgave van hetzelfde niveau (liefst hetzelfde domein), open of meerkeuze
+  const zelfde=LDS.filter(l=>l.niv===it.niv&&l.id!==it.ld&&l.dom===it.dom), kand=zelfde.length?zelfde:LDS.filter(l=>l.niv===it.niv&&l.id!==it.ld);
+  let nieuw=null; for(const l of shuffle(kand)){ try{ nieuw=maakItem(l.id,{trede:3,vorm:l.opties?'mc':'open',bron:it.bron}); break }catch(e){} }
+  if(!nieuw){ melding('Deze opgave kon niet worden getoond.'); return go('home') }
+  if(SES.soort==='instap') SES.blok[SES.bi]=nieuw; else if(SES.items) SES.items[SES.i]=nieuw;
+  setTimeout(()=>toonItem(nieuw),0);
 }
 // Enter is geen keuze: de leerling kiest zelf Zeker of Gok (anders klopt "Zeker én fout" niet)
 function enterGedrukt(){

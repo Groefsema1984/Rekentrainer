@@ -38,7 +38,7 @@ body.th-nacht .logo .lw b{color:#e8eaee}
 .menu button:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
 .menu button.aan{background:var(--donker);color:#fff}
 body.th-nacht .menu button.aan{background:var(--acc)}
-body[data-scherm=quiz] .rij2,body[data-scherm=welkom] .rij2,body[data-scherm=quiz] .rechts,body[data-scherm=welkom] .rechts{display:none}
+body[data-scherm=quiz] .rij2,body[data-scherm=welkom] .rij2,body[data-scherm=quiz] .topnav .rechts,body[data-scherm=welkom] .topnav .rechts{display:none}
 body[data-scherm=quiz] .topnav{position:static}
 
 /* ---------- algemene layout ---------- */
