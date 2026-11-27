@@ -6,7 +6,7 @@ L({id:'G1.afronden',niv:1,dom:'G',sub:'getalbegrip',naam:'Afronden op tientallen
   vraag:v=>`${v.ctx[0]} ${nl(v.x)} ${v.ctx[1]}. Rond dit getal af op ${({10:'tientallen',100:'honderdtallen',1000:'duizendtallen'})[v.op]}.`,
   antw:v=>Math.round(v.x/v.op)*v.op,
   stappen:v=>{ const d=Math.floor(v.x/(v.op/10))%10; return [st(`Het cijfer rechts van de ${({10:'tientallen',100:'honderdtallen',1000:'duizendtallen'})[v.op]} is ${d}.`,d),st(d>=5?`${d} is 5 of meer, dus naar boven afronden.`:`${d} is minder dan 5, dus naar beneden afronden.`),st(`Afgerond: ${nl(Math.round(v.x/v.op)*v.op)}`,Math.round(v.x/v.op)*v.op)] },
-  fouten:v=>[[Math.floor(v.x/v.op)*v.op,'Je hebt de cijfers alleen weggestreept. Kijk naar het cijfer erachter: bij 5 of meer rond je naar boven af.'],[Math.ceil(v.x/v.op)*v.op,'Bij een cijfer onder de 5 rond je naar beneden af.'],[Math.round(v.x/(v.op===1000?100:v.op*10))*(v.op===1000?100:v.op*10),'Let op op welke plek je moet afronden.']],
+  fouten:v=>[[Math.floor(v.x/v.op)*v.op,'Je hebt de cijfers alleen weggestreept. Kijk naar het cijfer erachter: bij 5 of meer rond je naar boven af.'],[Math.ceil(v.x/v.op)*v.op,'Bij een cijfer onder de 5 rond je naar beneden af.'],[Math.round(v.x/(v.op===1000?100:v.op*10))*(v.op===1000?100:v.op*10),'Let op op welke plek je moet afronden.'],[Math.round(v.x/v.op),'Je schreef alleen het aantal '+({10:'tientallen',100:'honderdtallen',1000:'duizendtallen'})[v.op]+' op. Zet de nullen erachter: het getal blijft ongeveer even groot.']],
   anders:v=>({tekst:`Zet het getal op een getallenlijn tussen de twee mogelijke uitkomsten. Welke ligt het dichtst bij?`,svg:FIG.lijn(Math.floor(v.x/v.op)*v.op,Math.floor(v.x/v.op)*v.op+v.op,v.op/10,[{x:v.x,label:nl(v.x)}],5)}),
   waarom:{vraag:'Waarom kijk je naar het cijfer rechts van de plek waarop je afrondt?',opties:['Dat cijfer bepaalt of je dichter bij het hogere of het lagere getal zit.','Omdat je altijd het laatste cijfer weghaalt.','Omdat je daar 1 bij moet optellen.']}
 });
@@ -22,6 +22,8 @@ L({id:'G1.nullen',niv:1,dom:'G',sub:'bewerkingen',naam:'Vermenigvuldigen met nul
   volgorde:true
 });
 function kolomfout(a,b){ const s=String(a),t=String(b).padStart(s.length,'0'); let o=''; for(let i=0;i<s.length;i++) o+=Math.abs(+s[i]-+t[i]); return +o }
+// Saboteur: alleen de eenheden lenen, zodat er precies één denkfout in de uitwerking zit
+function enkelLenen(v){ let {a,c}=v; if(Math.floor(c/10)%10>=8) c-=30; const tc=Math.floor(c/10)%10; if(Math.floor(a/10)%10-1<tc) a=Math.floor(a/100)*100+(tc+1)*10+a%10; return Object.assign({},v,{a,c}) }
 L({id:'G1.cijferen',niv:1,dom:'G',sub:'bewerkingen',naam:'Aftrekken met lenen',verwar:['G1.nullen'],
   uitleg:'Bij aftrekken met lenen: kan het niet in een kolom, leen dan 1 van de kolom links ervan (10 erbij). Je kunt ook rijgen: eerst de honderdtallen eraf, dan de tientallen, dan de eenheden.',
   gen(r){ let a,c; do{ a=r.int(121,480); c=r.int(36,98) }while(a%10>=c%10||a-c<20); const [p]=prodPrijs(r); return {a,c,p,n:r.naam()} },
@@ -30,7 +32,7 @@ L({id:'G1.cijferen',niv:1,dom:'G',sub:'bewerkingen',naam:'Aftrekken met lenen',v
   stappen:v=>{ const t=Math.floor(v.c/10)*10,e=v.c%10; return [st(`${v.a} − ${t} = ${v.a-t}`,v.a-t),st(`${v.a-t} − ${e} = ${v.a-v.c}`,v.a-v.c),st(`Controle: ${v.a-v.c} + ${v.c} = ${v.a}`)] },
   fouten:v=>[[kolomfout(v.a,v.c),'Je hebt per kolom het kleinste van het grootste afgetrokken. Bij aftrekken moet je dan lenen.'],[v.a+v.c,'Je hebt opgeteld. Na het kopen heb je minder over.'],[v.a-v.c+10,'Bij lenen ben je vergeten dat de tientallen 1 minder worden.']],
   anders:v=>({tekst:`Spring op de getallenlijn terug: eerst ${Math.floor(v.c/10)*10} terug, daarna nog ${v.c%10}.`,svg:FIG.lijn(Math.floor((v.a-v.c)/10)*10,Math.ceil(v.a/10)*10,10,[{x:v.a,label:String(v.a)},{x:v.a-Math.floor(v.c/10)*10,label:String(v.a-Math.floor(v.c/10)*10),k:'b'},{x:v.a-v.c,label:String(v.a-v.c)}])}),
-  sab:v=>{ const t=Math.floor(v.c/10)*10,e=v.c%10,kf=kolomfout(v.a,v.c); return {intro:`${v.n} heeft € ${v.a} en koopt iets van € ${v.c}. Ravi rekent onder elkaar uit wat er overblijft.`,
+  sab:v=>{ v=enkelLenen(v); const t=Math.floor(v.c/10)*10,e=v.c%10,kf=kolomfout(v.a,v.c); return {intro:`${v.n} heeft € ${v.a} en koopt iets van € ${v.c}. Ravi rekent onder elkaar uit wat er overblijft.`,
     stappen:[`Eenheden: ${v.a%10} − ${e} kan niet, dus ${e} − ${v.a%10} = ${e-v.a%10}.`,`Tientallen: ${Math.floor(v.a/10)%10} en ${Math.floor(v.c/10)%10} → verschil ${Math.abs(Math.floor(v.a/10)%10-Math.floor(v.c/10)%10)}.`,`Honderdtallen: ${Math.floor(v.a/100)} blijft ${Math.floor(v.a/100)}.`,`Antwoord: € ${kf}.`],
     fout:0,juist:v.a-v.c,eenheid:'€',vraag:'Hoeveel houdt ' + v.n + ' echt over?',uitleg:`Ravi draait de som om bij de eenheden. Je mag niet ${e} − ${v.a%10} doen: je moet lenen.`,
     goed:[`${v.a} − ${t} = ${v.a-t}`,`${v.a-t} − ${e} = ${v.a-v.c}`]} }
@@ -94,7 +96,7 @@ L({id:'M1.eenheden',niv:1,dom:'M',sub:'eenheden',naam:'Lengte, gewicht en inhoud
 });
 L({id:'M1.tijd',niv:1,dom:'M',sub:'tijd',naam:'Tijdsduur berekenen',
   uitleg:'Een uur heeft 60 minuten, niet 100. Reken een tijdsduur uit door in stappen naar hele uren te springen.',
-  gen(r){ const s=r.int(8,19)*60+r.pick([15,20,25,35,40,45,50]); const d=r.int(50,170); return {s,e:s+d,d,c:r.pick(['De film begint om','De training begint om','De bus vertrekt om','Het concert begint om','De wedstrijd begint om']),c2:r.pick(['is afgelopen om','is klaar om','komt aan om','eindigt om'])} },
+  gen(r){ const s=r.int(8,19)*60+r.pick([15,20,25,35,40,45,50]); const d=r.int(50,170); return {s,e:s+d,d,...(([c,c2])=>({c,c2}))(r.pick([['De film begint om','is afgelopen om'],['De training begint om','is klaar om'],['De bus vertrekt om','komt aan om'],['Het concert begint om','eindigt om'],['De wedstrijd begint om','is afgelopen om']]))} }, // begin- en eindzin horen bij elkaar
   vraag:v=>`${v.c} ${tijdStr(v.s)} en ${v.c2} ${tijdStr(v.e)}. Hoeveel minuten duurt het?`,
   antw:v=>v.d, eenheid:'min',
   stappen:v=>{ const h1=Math.ceil(v.s/60)*60, a=h1-v.s, b=Math.floor(v.e/60)*60-h1, c=v.e-Math.floor(v.e/60)*60; return [st(`Van ${tijdStr(v.s)} naar ${tijdStr(h1)}: ${a} minuten`,a),st(`Van ${tijdStr(h1)} naar ${tijdStr(Math.floor(v.e/60)*60)}: ${b} minuten`,b),st(`Van ${tijdStr(Math.floor(v.e/60)*60)} naar ${tijdStr(v.e)}: ${c} minuten`,c),st(`Samen: ${a} + ${b} + ${c} = ${v.d} minuten`,v.d)] },
@@ -127,7 +129,7 @@ const SPORTEN=['voetbal','hockey','turnen','tennis','dansen','zwemmen','basketba
 L({id:'B1.staaf',niv:1,dom:'B',sub:'grafieken',naam:'Staafdiagram aflezen',
   uitleg:'Bij een staafdiagram lees je de hoogte van de staaf af op de verticale as. Kijk goed hoeveel één hokje waard is.',
   gen(r){ const s=r.shuffle(SPORTEN).slice(0,5); const stap=r.pick([2,5]); const w=s.map(()=>r.int(1,8)*stap); let i=r.int(0,4),j; do{j=r.int(0,4)}while(j===i||w[i]===w[j]); return {s,w,stap,i,j,wat:r.pick(['meer','totaal'])} },
-  vraag:v=>v.wat==='meer'?`In het diagram zie je welke sport de leerlingen van groep 8 en de brugklas het leukst vinden. Hoeveel leerlingen kiezen ${v.s[v.i]} meer of minder dan ${v.s[v.j]}? (Geef het verschil.)`:`In het diagram zie je welke sport leerlingen het leukst vinden. Hoeveel leerlingen kiezen ${v.s[v.i]} of ${v.s[v.j]} samen?`,
+  vraag:v=>v.wat==='meer'?`In het diagram zie je welke sport de leden van een sportclub het leukst vinden. Hoeveel leerlingen kiezen ${v.s[v.i]} meer of minder dan ${v.s[v.j]}? (Geef het verschil.)`:`In het diagram zie je welke sport leerlingen het leukst vinden. Hoeveel leerlingen kiezen ${v.s[v.i]} of ${v.s[v.j]} samen?`,
   fig:v=>FIG.staaf(v.s,v.w,{ymax:Math.max(...v.w)+v.stap*2-Math.max(...v.w)%v.stap,ys:v.stap,yl:'aantal leerlingen'}),
   antw:v=>v.wat==='meer'?Math.abs(v.w[v.i]-v.w[v.j]):v.w[v.i]+v.w[v.j],
   stappen:v=>[st(`${v.s[v.i]}: ${v.w[v.i]} leerlingen`,v.w[v.i]),st(`${v.s[v.j]}: ${v.w[v.j]} leerlingen`,v.w[v.j]),st(v.wat==='meer'?`Verschil: ${Math.abs(v.w[v.i]-v.w[v.j])}`:`Samen: ${v.w[v.i]+v.w[v.j]}`,v.wat==='meer'?Math.abs(v.w[v.i]-v.w[v.j]):v.w[v.i]+v.w[v.j])],

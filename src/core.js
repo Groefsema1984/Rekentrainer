@@ -54,7 +54,10 @@ const eur = (x,altijdCent=false) => { const c=Math.abs(rondaf(x,2)%1)>1e-9||alti
 const pct = x => nl(x,2)+'%';
 function parseGetal(s){
   if(s==null) return NaN;
-  s=String(s).trim().replace(/[−–]/g,'-').replace(/[€%\s]/g,'').replace(/[a-zA-Z²³\/]+$/,'');
+  s=String(s).trim().replace(/[−–]/g,'-');
+  const gem=s.replace(/[€%]/g,'').trim().match(/^(-?)(\d+)\s+(\d+)\s*\/\s*(\d+)\s*[a-zA-Z]*$/); // gemengd getal: 1 1/6
+  if(gem) return (gem[1]?-1:1)*(Number(gem[2])+Number(gem[3])/Number(gem[4]));
+  s=s.replace(/[€%\s]/g,'').replace(/[a-zA-Z²³\/]+$/,'');
   if(/^-?[1-9]\d{0,2}(\.\d{3})+(,\d+)?$/.test(s)) s=s.replace(/\./g,'');
   s=s.replace(',','.');
   if(/^-?\d+\/\d+$/.test(s)){ const [a,b]=s.split('/'); return Number(a)/Number(b) }

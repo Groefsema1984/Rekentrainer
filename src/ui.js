@@ -203,16 +203,24 @@ function quizHtml(){
    <div class="voet" id="qknoppen">${knoppen}</div></div></div><div id="rekenmachine" hidden></div>`;
 }
 function naRender(){
+  if(Q&&!Q.t0) Q.t0=Date.now();
   try{ woordenMarkeren($('#qbody')) }catch(e){}
   schatNaRender();
   try{ schemaNaRender() }catch(e){ console.warn(e) }
   const a=$('#antw'); if(a&&!('ontouchstart' in window)) a.focus();
-  $$('#qbody input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); indienen(true) } }));
+  $$('#qbody input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); enterGedrukt() } }));
   if(Q.it.vorm==='v3') $('#kCheck').textContent='Verder';
+}
+// Enter is geen keuze: de leerling kiest zelf Zeker of Gok (anders klopt "Zeker én fout" niet)
+function enterGedrukt(){
+  if(!Q||Q.klaar) return; if(Q.it.vorm==='faded1'||Q.it.vorm==='v3') return indienen(null);
+  const k=$$('.zekerknop,.gokknop'); k.forEach(b=>{ b.classList.toggle('pols',false); void b.offsetWidth; b.classList.add('pols') }); if(k[0]) k[0].focus();
+  melding('Kies <b>! Zeker</b> of <b>? Gok</b>.',2500);
 }
 function stopSessie(){
   if(SES&&SES.soort==='toets'&&!confirm('Wil je stoppen met de toets? Je antwoorden tellen dan niet.')) return;
   if(SES&&SES.soort==='instap'&&!confirm('Wil je stoppen met de instaptoets? Je kunt hem later opnieuw starten.')) return;
+  try{ if(Q&&!Q.klaar&&Q.it&&Q.t0&&Date.now()-Q.t0>15000) itemEvent(Q.it,{},true) }catch(e){}   // gestopt midden in een opgave = overgeslagen
   bewaar(); go(S.niv?'home':'instapIntro');
 }
 
@@ -221,9 +229,12 @@ function indienen(zeker){
   const it=Q.it;
   if(it.vorm==='v3') return v3Stap();
   if(!heeftAntwoord()){ melding('Vul eerst je antwoord in.'); return }
+  { const a=$('#antw'), w=a&&!a.disabled?a.value.trim():''; // 2.125: duizendtal of komma bedoeld?
+    if(!Q.puntGevraagd&&/^-?\d{1,3}\.\d{3}$/.test(w)&&typeof it.antw==='number'&&!Number.isInteger(it.antw)){ Q.puntGevraagd=true; melding(`Bedoel je <b>${esc(w.replace('.',''))}</b> of <b>${esc(w.replace('.',','))}</b>? Een kommagetal schrijf je met een komma. Pas je antwoord aan of druk nog een keer.`,6000); a.focus(); return } }
   Q.klaar=true; const res=nakijk(); res.zeker=zeker; Q.res=res;
   $$('#qbody input,#qbody select,#qbody textarea').forEach(x=>x.disabled=true);
   if(it.vorm==='sab'&&res.goed) S.sabGoed=(S.sabGoed||0)+1;
+  try{ itemEvent(it,res) }catch(e){}
   if(SES.soort==='instap') return instapAntwoord(res);
   if(SES.soort==='toets'){ SES.res.push(res.goed); SES.antw.push({it,res}); SES.i++; return volgendeItem() }
   // oefenen: verwerken + feedback
@@ -286,6 +297,7 @@ function v3Stap(){
   }
   if(Q.zelf==null){ Q.v3fase=2; melding('Kies hoe jouw eigen aanpak was.'); return }
   Q.klaar=true; const res={goed:Q.v3goed,zeker:null,gegeven:'Eigen aanpak: '+['goed','bijna','nog niet'][Q.zelf]+' · '+($('#eigen').value||'').slice(0,120),juist:'',mis:''};
+  try{ itemEvent(it,res) }catch(e){}
   if(SES.soort==='toets'){ SES.res.push(res.goed); SES.antw.push({it,res}); SES.i++; return volgendeItem() }
   verwerk(it,res); SES.res.push(res.goed); SES.recent.push(it.ld);
   $('#qknoppen').innerHTML=`<button class="knop" onclick="naVraag()">Volgende →</button>`;
@@ -299,5 +311,5 @@ function start(){
   if(location.hash==='#docent') return go('docentLogin');
   if(!S||!S.naam) return go('welkom');
   if(!S.niv) return go('instapIntro');
-  go('home'); planSync(1500);
+  go('home'); planSync(1500); setTimeout(()=>{ try{ haalSjablonen() }catch(e){} },2500);
 }

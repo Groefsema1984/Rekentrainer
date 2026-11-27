@@ -10,17 +10,17 @@ L({id:'G2.verdelen',niv:2,dom:'G',sub:'bewerkingen',naam:'Eerlijk verdelen: wat 
 });
 L({id:'M3.temperatuur',niv:3,dom:'M',sub:'eenheden',naam:'Temperatuur: rekenen onder en boven nul',verwar:['G3.negatief'],
   uitleg:'Op een thermometer tel je het verschil in stappen. Van −4 °C naar 7 °C: eerst 4 graden naar 0, dan nog 7. Samen 11 graden.',
-  gen(r){ const a=-r.int(2,12),b=r.int(1,15); return {a,b,t:r.pick(['verschil','eind']),d:r.int(3,9),c:r.pick(['In Oostenrijk op wintersport','Op een winterochtend in Groningen','In Noorwegen'])} },
+  gen(r){ const a=-r.int(2,12),b=r.int(1,15); return {a,b,t:r.pick(['verschil','eind']),d:r.int(3,9),c:r.pick(['In Oostenrijk op wintersport','In een dorp in de bergen van Zwitserland','In Noorwegen'])} },
   vraag:v=>v.t==='verschil'?`${v.c} is het ’s ochtends ${String(v.a).replace('-','−')} °C. ’s Middags is het ${v.b} °C. Hoeveel graden is de temperatuur gestegen?`:`${v.c} is het ’s middags ${v.b} °C. ’s Nachts daalt de temperatuur ${v.b+v.d} graden. Hoeveel graden onder nul is het dan?`,
   antw:v=>v.t==='verschil'?v.b-v.a:v.d, eenheid:v=>v.t==='verschil'?'graden':'graden onder nul',
   stappen:v=>v.t==='verschil'?[st(`Van ${String(v.a).replace('-','−')} naar 0: ${-v.a} graden`,-v.a),st(`Van 0 naar ${v.b}: ${v.b} graden`,v.b),st(`Samen: ${-v.a} + ${v.b} = ${v.b-v.a}`,v.b-v.a)]:[st(`Van ${v.b} naar 0: ${v.b} graden`,v.b),st(`Nog ${v.b+v.d} − ${v.b} = ${v.d} graden eronder: −${v.d} °C`,v.d)],
-  fouten:v=>v.t==='verschil'?[[v.b+v.a>0?v.b+v.a:v.b,'Je trok af. Onder nul en boven nul tel je bij elkaar op.'],[v.b,'Vergeet het stuk onder nul niet.']]:[[v.b+v.d,'Dat is de daling. Hoeveel is er onder nul over?'],[v.b,'Dat is de temperatuur overdag.']],
+  fouten:v=>v.t==='verschil'?[[v.b+v.a>0?v.b+v.a:v.b,'Je trok af. Onder nul en boven nul tel je bij elkaar op.'],[v.b,'Vergeet het stuk onder nul niet.'],[-v.a,'Dat is alleen het stuk onder nul. Tel het stuk boven nul erbij.']]:[[v.b+v.d,'Dat is de daling. Hoeveel is er onder nul over?'],[v.b,'Dat is de temperatuur overdag.']],
   anders:v=>({tekst:'Teken een thermometer als getallenlijn en tel de stappen.',svg:FIG.lijn(Math.min(v.a,-v.d)-1,Math.max(v.b,1)+1,1,[{x:v.t==='verschil'?v.a:v.b,label:String(v.t==='verschil'?v.a:v.b).replace('-','−')+'°'},{x:v.t==='verschil'?v.b:-v.d,label:String(v.t==='verschil'?v.b:-v.d).replace('-','−')+'°',k:'b'}],5)})
 });
 L({id:'B4.cirkeldiagram',niv:4,dom:'B',sub:'grafieken',naam:'Cirkeldiagram: percentage en graden',rm:true,dec:1,
   uitleg:'Een hele cirkel is 360° = 100%. 1% is dus 3,6°. Van graden naar procent: delen door 3,6.',
   gen(r){ const d=r.pick([[50,25,15,10],[40,30,20,10],[45,25,20,10],[35,30,25,10],[60,20,15,5]]); const l=r.shuffle(['gamen','sporten','social media','huiswerk','muziek']).slice(0,4); return {d,l,i:r.int(0,3),t:r.pick(['graden','procent'])} },
-  vraag:v=>`Het cirkeldiagram laat zien waaraan leerlingen hun vrije tijd besteden. ${v.t==='graden'?`${v.l[v.i]} is ${v.d[v.i]}%. Hoeveel graden is dat stuk van de cirkel?`:`Het stuk ${v.l[v.i]} is ${nl(v.d[v.i]*3.6)}°. Hoeveel procent is dat?`}`,
+  vraag:v=>`Het cirkeldiagram laat zien waaraan leerlingen hun vrije tijd besteden. ${v.t==='graden'?`${v.l[v.i][0].toUpperCase()+v.l[v.i].slice(1)} is ${v.d[v.i]}%. Hoeveel graden is dat stuk van de cirkel?`:`Het stuk ${v.l[v.i]} is ${nl(v.d[v.i]*3.6)}°. Hoeveel procent is dat?`}`,
   fig:v=>FIG.taart(v.d.map((w,i)=>({w,label:v.l[i]+(i===v.i?'':' '+w+'%')}))),
   antw:v=>v.t==='graden'?rondaf(v.d[v.i]*3.6,1):v.d[v.i], eenheid:v=>v.t==='graden'?'graden':'%',
   stappen:v=>v.t==='graden'?[st(`100% = 360°, dus 1% = 3,6°`,3.6),st(`${v.d[v.i]} × 3,6 = ${nl(v.d[v.i]*3.6)}°`,rondaf(v.d[v.i]*3.6,1))]:[st(`360° = 100%, 1% = 3,6°`,3.6),st(`${nl(v.d[v.i]*3.6)} : 3,6 = ${v.d[v.i]}%`,v.d[v.i])],

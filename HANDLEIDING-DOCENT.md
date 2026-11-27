@@ -42,3 +42,14 @@ Klik rechtsboven op **Docent** en vul de docentcode uit `Code.gs` in. Je ziet da
 - **Logboek**: nieuwe accounts, herstelpogingen en niveauwissels.
 
 Na een wijziging in Code.gs: Implementeren › Implementaties beheren › bewerken › Nieuwe versie (de URL blijft dan hetzelfde).
+
+## Automatische kwaliteitscontrole van de opgaven
+Na elke gemaakte opgave stuurt de app een klein gegeven naar de Sheet: welk opgavesjabloon (leerdoel + vraagvorm), goed of fout, Zeker of Gok, hoe lang het duurde, of de leerling afhaakte, en of de leerling op dat onderdeel sterk is. In het tabblad **Sjablonen** telt Code.gs dit op.
+
+Vanaf 30 pogingen beoordeelt het systeem elk sjabloon:
+- **Geblokkeerd** als bijna iedereen hem fout maakt (minder dan 15% goed), als meer dan 25% afhaakt, als het gemiddeld langer dan 5 minuten duurt, als ook sterke leerlingen hem vaak fout maken, of als sterke leerlingen het slechter doen dan zwakke. De app biedt een geblokkeerd sjabloon dan niet meer aan (een leerdoel blijft altijd bereikbaar via de andere vormen).
+- **Werkt goed** als hij duidelijk onderscheid maakt tussen sterke en zwakke leerlingen. Die vorm komt vaker aan bod.
+
+In het docentscherm › *Analyse van de vragen* zie je de lijst met reden. Met **Herstel** geef je een sjabloon weer vrij, met **Blokkeer** zet je hem zelf uit. De grenzen staan bovenaan in Code.gs (CFG.ITEM_…) en kun je daar aanpassen.
+
+Ook nieuw: Enter in het antwoordvak telt niet meer als "Zeker". De leerling kiest altijd zelf Zeker of Gok, zodat "Zeker én fout" betrouwbaar is.

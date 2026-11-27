@@ -11,7 +11,7 @@ L({id:'G4.afronden',niv:4,dom:'G',sub:'getalbegrip',naam:'Afronden op decimalen 
 });
 L({id:'G4.miljoen',niv:4,dom:'G',sub:'getalbegrip',naam:'Grote getallen: duizend, miljoen, miljard',dec:3,
   uitleg:'1 miljoen = 1.000.000 (6 nullen), 1 miljard = 1.000.000.000 (9 nullen). 2,4 miljoen = 2,4 × 1.000.000 = 2.400.000.',
-  gen(r){ const naarGetal=r.ja(); const x=r.pick([1.2,2.4,3.5,0.8,17.5,4.25,0.35,6.8]); const e=r.pick([['miljoen',1e6],['duizend',1e3],['miljard',1e9]]); const c=r.pick(['Een video heeft','Een stad heeft','Een land heeft','Een game is gedownload door']); return {naarGetal,x,e,c} },
+  gen(r){ const naarGetal=r.ja(); const [c,e,x]=r.pick([['Een video heeft',['miljoen',1e6],r.pick([1.2,2.4,3.5,0.8,17.5,4.25])],['Een video heeft',['miljard',1e9],r.pick([1.2,2.4,3.5])],['Een stad heeft',['duizend',1e3],r.pick([17.5,42.5,85,120,350])],['Een land heeft',['miljoen',1e6],r.pick([17.5,8.6,4.25,11.6,6.8])],['Een game is gedownload door',['miljoen',1e6],r.pick([1.2,2.4,0.8,6.8,0.35])]]); return {naarGetal,x,e,c} }, // aantal past bij de context
   vraag:v=>v.naarGetal?`${v.c} ${nl(v.x)} ${v.e[0]} ${v.c.includes('video')?'views':v.c.includes('game')?'spelers':'inwoners'}. Schrijf dit getal helemaal uit (zonder het woord ${v.e[0]}).`:`${v.c} ${nl(v.x*v.e[1],0)} ${v.c.includes('video')?'views':v.c.includes('game')?'spelers':'inwoners'}. Hoeveel ${v.e[0]} is dat?`,
   antw:v=>v.naarGetal?rondaf(v.x*v.e[1],0):v.x, eenheid:v=>v.naarGetal?'':v.e[0],
   stappen:v=>[st(`1 ${v.e[0]} = ${nl(v.e[1],0)}`,v.e[1]),st(v.naarGetal?`${nl(v.x)} × ${nl(v.e[1],0)} = ${nl(v.x*v.e[1],0)}`:`${nl(v.x*v.e[1],0)} : ${nl(v.e[1],0)} = ${nl(v.x)}`,v.naarGetal?rondaf(v.x*v.e[1],0):v.x)],
@@ -40,7 +40,7 @@ L({id:'G4.kommakeerkomma',niv:4,dom:'G',sub:'komma',naam:'Kommagetal keer kommag
 // ---------- Verhoudingen ----------
 L({id:'V4.terugrekenen',niv:4,dom:'V',sub:'pverandering',naam:'Terugrekenen naar de oude prijs',verwar:['V3.korting','V4.btw'],rm:true,
   uitleg:'De nieuwe prijs is een percentage van de OUDE prijs. Bij 20% korting is de nieuwe prijs 80%. Reken via 1% terug naar 100%.',
-  gen(r){ let k,o; do{ k=r.pick([10,15,20,25,30,40]); o=r.pick([40,60,70,80,90,120,150,200,240,300,450,600,1200,1800]) }while((o*(100-k))%100!==0); const omhoog=r.ja(.3); return {k,o,omhoog,n:rondaf(o*(omhoog?100+k:100-k)/100,2),d:r.pick(['e-bike','telefoon','scooterhelm','wintercoat','gameconsole','tent'])} },
+  gen(r){ let k,o; do{ k=r.pick([10,15,20,25,30,40]); o=r.pick([40,60,70,80,90,120,150,200,240,300,450,600,1200,1800]) }while((o*(100-k))%100!==0); const omhoog=r.ja(.3); return {k,o,omhoog,n:rondaf(o*(omhoog?100+k:100-k)/100,2),d:({40:'pet',60:'scooterhelm',70:'sporttas',80:'winterjas',90:'paar voetbalschoenen',120:'skateboard',150:'tent',200:'gameconsole',240:'telefoon',300:'telefoon',450:'laptop',600:'laptop',1200:'e-bike',1800:'e-bike'})[o]} }, // product past bij de prijs
   vraag:v=>v.omhoog?`De prijs van een ${v.d} is met ${v.k}% verhoogd. Nu kost hij ${eur(v.n)}. Wat was de oude prijs?`:`Na ${v.k}% korting kost een ${v.d} nog ${eur(v.n)}. Wat was de oude prijs?`,
   antw:v=>v.o, eenheid:'€',
   stappen:v=>{ const p=v.omhoog?100+v.k:100-v.k; return [st(`${eur(v.n)} is ${p}% van de oude prijs`,p),st(`1% = ${nl(v.n)} : ${p} = ${nl(v.n/p)}`,rondaf(v.n/p,4)),st(`100% = ${nl(v.n/p)} × 100 = ${eur(v.o)}`,v.o)] },
@@ -96,10 +96,10 @@ L({id:'M4.snelheid',niv:4,dom:'M',sub:'tijd',naam:'Afstand, snelheid en tijd',rm
 });
 L({id:'M4.cirkel',niv:4,dom:'M',sub:'oppervlak',naam:'Omtrek en oppervlakte van een cirkel',rm:true,dec:1,tol:v=>Math.max(.06,(v.wat==='omtrek'?2*Math.PI*v.r:Math.PI*v.r*v.r)*.0012),
   uitleg:'Omtrek = π × diameter (= 2 × π × straal). Oppervlakte = π × straal × straal. Gebruik π ≈ 3,14 of de π-toets.',
-  gen(r){ return {r:r.pick([3,4,5,6,7,8,10,12,15,20,25]),wat:r.pick(['omtrek','opp']),c:r.pick(['Een trampoline','Een ronde tafel','Een pizza','Een rond zwembadje','Een cirkelvormig grasveld']),geefD:r.ja()} },
-  vraag:v=>`${v.c} heeft een ${v.geefD?'diameter van '+(2*v.r):'straal van '+v.r} ${v.r>=10?'dm':'cm'}. Bereken de ${v.wat==='omtrek'?'omtrek':'oppervlakte'}. Rond af op 1 decimaal.`,
+  gen(r){ const [c,rs,eh]=r.pick([['Een trampoline',[15,18,20,25],'dm'],['Een ronde tafel',[5,6,7,8],'dm'],['Een pizza',[12,14,15,16],'cm'],['Een rond zwembadje',[10,12,15,20],'dm'],['Een cirkelvormig grasveld',[5,6,8,10,12],'m'],['Een bierviltje',[4,5,6],'cm']]); return {r:r.pick(rs),wat:r.pick(['omtrek','opp']),c,eh,geefD:r.ja()} }, // realistische maat per voorwerp
+  vraag:v=>`${v.c} heeft een ${v.geefD?'diameter van '+(2*v.r):'straal van '+v.r} ${v.eh}. Bereken de ${v.wat==='omtrek'?'omtrek':'oppervlakte'}. Rond af op 1 decimaal.`,
   fig:v=>FIG.cirkel(v.r,v.geefD?'d = '+(2*v.r):'r = '+v.r),
-  antw:v=>rondaf(v.wat==='omtrek'?2*Math.PI*v.r:Math.PI*v.r*v.r,1), eenheid:v=>v.wat==='omtrek'?(v.r>=10?'dm':'cm'):(v.r>=10?'dm²':cm2),
+  antw:v=>rondaf(v.wat==='omtrek'?2*Math.PI*v.r:Math.PI*v.r*v.r,1), eenheid:v=>v.wat==='omtrek'?v.eh:v.eh+'²',
   stappen:v=>v.wat==='omtrek'?[st(`Diameter = ${2*v.r}`,2*v.r),st(`Omtrek = π × ${2*v.r} ≈ ${nl(rondaf(2*Math.PI*v.r,1))}`,rondaf(2*Math.PI*v.r,1))]:[st(`Straal = ${v.r}`,v.r),st(`Oppervlakte = π × ${v.r} × ${v.r} = π × ${v.r*v.r} ≈ ${nl(rondaf(Math.PI*v.r*v.r,1))}`,rondaf(Math.PI*v.r*v.r,1))],
   fouten:v=>v.wat==='omtrek'?[[rondaf(Math.PI*v.r,1),'Je gebruikte de straal. Omtrek = π × diameter.'],[rondaf(Math.PI*v.r*v.r,1),'Dat is de oppervlakte.'],[rondaf(4*Math.PI*v.r,1),'Je verdubbelde de diameter nog een keer.']]:[[rondaf(Math.PI*4*v.r*v.r,1),'Je gebruikte de diameter in plaats van de straal.'],[rondaf(2*Math.PI*v.r,1),'Dat is de omtrek.'],[rondaf(Math.PI*2*v.r,1),'Oppervlakte = π × straal × straal.']],
   anders:v=>v.wat==='omtrek'?`Leg een touw om de cirkel en dan langs de diameter: het touw is iets meer dan 3 keer zo lang als de diameter. Dat "iets meer dan 3" is π.`:`Een cirkel past in een vierkant van ${2*v.r} bij ${2*v.r}. De cirkel is iets meer dan driekwart daarvan: ongeveer 3,14 × ${v.r} × ${v.r}.`
@@ -127,7 +127,7 @@ L({id:'M4.plattegrond',niv:4,dom:'M',sub:'oppervlak',naam:'Oppervlakte via een p
 // ---------- Verbanden ----------
 L({id:'B4.formuleterug',niv:4,dom:'B',sub:'formules',naam:'Terugrekenen met een formule',verwar:['B3.formule'],rm:true,
   uitleg:'Weet je de uitkomst en zoek je het getal dat erin ging? Werk terug: eerst het vaste bedrag eraf, dan delen door het getal dat ervoor staat.',
-  gen(r){ const c=r.pick([['taxirit','K','a','km',[2,2.5,3],[3,4,5]],['schaatsbaan','K','u','uur',[3,4,5],[5,7.5,10]],['belbundel','K','m','minuten',[0.1,0.2,0.25],[5,7.5,10]]]); const a=r.pick(c[4]),b=r.pick(c[5]),x=r.int(3,30); return {c,a,b,x,K:rondaf(a*x+b,2)} },
+  gen(r){ const c=r.pick([['taxirit','K','a','km',[2,2.5,3],[3,4,5]],['schaatsbaan','K','u','uur',[3,4,5],[5,7.5,10]],['belbundel','K','m','minuten',[0.1,0.2,0.25],[5,7.5,10]]]); const a=r.pick(c[4]),b=r.pick(c[5]),x=c[0]==='schaatsbaan'?r.int(1,4):r.int(3,30); return {c,a,b,x,K:rondaf(a*x+b,2)} }, // niet 19 uur schaatsen
   vraag:v=>`Voor een ${v.c[0]} geldt <b>${v.c[1]} = ${nl(v.a)}${v.c[2]} + ${nl(v.b)}</b> (${v.c[1]} in euro, ${v.c[2]} in ${v.c[3]}). Iemand betaalt ${eur(v.K)}. Hoeveel ${v.c[3]} was dat?`,
   antw:v=>v.x, eenheid:v=>v.c[3],
   stappen:v=>[st(`${nl(v.a)}${v.c[2]} + ${nl(v.b)} = ${nl(v.K)}`),st(`Vaste bedrag eraf: ${nl(v.K)} − ${nl(v.b)} = ${nl(v.K-v.b)}`,rondaf(v.K-v.b,2)),st(`Delen: ${nl(v.K-v.b)} : ${nl(v.a)} = ${v.x}`,v.x)],

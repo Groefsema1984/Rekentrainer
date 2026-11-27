@@ -13,7 +13,7 @@ L({id:'G2.wisselgeld',niv:2,dom:'G',sub:'komma',naam:'Rekenen met geld: optellen
 });
 L({id:'G2.kommakeer',niv:2,dom:'G',sub:'komma',naam:'Kommagetal keer een heel getal',verwar:['G2.wisselgeld'],
   uitleg:'Reken eerst zonder komma, en zet de komma daarna terug. Schat ook: € 1,35 × 12 is ongeveer € 1 × 12 + nog wat, dus iets meer dan € 12.',
-  gen(r){ const p=r.int(105,395), n=r.int(4,15); return {p,n,c:r.pick([['Een busrit kost','Je reist','keer. Hoeveel betaal je in totaal?'],['Een pak sap kost','Voor het klassenfeest koop je','pakken. Wat kost dat samen?'],['Een kaartje voor de schoolfeest-loterij kost','Je verkoopt er','. Hoeveel geld haal je op?']])} },
+  gen(r){ const p=r.int(105,395), n=r.int(4,15); return {p,n,c:r.pick([['Een busrit kost','Je reist','keer. Hoeveel betaal je in totaal?'],['Een pak sap kost','Voor het klassenfeest koop je','pakken. Wat kost dat samen?'],['Een lot voor de loterij van het schoolfeest kost','Je verkoopt','loten. Hoeveel geld haal je op?']])} },
   vraag:v=>`${v.c[0]} ${eur(c2e(v.p))}. ${v.c[1]} ${v.n} ${v.c[2]}`,
   antw:v=>c2e(v.p*v.n), eenheid:'€',
   stappen:v=>[st(`Zonder komma: ${v.p} × ${v.n} = ${v.p*v.n}`,v.p*v.n),st(`Komma terug (2 cijfers achter de komma): ${eur(c2e(v.p*v.n))}`,c2e(v.p*v.n)),st(`Schatting: ongeveer ${Math.round(v.p/100)} × ${v.n} = ${Math.round(v.p/100)*v.n}, dat past.`)],

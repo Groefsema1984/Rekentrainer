@@ -225,3 +225,4 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .schema{border:2px solid var(--knop);border-radius:12px;padding:12px 14px;margin:0 0 14px;background:color-mix(in srgb,var(--knop) 6%,transparent)}
 .schema .vtab input{width:84px}.schema td.zoek{font:900 20px var(--kop);color:var(--knop)}
 .schvak.goed{border-color:var(--goed);background:color-mix(in srgb,var(--goed) 12%,transparent)}.schvak.fout{border-color:var(--fout);background:color-mix(in srgb,var(--fout) 10%,transparent)}
+.pols{animation:pols .5s ease 2}@keyframes pols{50%{transform:scale(1.08);box-shadow:0 0 0 4px var(--acc)}}

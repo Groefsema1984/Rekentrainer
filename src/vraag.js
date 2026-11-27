@@ -29,9 +29,10 @@ function maakItem(ldId,opt={}){
   const trede=opt.trede||3;
   let vorm=opt.vorm;
   if(!vorm){
-    if(trede===1&&ld.stappen) vorm='faded1';
-    else if(trede===2&&ld.stappen) vorm='faded2';
-    else { const vs=vormen(ld); vorm=vs[Math.floor(RNG(seed+7).f()*vs.length)] }
+    const blok=k=>typeof sjGeblokkeerd==='function'&&sjGeblokkeerd(ldId+'|'+k);
+    if(trede===1&&ld.stappen&&!blok('faded1')) vorm='faded1';
+    else if(trede<=2&&ld.stappen&&!blok('faded2')) vorm='faded2';
+    else { let vs=vormen(ld); if(typeof sjabloonFilter==='function') vs=sjabloonFilter(ld,vs); vorm=vs[Math.floor(RNG(seed+7).f()*vs.length)] }
   }
   const it={ key:ldId+'#'+seed, ld:ldId, niv:ld.niv, dom:ld.dom, sub:ld.sub, seed, v, vorm, trede, bron:opt.bron||'oefen', rm:ld.rm, r:RNG(seed+99) };
   it.vraag = ld.vraag?ld.vraag(v):'';
@@ -50,7 +51,7 @@ function maakItem(ldId,opt={}){
     }
   }
   if(vorm==='faded1'||vorm==='faded2'||vorm==='volgorde'){ it.stappen=ld.stappen(v) }
-  if(vorm==='faded1'){ const w=ld.waarom?(typeof ld.waarom==='function'?ld.waarom(v):ld.waarom):{vraag:'Klopt de laatste stap van deze uitwerking?',opties:['Ja, het antwoord past bij de vraag','Nee, er moet nog iets bij','Nee, je moet delen in plaats van vermenigvuldigen']};
+  if(vorm==='faded1'){ const w=ld.waarom?(typeof ld.waarom==='function'?ld.waarom(v):ld.waarom):foutAnalyseVraag(ld,v,it.r);
     it.check={vraag:w.vraag,opties:it.r.shuffle(w.opties.map((t,i)=>({t,goed:i===0})))} }
   if(vorm==='faded2'){ // één lege tussenstap: bij voorkeur niet de laatste
     const kand=it.stappen.map((s,i)=>i).filter(i=>typeof it.stappen[i][1]==='number');
@@ -171,7 +172,7 @@ function nakijk(){
       if(!goed) fb=`In deze stap hoort <b>${nl(s[1])}</b>.`;
       break; }
     case 'sab': {
-      const x=parseGetal($('#antw').value); const stapGoed=Q.sabStap===it.sab.fout; const valGoed=zelfde(x,it.sab.juist,tol);
+      const x=parseGetal($('#antw').value); const stapGoed=Q.sabStap===it.sab.fout; const dp=(String(it.sab.juist).split('.')[1]||'').length; const valGoed=zelfde(x,it.sab.juist,tol)||(x!==null&&dp<=2&&zelfde(rondaf(x,dp),it.sab.juist,1e-6)); // exact antwoord telt ook als de afronding klopt
       gegeven='stap '+(Q.sabStap+1)+': '+$('#antw').value; goed=stapGoed&&valGoed;
       $$('.sabstap').forEach((b,i)=>{ if(i===it.sab.fout) b.classList.add('goed'); else if(i===Q.sabStap) b.classList.add('fout') });
       if(!stapGoed) fb=`De denkfout zit in stap ${it.sab.fout+1}. ${it.sab.uitleg}`;
@@ -219,4 +220,18 @@ function andersHtml(it){
   const ld=LD[it.ld]; if(!ld.anders) return `<p>${ld.uitleg}</p>`;
   const a=ld.anders(it.v); const o=typeof a==='string'?{tekst:a}:a;
   return `<p>${o.tekst}</p>${o.svg?`<div class="figuur">${o.svg}</div>`:''}${o.tabel?`<div class="tabelwrap">${vtabelHtml(o.tabel.kop,o.tabel.rijen)}</div>`:''}${o.svg?'':modelHtml(it)}`;
+}
+// Zelfuitleg bij het uitgewerkte voorbeeld: "Een klasgenoot kwam op X. Wat ging er mis?"
+// De leerling koppelt een fout antwoord aan de denkfout erachter (uit fouten(v) van het leerdoel).
+function foutAnalyseVraag(ld,v,r){
+  const schoon=t=>String(t||'').replace(/<[^>]+>/g,'').trim();
+  let f=[]; try{ f=(ld.fouten?ld.fouten(v):[]).filter(x=>typeof x[0]==='number'&&isFinite(x[0])&&schoon(x[1])) }catch(e){}
+  const juist=ld.antw?ld.antw(v):null;
+  f=f.filter((x,i)=>!zelfde(x[0],juist)&&f.findIndex(y=>schoon(y[1])===schoon(x[1]))===i);
+  if(!f.length) return {vraag:'Welke stap uit de uitwerking is het belangrijkst om niet te vergeten?',opties:[schoon(ld.stappen(v).slice(-2)[0][0]).slice(0,120),'Het antwoord netjes afronden op hele getallen.','De getallen uit de vraag optellen.']};
+  const k=r.pick(f); const eh=typeof ld.eenheid==='string'?ld.eenheid:'';
+  const waarde=(eh==='€'?'€ ':'')+nl(rondaf(k[0],4))+(eh&&eh!=='€'?' '+eh:'');
+  const andere=f.filter(x=>x!==k).map(x=>schoon(x[1]));
+  const vul=['Er ging niets mis: dat antwoord is ook goed.','Je mag het antwoord alleen schatten, dus het maakt niet uit.','Er is alleen een tikfout gemaakt bij het overschrijven.'];
+  return {vraag:`Stel: je komt bij deze opgave op ${waarde}. Welke denkfout heb je dan gemaakt?`,opties:[schoon(k[1])].concat(andere.slice(0,2)).concat(vul).slice(0,3)};
 }

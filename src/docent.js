@@ -75,6 +75,7 @@ async function docAnalyse(){
   let items;
   if(DOC.data.lokaal){ items=Object.keys(S.ld).filter(k=>S.ld[k].p3).map(k=>({ld:k,pogingen:S.ld[k].p3,goed:S.ld[k].g3||0,zekerFout:S.ld[k].zf3||0,leerlingen:1})) }
   else try{ items=(await api('analyse',{docentcode:DOC.code,klas:DOC.klas})).items }catch(e){ melding(esc(e.message)); return }
+  DOC.sj=null; if(!DOC.data.lokaal) try{ const j=await api('itemanalyse',{docentcode:DOC.code}); DOC.sj=j.sjablonen||[]; DOC.sjMin=j.min||30 }catch(e){ DOC.sj=null }
   DOC.analyse=items.filter(x=>LD[x.ld]).map(x=>Object.assign(x,{p:Math.round(100*x.goed/x.pogingen),zf:Math.round(100*x.zekerFout/x.pogingen)})); go('docentAnalyse');
 }
 const signaal = x => x.pogingen<10?['te weinig data','zacht']:x.p>=90?['erg makkelijk: eerder overslaan of naar een lager niveau','groen']:x.p<40?['erg moeilijk: extra instructie of later aanbieden','rood']:x.zf>=25?['veel zeker-fout: hardnekkige misconceptie','rood']:['passend','groen'];
@@ -82,6 +83,26 @@ SCHERMEN.docentAnalyse=function(){
   const a=(DOC.analyse||[]).slice().sort((x,y)=>LD[x.ld].niv-LD[y.ld].niv||x.p-y.p);
   return `<div class="wrap"><div class="top"><button class="terug" onclick="go('docent')">← Dashboard</button><h1>Analyse van de vragen${DOC.klas?' · '+esc(DOC.klas):''}</h1><button class="knop zacht klein" onclick="analyseCsv()">CSV</button></div>
    <p class="zacht">Per leerdoel: het percentage goed bij de <b>eerste zelfstandige poging</b> (p-waarde). Tussen 40% en 90% is een opgave goed op niveau. Gebruik dit om instructie te plannen en om de indeling van leerdoelen over niveaus bij te stellen.</p>
-   ${a.length?`<div class="kaart tabelwrap"><table><thead><tr><th>Leerdoel</th><th>Niveau</th><th>Pogingen</th><th>Leerlingen</th><th>% goed</th><th>% zeker-fout</th><th>Signaal</th></tr></thead><tbody>${a.map(x=>{ const [t,k]=signaal(x); return `<tr><td>${esc(LD[x.ld].naam)}</td><td>${LD[x.ld].niv}</td><td>${x.pogingen}</td><td>${x.leerlingen}</td><td>${balk(x.p)} ${x.p}%</td><td>${x.zf}%</td><td><span class="chip ${k}">${t}</span></td></tr>` }).join('')}</tbody></table></div>`:'<div class="kaart"><p>Nog geen gegevens. Zodra leerlingen oefenen, verschijnt hier per leerdoel hoe moeilijk het is.</p></div>'}</div>${VOET()}`;
+   ${a.length?`<div class="kaart tabelwrap"><table><thead><tr><th>Leerdoel</th><th>Niveau</th><th>Pogingen</th><th>Leerlingen</th><th>% goed</th><th>% zeker-fout</th><th>Signaal</th></tr></thead><tbody>${a.map(x=>{ const [t,k]=signaal(x); return `<tr><td>${esc(LD[x.ld].naam)}</td><td>${LD[x.ld].niv}</td><td>${x.pogingen}</td><td>${x.leerlingen}</td><td>${balk(x.p)} ${x.p}%</td><td>${x.zf}%</td><td><span class="chip ${k}">${t}</span></td></tr>` }).join('')}</tbody></table></div>`:'<div class="kaart"><p>Nog geen gegevens. Zodra leerlingen oefenen, verschijnt hier per leerdoel hoe moeilijk het is.</p></div>'}${sjabloonHtml()}</div>${VOET()}`;
 };
 function analyseCsv(){ download('itemanalyse-'+vandaag()+'.csv',['leerdoel;niveau;domein;pogingen;leerlingen;% goed;% zeker-fout'].concat((DOC.analyse||[]).map(x=>[x.ld,LD[x.ld].niv,LD[x.ld].dom,x.pogingen,x.leerlingen,x.p,x.zf].join(';'))).join('\n'),'text/csv') }
+
+// ---------- automatische kwaliteitscontrole per opgavesjabloon (leerdoel + vraagvorm) ----------
+const VORMNAAM={open:'Zelf doen',mc:'Meerkeuze',sab:'Saboteur',tabel:'Verhoudingstabel',volgorde:'Volgorde',koppel:'Koppel',v3:'Drie antwoorden',faded1:'Voorbeeld (fase 1)',faded2:'Invulsom (fase 2)'};
+function sjabloonHtml(){
+  if(DOC.data&&DOC.data.lokaal) return '<div class="kaart"><p class="zacht">De automatische kwaliteitscontrole werkt met de gegevens van alle leerlingen in de Sheet. In de lokale test is die niet beschikbaar.</p></div>';
+  if(!DOC.sj) return '<div class="kaart"><p class="zacht">De kwaliteitscontrole kon niet worden geladen. Staat de nieuwste Code.gs in Apps Script (Implementeren › Nieuwe versie)?</p></div>';
+  const rang={Geblokkeerd:0,'Werkt goed':2,Actief:1,'Te weinig gegevens':3};
+  const l=DOC.sj.filter(x=>x.Sjabloon).sort((a,b)=>(rang[a.Status]??4)-(rang[b.Status]??4)||(b.Pogingen||0)-(a.Pogingen||0));
+  const tel=st=>l.filter(x=>x.Status===st).length;
+  const knop=x=>{ const sj=esc(x.Sjabloon); return x.Docent?`<button class="knop zacht klein" onclick="zetSjabloon('${sj}','')">Automatisch</button>`:x.Status==='Geblokkeerd'?`<button class="knop klein" onclick="zetSjabloon('${sj}','vrijgegeven')">Herstel</button>`:`<button class="knop zacht klein" onclick="zetSjabloon('${sj}','geblokkeerd')">Blokkeer</button>` };
+  const chip={Geblokkeerd:'rood','Werkt goed':'groen',Actief:'groen','Te weinig gegevens':'zacht'};
+  return `<h2 style="margin-top:28px">Automatische kwaliteitscontrole</h2>
+   <p class="zacht">Per opgavesjabloon (leerdoel + vraagvorm) houdt het systeem bij hoe vaak hij goed gaat, hoe lang het duurt, hoe vaak leerlingen afhaken, en of <b>sterke leerlingen</b> hem vaker goed hebben dan zwakke (discriminatie). Vanaf ${DOC.sjMin} pogingen wordt een sjabloon dat slecht werkt automatisch <b>geblokkeerd</b>: de app biedt hem dan niet meer aan. Sjablonen die goed onderscheiden krijgen vaker een beurt. Met <b>Herstel</b> zet je een sjabloon terug.</p>
+   <div class="hteller" style="max-width:520px"><div><b>${tel('Geblokkeerd')}</b><small>geblokkeerd</small></div><div><b>${tel('Werkt goed')}</b><small>werkt goed</small></div><div><b>${tel('Te weinig gegevens')}</b><small>te weinig gegevens</small></div></div>
+   ${l.length?`<div class="kaart tabelwrap"><table><thead><tr><th>Leerdoel</th><th>Vorm</th><th>Pogingen</th><th>% goed</th><th>Discr.</th><th>Afgehaakt</th><th>Tijd</th><th>Status</th><th></th></tr></thead><tbody>${l.map(x=>{ const ld=LD[x.Leerdoel]; const n=+x.Pogingen||0, sk=+x.Overgeslagen||0;
+     return `<tr><td>${esc(ld?ld.naam:x.Leerdoel)}<br><small class="zacht">Niveau ${ld?ld.niv:x.Niveau} · ${esc(x.Leerdoel)}</small></td><td>${esc(VORMNAAM[x.Vorm]||x.Vorm)}</td><td>${n}</td><td>${n?Math.round(100*(+x.Goed||0)/n)+'%':'–'}</td><td>${x.Discriminatie===''||x.Discriminatie==null?'–':nl(+x.Discriminatie,2)}</td><td>${n+sk?Math.round(100*sk/(n+sk))+'%':'–'}</td><td>${x['Gem. tijd (s)']?x['Gem. tijd (s)']+' s':'–'}</td><td><span class="chip ${chip[x.Status]||'zacht'}">${esc(x.Status||'')}</span>${x.Reden?`<br><small class="zacht">${esc(x.Reden)}</small>`:''}</td><td>${knop(x)}</td></tr>` }).join('')}</tbody></table></div>`:'<div class="kaart"><p class="zacht">Nog geen gegevens. Na elke gemaakte opgave komt er een regel bij in het tabblad Sjablonen van de Sheet.</p></div>'}`;
+}
+async function zetSjabloon(sj,status){
+  try{ await api('sjabloonstatus',{docentcode:DOC.code,sj,status}); const j=await api('itemanalyse',{docentcode:DOC.code}); DOC.sj=j.sjablonen||[]; SJ.t=0; melding(status==='vrijgegeven'?'Sjabloon hersteld: hij wordt weer aangeboden.':status==='geblokkeerd'?'Sjabloon geblokkeerd.':'Sjabloon staat weer op automatisch.'); go('docentAnalyse') }catch(e){ melding(esc(e.message)) }
+}

@@ -78,7 +78,7 @@ L({id:'V5.procentvan',niv:5,dom:'V',sub:'procent',naam:'Procent van procent: dee
 // ---------- Meten en meetkunde ----------
 L({id:'M5.kmums',niv:5,dom:'M',sub:'eenheden',naam:'Snelheid omrekenen: km/u en m/s',rm:true,dec:2,
   uitleg:'1 m/s = 3,6 km/u (in een uur zitten 3600 seconden: 3600 m = 3,6 km). Van m/s naar km/u: keer 3,6. Van km/u naar m/s: delen door 3,6.',
-  gen(r){ const naarKmu=r.ja(); const ms=r.pick([5,10,12.5,15,20,25,30,2.5,7.5]); return {naarKmu,ms,kmu:rondaf(ms*3.6,2),c:r.pick(['Een sprinter loopt','Een trein rijdt','Een windvlaag waait','Een scooter rijdt'])} },
+  gen(r){ const naarKmu=r.ja(); const [c,ms]=r.pick([['Een sprinter loopt',r.pick([7.5,10])],['Een wielrenner rijdt',r.pick([10,12.5])],['Een scooter rijdt',r.pick([7.5,12.5])],['Een windvlaag waait',r.pick([15,20,25])],['Een trein rijdt',r.pick([25,30,40])],['Een wandelaar loopt',r.pick([1.25,1.5])]]); return {naarKmu,ms,kmu:rondaf(ms*3.6,2),c} }, // snelheid past bij wie of wat er beweegt
   vraag:v=>v.naarKmu?`${v.c} ${nl(v.ms)} m/s. Hoeveel km/u is dat?`:`${v.c} ${nl(v.kmu)} km/u. Hoeveel m/s is dat?`,
   antw:v=>v.naarKmu?v.kmu:v.ms, eenheid:v=>v.naarKmu?'km/u':'m/s',
   stappen:v=>v.naarKmu?[st(`In 1 uur (3600 s): ${nl(v.ms)} × 3600 = ${nl(v.ms*3600)} m`,v.ms*3600),st(`${nl(v.ms*3600)} m = ${nl(v.kmu)} km, dus ${nl(v.kmu)} km/u`,v.kmu)]:[st(`${nl(v.kmu)} km/u = ${nl(v.kmu*1000)} m per 3600 s`,v.kmu*1000),st(`${nl(v.kmu*1000)} : 3600 = ${nl(v.ms)} m/s`,v.ms)],
@@ -87,7 +87,7 @@ L({id:'M5.kmums',niv:5,dom:'M',sub:'eenheden',naam:'Snelheid omrekenen: km/u en 
 });
 L({id:'M5.cilinder',niv:5,dom:'M',sub:'inhoud',naam:'Inhoud van een cilinder',rm:true,dec:1,tol:v=>Math.max(.06,Math.PI*v.r*v.r*v.h/1000*.0015),
   uitleg:'Inhoud cilinder = oppervlakte grondvlak × hoogte = π × r × r × h. In cm krijg je cm³; 1000 cm³ = 1 liter.',
-  gen(r){ return {r:r.pick([3,4,5,6,8,10,12,15]),h:r.pick([10,12,15,20,25,30,40]),c:r.pick(['Een blik','Een regenton','Een vaas','Een theelicht-houder','Een drinkfles'])} },
+  gen(r){ const [c,rs,hs]=r.pick([['Een blik',[3,4,5],[10,12,15]],['Een regenton',[25,30],[80,90,100]],['Een vaas',[5,6,8],[20,25,30]],['Een emmer',[12,15],[25,30]],['Een drinkfles',[3,4],[20,25]]]); return {r:r.pick(rs),h:r.pick(hs),c} }, // realistische maten
   vraag:v=>`${v.c} is een cilinder met een straal van ${v.r} cm en een hoogte van ${v.h} cm. Hoeveel liter past erin? Rond af op 1 decimaal.`,
   antw:v=>rondaf(Math.PI*v.r*v.r*v.h/1000,1), eenheid:'liter',
   stappen:v=>[st(`Grondvlak: π × ${v.r} × ${v.r} ≈ ${nl(rondaf(Math.PI*v.r*v.r,2))} cm²`,rondaf(Math.PI*v.r*v.r,2)),st(`Inhoud: ${nl(rondaf(Math.PI*v.r*v.r,2))} × ${v.h} ≈ ${nl(rondaf(Math.PI*v.r*v.r*v.h,0))} cm³`,rondaf(Math.PI*v.r*v.r*v.h,0)),st(`: 1000 ≈ ${nl(rondaf(Math.PI*v.r*v.r*v.h/1000,1))} liter`,rondaf(Math.PI*v.r*v.r*v.h/1000,1))],

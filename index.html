@@ -497,6 +497,7 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .schema{border:2px solid var(--knop);border-radius:12px;padding:12px 14px;margin:0 0 14px;background:color-mix(in srgb,var(--knop) 6%,transparent)}
 .schema .vtab input{width:84px}.schema td.zoek{font:900 20px var(--kop);color:var(--knop)}
 .schvak.goed{border-color:var(--goed);background:color-mix(in srgb,var(--goed) 12%,transparent)}.schvak.fout{border-color:var(--fout);background:color-mix(in srgb,var(--fout) 10%,transparent)}
+.pols{animation:pols .5s ease 2}@keyframes pols{50%{transform:scale(1.08);box-shadow:0 0 0 4px var(--acc)}}
 
 </style>
 </head>
@@ -510,7 +511,7 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekentrainer Vellesan · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = '56beada278';
+const BOUW = '3f5963cbff';
 const KLASSEN = ['1e klas','2e klas','3e klas','4e klas','5e klas','6e klas','Thuis'];
 const KEY = 'rekenvel-v1';
 const OUTBOX = 'rekenvel-outbox';
@@ -563,7 +564,10 @@ const eur = (x,altijdCent=false) => { const c=Math.abs(rondaf(x,2)%1)>1e-9||alti
 const pct = x => nl(x,2)+'%';
 function parseGetal(s){
   if(s==null) return NaN;
-  s=String(s).trim().replace(/[−–]/g,'-').replace(/[€%\s]/g,'').replace(/[a-zA-Z²³\/]+$/,'');
+  s=String(s).trim().replace(/[−–]/g,'-');
+  const gem=s.replace(/[€%]/g,'').trim().match(/^(-?)(\d+)\s+(\d+)\s*\/\s*(\d+)\s*[a-zA-Z]*$/); // gemengd getal: 1 1/6
+  if(gem) return (gem[1]?-1:1)*(Number(gem[2])+Number(gem[3])/Number(gem[4]));
+  s=s.replace(/[€%\s]/g,'').replace(/[a-zA-Z²³\/]+$/,'');
   if(/^-?[1-9]\d{0,2}(\.\d{3})+(,\d+)?$/.test(s)) s=s.replace(/\./g,'');
   s=s.replace(',','.');
   if(/^-?\d+\/\d+$/.test(s)){ const [a,b]=s.split('/'); return Number(a)/Number(b) }
@@ -818,9 +822,10 @@ function maakItem(ldId,opt={}){
   const trede=opt.trede||3;
   let vorm=opt.vorm;
   if(!vorm){
-    if(trede===1&&ld.stappen) vorm='faded1';
-    else if(trede===2&&ld.stappen) vorm='faded2';
-    else { const vs=vormen(ld); vorm=vs[Math.floor(RNG(seed+7).f()*vs.length)] }
+    const blok=k=>typeof sjGeblokkeerd==='function'&&sjGeblokkeerd(ldId+'|'+k);
+    if(trede===1&&ld.stappen&&!blok('faded1')) vorm='faded1';
+    else if(trede<=2&&ld.stappen&&!blok('faded2')) vorm='faded2';
+    else { let vs=vormen(ld); if(typeof sjabloonFilter==='function') vs=sjabloonFilter(ld,vs); vorm=vs[Math.floor(RNG(seed+7).f()*vs.length)] }
   }
   const it={ key:ldId+'#'+seed, ld:ldId, niv:ld.niv, dom:ld.dom, sub:ld.sub, seed, v, vorm, trede, bron:opt.bron||'oefen', rm:ld.rm, r:RNG(seed+99) };
   it.vraag = ld.vraag?ld.vraag(v):'';
@@ -839,7 +844,7 @@ function maakItem(ldId,opt={}){
     }
   }
   if(vorm==='faded1'||vorm==='faded2'||vorm==='volgorde'){ it.stappen=ld.stappen(v) }
-  if(vorm==='faded1'){ const w=ld.waarom?(typeof ld.waarom==='function'?ld.waarom(v):ld.waarom):{vraag:'Klopt de laatste stap van deze uitwerking?',opties:['Ja, het antwoord past bij de vraag','Nee, er moet nog iets bij','Nee, je moet delen in plaats van vermenigvuldigen']};
+  if(vorm==='faded1'){ const w=ld.waarom?(typeof ld.waarom==='function'?ld.waarom(v):ld.waarom):foutAnalyseVraag(ld,v,it.r);
     it.check={vraag:w.vraag,opties:it.r.shuffle(w.opties.map((t,i)=>({t,goed:i===0})))} }
   if(vorm==='faded2'){ // één lege tussenstap: bij voorkeur niet de laatste
     const kand=it.stappen.map((s,i)=>i).filter(i=>typeof it.stappen[i][1]==='number');
@@ -960,7 +965,7 @@ function nakijk(){
       if(!goed) fb=`In deze stap hoort <b>${nl(s[1])}</b>.`;
       break; }
     case 'sab': {
-      const x=parseGetal($('#antw').value); const stapGoed=Q.sabStap===it.sab.fout; const valGoed=zelfde(x,it.sab.juist,tol);
+      const x=parseGetal($('#antw').value); const stapGoed=Q.sabStap===it.sab.fout; const dp=(String(it.sab.juist).split('.')[1]||'').length; const valGoed=zelfde(x,it.sab.juist,tol)||(x!==null&&dp<=2&&zelfde(rondaf(x,dp),it.sab.juist,1e-6)); // exact antwoord telt ook als de afronding klopt
       gegeven='stap '+(Q.sabStap+1)+': '+$('#antw').value; goed=stapGoed&&valGoed;
       $$('.sabstap').forEach((b,i)=>{ if(i===it.sab.fout) b.classList.add('goed'); else if(i===Q.sabStap) b.classList.add('fout') });
       if(!stapGoed) fb=`De denkfout zit in stap ${it.sab.fout+1}. ${it.sab.uitleg}`;
@@ -1008,6 +1013,20 @@ function andersHtml(it){
   const ld=LD[it.ld]; if(!ld.anders) return `<p>${ld.uitleg}</p>`;
   const a=ld.anders(it.v); const o=typeof a==='string'?{tekst:a}:a;
   return `<p>${o.tekst}</p>${o.svg?`<div class="figuur">${o.svg}</div>`:''}${o.tabel?`<div class="tabelwrap">${vtabelHtml(o.tabel.kop,o.tabel.rijen)}</div>`:''}${o.svg?'':modelHtml(it)}`;
+}
+// Zelfuitleg bij het uitgewerkte voorbeeld: "Een klasgenoot kwam op X. Wat ging er mis?"
+// De leerling koppelt een fout antwoord aan de denkfout erachter (uit fouten(v) van het leerdoel).
+function foutAnalyseVraag(ld,v,r){
+  const schoon=t=>String(t||'').replace(/<[^>]+>/g,'').trim();
+  let f=[]; try{ f=(ld.fouten?ld.fouten(v):[]).filter(x=>typeof x[0]==='number'&&isFinite(x[0])&&schoon(x[1])) }catch(e){}
+  const juist=ld.antw?ld.antw(v):null;
+  f=f.filter((x,i)=>!zelfde(x[0],juist)&&f.findIndex(y=>schoon(y[1])===schoon(x[1]))===i);
+  if(!f.length) return {vraag:'Welke stap uit de uitwerking is het belangrijkst om niet te vergeten?',opties:[schoon(ld.stappen(v).slice(-2)[0][0]).slice(0,120),'Het antwoord netjes afronden op hele getallen.','De getallen uit de vraag optellen.']};
+  const k=r.pick(f); const eh=typeof ld.eenheid==='string'?ld.eenheid:'';
+  const waarde=(eh==='€'?'€ ':'')+nl(rondaf(k[0],4))+(eh&&eh!=='€'?' '+eh:'');
+  const andere=f.filter(x=>x!==k).map(x=>schoon(x[1]));
+  const vul=['Er ging niets mis: dat antwoord is ook goed.','Je mag het antwoord alleen schatten, dus het maakt niet uit.','Er is alleen een tikfout gemaakt bij het overschrijven.'];
+  return {vraag:`Stel: je komt bij deze opgave op ${waarde}. Welke denkfout heb je dan gemaakt?`,opties:[schoon(k[1])].concat(andere.slice(0,2)).concat(vul).slice(0,3)};
 }
 
 // ===== Adaptieve engine: beheersing, treden, foutenbank (spaced repetition), vraagkeuze en niveau omhoog/omlaag =====
@@ -1230,7 +1249,7 @@ L({id:'G1.afronden',niv:1,dom:'G',sub:'getalbegrip',naam:'Afronden op tientallen
   vraag:v=>`${v.ctx[0]} ${nl(v.x)} ${v.ctx[1]}. Rond dit getal af op ${({10:'tientallen',100:'honderdtallen',1000:'duizendtallen'})[v.op]}.`,
   antw:v=>Math.round(v.x/v.op)*v.op,
   stappen:v=>{ const d=Math.floor(v.x/(v.op/10))%10; return [st(`Het cijfer rechts van de ${({10:'tientallen',100:'honderdtallen',1000:'duizendtallen'})[v.op]} is ${d}.`,d),st(d>=5?`${d} is 5 of meer, dus naar boven afronden.`:`${d} is minder dan 5, dus naar beneden afronden.`),st(`Afgerond: ${nl(Math.round(v.x/v.op)*v.op)}`,Math.round(v.x/v.op)*v.op)] },
-  fouten:v=>[[Math.floor(v.x/v.op)*v.op,'Je hebt de cijfers alleen weggestreept. Kijk naar het cijfer erachter: bij 5 of meer rond je naar boven af.'],[Math.ceil(v.x/v.op)*v.op,'Bij een cijfer onder de 5 rond je naar beneden af.'],[Math.round(v.x/(v.op===1000?100:v.op*10))*(v.op===1000?100:v.op*10),'Let op op welke plek je moet afronden.']],
+  fouten:v=>[[Math.floor(v.x/v.op)*v.op,'Je hebt de cijfers alleen weggestreept. Kijk naar het cijfer erachter: bij 5 of meer rond je naar boven af.'],[Math.ceil(v.x/v.op)*v.op,'Bij een cijfer onder de 5 rond je naar beneden af.'],[Math.round(v.x/(v.op===1000?100:v.op*10))*(v.op===1000?100:v.op*10),'Let op op welke plek je moet afronden.'],[Math.round(v.x/v.op),'Je schreef alleen het aantal '+({10:'tientallen',100:'honderdtallen',1000:'duizendtallen'})[v.op]+' op. Zet de nullen erachter: het getal blijft ongeveer even groot.']],
   anders:v=>({tekst:`Zet het getal op een getallenlijn tussen de twee mogelijke uitkomsten. Welke ligt het dichtst bij?`,svg:FIG.lijn(Math.floor(v.x/v.op)*v.op,Math.floor(v.x/v.op)*v.op+v.op,v.op/10,[{x:v.x,label:nl(v.x)}],5)}),
   waarom:{vraag:'Waarom kijk je naar het cijfer rechts van de plek waarop je afrondt?',opties:['Dat cijfer bepaalt of je dichter bij het hogere of het lagere getal zit.','Omdat je altijd het laatste cijfer weghaalt.','Omdat je daar 1 bij moet optellen.']}
 });
@@ -1246,6 +1265,8 @@ L({id:'G1.nullen',niv:1,dom:'G',sub:'bewerkingen',naam:'Vermenigvuldigen met nul
   volgorde:true
 });
 function kolomfout(a,b){ const s=String(a),t=String(b).padStart(s.length,'0'); let o=''; for(let i=0;i<s.length;i++) o+=Math.abs(+s[i]-+t[i]); return +o }
+// Saboteur: alleen de eenheden lenen, zodat er precies één denkfout in de uitwerking zit
+function enkelLenen(v){ let {a,c}=v; if(Math.floor(c/10)%10>=8) c-=30; const tc=Math.floor(c/10)%10; if(Math.floor(a/10)%10-1<tc) a=Math.floor(a/100)*100+(tc+1)*10+a%10; return Object.assign({},v,{a,c}) }
 L({id:'G1.cijferen',niv:1,dom:'G',sub:'bewerkingen',naam:'Aftrekken met lenen',verwar:['G1.nullen'],
   uitleg:'Bij aftrekken met lenen: kan het niet in een kolom, leen dan 1 van de kolom links ervan (10 erbij). Je kunt ook rijgen: eerst de honderdtallen eraf, dan de tientallen, dan de eenheden.',
   gen(r){ let a,c; do{ a=r.int(121,480); c=r.int(36,98) }while(a%10>=c%10||a-c<20); const [p]=prodPrijs(r); return {a,c,p,n:r.naam()} },
@@ -1254,7 +1275,7 @@ L({id:'G1.cijferen',niv:1,dom:'G',sub:'bewerkingen',naam:'Aftrekken met lenen',v
   stappen:v=>{ const t=Math.floor(v.c/10)*10,e=v.c%10; return [st(`${v.a} − ${t} = ${v.a-t}`,v.a-t),st(`${v.a-t} − ${e} = ${v.a-v.c}`,v.a-v.c),st(`Controle: ${v.a-v.c} + ${v.c} = ${v.a}`)] },
   fouten:v=>[[kolomfout(v.a,v.c),'Je hebt per kolom het kleinste van het grootste afgetrokken. Bij aftrekken moet je dan lenen.'],[v.a+v.c,'Je hebt opgeteld. Na het kopen heb je minder over.'],[v.a-v.c+10,'Bij lenen ben je vergeten dat de tientallen 1 minder worden.']],
   anders:v=>({tekst:`Spring op de getallenlijn terug: eerst ${Math.floor(v.c/10)*10} terug, daarna nog ${v.c%10}.`,svg:FIG.lijn(Math.floor((v.a-v.c)/10)*10,Math.ceil(v.a/10)*10,10,[{x:v.a,label:String(v.a)},{x:v.a-Math.floor(v.c/10)*10,label:String(v.a-Math.floor(v.c/10)*10),k:'b'},{x:v.a-v.c,label:String(v.a-v.c)}])}),
-  sab:v=>{ const t=Math.floor(v.c/10)*10,e=v.c%10,kf=kolomfout(v.a,v.c); return {intro:`${v.n} heeft € ${v.a} en koopt iets van € ${v.c}. Ravi rekent onder elkaar uit wat er overblijft.`,
+  sab:v=>{ v=enkelLenen(v); const t=Math.floor(v.c/10)*10,e=v.c%10,kf=kolomfout(v.a,v.c); return {intro:`${v.n} heeft € ${v.a} en koopt iets van € ${v.c}. Ravi rekent onder elkaar uit wat er overblijft.`,
     stappen:[`Eenheden: ${v.a%10} − ${e} kan niet, dus ${e} − ${v.a%10} = ${e-v.a%10}.`,`Tientallen: ${Math.floor(v.a/10)%10} en ${Math.floor(v.c/10)%10} → verschil ${Math.abs(Math.floor(v.a/10)%10-Math.floor(v.c/10)%10)}.`,`Honderdtallen: ${Math.floor(v.a/100)} blijft ${Math.floor(v.a/100)}.`,`Antwoord: € ${kf}.`],
     fout:0,juist:v.a-v.c,eenheid:'€',vraag:'Hoeveel houdt ' + v.n + ' echt over?',uitleg:`Ravi draait de som om bij de eenheden. Je mag niet ${e} − ${v.a%10} doen: je moet lenen.`,
     goed:[`${v.a} − ${t} = ${v.a-t}`,`${v.a-t} − ${e} = ${v.a-v.c}`]} }
@@ -1318,7 +1339,7 @@ L({id:'M1.eenheden',niv:1,dom:'M',sub:'eenheden',naam:'Lengte, gewicht en inhoud
 });
 L({id:'M1.tijd',niv:1,dom:'M',sub:'tijd',naam:'Tijdsduur berekenen',
   uitleg:'Een uur heeft 60 minuten, niet 100. Reken een tijdsduur uit door in stappen naar hele uren te springen.',
-  gen(r){ const s=r.int(8,19)*60+r.pick([15,20,25,35,40,45,50]); const d=r.int(50,170); return {s,e:s+d,d,c:r.pick(['De film begint om','De training begint om','De bus vertrekt om','Het concert begint om','De wedstrijd begint om']),c2:r.pick(['is afgelopen om','is klaar om','komt aan om','eindigt om'])} },
+  gen(r){ const s=r.int(8,19)*60+r.pick([15,20,25,35,40,45,50]); const d=r.int(50,170); return {s,e:s+d,d,...(([c,c2])=>({c,c2}))(r.pick([['De film begint om','is afgelopen om'],['De training begint om','is klaar om'],['De bus vertrekt om','komt aan om'],['Het concert begint om','eindigt om'],['De wedstrijd begint om','is afgelopen om']]))} }, // begin- en eindzin horen bij elkaar
   vraag:v=>`${v.c} ${tijdStr(v.s)} en ${v.c2} ${tijdStr(v.e)}. Hoeveel minuten duurt het?`,
   antw:v=>v.d, eenheid:'min',
   stappen:v=>{ const h1=Math.ceil(v.s/60)*60, a=h1-v.s, b=Math.floor(v.e/60)*60-h1, c=v.e-Math.floor(v.e/60)*60; return [st(`Van ${tijdStr(v.s)} naar ${tijdStr(h1)}: ${a} minuten`,a),st(`Van ${tijdStr(h1)} naar ${tijdStr(Math.floor(v.e/60)*60)}: ${b} minuten`,b),st(`Van ${tijdStr(Math.floor(v.e/60)*60)} naar ${tijdStr(v.e)}: ${c} minuten`,c),st(`Samen: ${a} + ${b} + ${c} = ${v.d} minuten`,v.d)] },
@@ -1351,7 +1372,7 @@ const SPORTEN=['voetbal','hockey','turnen','tennis','dansen','zwemmen','basketba
 L({id:'B1.staaf',niv:1,dom:'B',sub:'grafieken',naam:'Staafdiagram aflezen',
   uitleg:'Bij een staafdiagram lees je de hoogte van de staaf af op de verticale as. Kijk goed hoeveel één hokje waard is.',
   gen(r){ const s=r.shuffle(SPORTEN).slice(0,5); const stap=r.pick([2,5]); const w=s.map(()=>r.int(1,8)*stap); let i=r.int(0,4),j; do{j=r.int(0,4)}while(j===i||w[i]===w[j]); return {s,w,stap,i,j,wat:r.pick(['meer','totaal'])} },
-  vraag:v=>v.wat==='meer'?`In het diagram zie je welke sport de leerlingen van groep 8 en de brugklas het leukst vinden. Hoeveel leerlingen kiezen ${v.s[v.i]} meer of minder dan ${v.s[v.j]}? (Geef het verschil.)`:`In het diagram zie je welke sport leerlingen het leukst vinden. Hoeveel leerlingen kiezen ${v.s[v.i]} of ${v.s[v.j]} samen?`,
+  vraag:v=>v.wat==='meer'?`In het diagram zie je welke sport de leden van een sportclub het leukst vinden. Hoeveel leerlingen kiezen ${v.s[v.i]} meer of minder dan ${v.s[v.j]}? (Geef het verschil.)`:`In het diagram zie je welke sport leerlingen het leukst vinden. Hoeveel leerlingen kiezen ${v.s[v.i]} of ${v.s[v.j]} samen?`,
   fig:v=>FIG.staaf(v.s,v.w,{ymax:Math.max(...v.w)+v.stap*2-Math.max(...v.w)%v.stap,ys:v.stap,yl:'aantal leerlingen'}),
   antw:v=>v.wat==='meer'?Math.abs(v.w[v.i]-v.w[v.j]):v.w[v.i]+v.w[v.j],
   stappen:v=>[st(`${v.s[v.i]}: ${v.w[v.i]} leerlingen`,v.w[v.i]),st(`${v.s[v.j]}: ${v.w[v.j]} leerlingen`,v.w[v.j]),st(v.wat==='meer'?`Verschil: ${Math.abs(v.w[v.i]-v.w[v.j])}`:`Samen: ${v.w[v.i]+v.w[v.j]}`,v.wat==='meer'?Math.abs(v.w[v.i]-v.w[v.j]):v.w[v.i]+v.w[v.j])],
@@ -1386,17 +1407,17 @@ L({id:'G2.verdelen',niv:2,dom:'G',sub:'bewerkingen',naam:'Eerlijk verdelen: wat 
 });
 L({id:'M3.temperatuur',niv:3,dom:'M',sub:'eenheden',naam:'Temperatuur: rekenen onder en boven nul',verwar:['G3.negatief'],
   uitleg:'Op een thermometer tel je het verschil in stappen. Van −4 °C naar 7 °C: eerst 4 graden naar 0, dan nog 7. Samen 11 graden.',
-  gen(r){ const a=-r.int(2,12),b=r.int(1,15); return {a,b,t:r.pick(['verschil','eind']),d:r.int(3,9),c:r.pick(['In Oostenrijk op wintersport','Op een winterochtend in Groningen','In Noorwegen'])} },
+  gen(r){ const a=-r.int(2,12),b=r.int(1,15); return {a,b,t:r.pick(['verschil','eind']),d:r.int(3,9),c:r.pick(['In Oostenrijk op wintersport','In een dorp in de bergen van Zwitserland','In Noorwegen'])} },
   vraag:v=>v.t==='verschil'?`${v.c} is het ’s ochtends ${String(v.a).replace('-','−')} °C. ’s Middags is het ${v.b} °C. Hoeveel graden is de temperatuur gestegen?`:`${v.c} is het ’s middags ${v.b} °C. ’s Nachts daalt de temperatuur ${v.b+v.d} graden. Hoeveel graden onder nul is het dan?`,
   antw:v=>v.t==='verschil'?v.b-v.a:v.d, eenheid:v=>v.t==='verschil'?'graden':'graden onder nul',
   stappen:v=>v.t==='verschil'?[st(`Van ${String(v.a).replace('-','−')} naar 0: ${-v.a} graden`,-v.a),st(`Van 0 naar ${v.b}: ${v.b} graden`,v.b),st(`Samen: ${-v.a} + ${v.b} = ${v.b-v.a}`,v.b-v.a)]:[st(`Van ${v.b} naar 0: ${v.b} graden`,v.b),st(`Nog ${v.b+v.d} − ${v.b} = ${v.d} graden eronder: −${v.d} °C`,v.d)],
-  fouten:v=>v.t==='verschil'?[[v.b+v.a>0?v.b+v.a:v.b,'Je trok af. Onder nul en boven nul tel je bij elkaar op.'],[v.b,'Vergeet het stuk onder nul niet.']]:[[v.b+v.d,'Dat is de daling. Hoeveel is er onder nul over?'],[v.b,'Dat is de temperatuur overdag.']],
+  fouten:v=>v.t==='verschil'?[[v.b+v.a>0?v.b+v.a:v.b,'Je trok af. Onder nul en boven nul tel je bij elkaar op.'],[v.b,'Vergeet het stuk onder nul niet.'],[-v.a,'Dat is alleen het stuk onder nul. Tel het stuk boven nul erbij.']]:[[v.b+v.d,'Dat is de daling. Hoeveel is er onder nul over?'],[v.b,'Dat is de temperatuur overdag.']],
   anders:v=>({tekst:'Teken een thermometer als getallenlijn en tel de stappen.',svg:FIG.lijn(Math.min(v.a,-v.d)-1,Math.max(v.b,1)+1,1,[{x:v.t==='verschil'?v.a:v.b,label:String(v.t==='verschil'?v.a:v.b).replace('-','−')+'°'},{x:v.t==='verschil'?v.b:-v.d,label:String(v.t==='verschil'?v.b:-v.d).replace('-','−')+'°',k:'b'}],5)})
 });
 L({id:'B4.cirkeldiagram',niv:4,dom:'B',sub:'grafieken',naam:'Cirkeldiagram: percentage en graden',rm:true,dec:1,
   uitleg:'Een hele cirkel is 360° = 100%. 1% is dus 3,6°. Van graden naar procent: delen door 3,6.',
   gen(r){ const d=r.pick([[50,25,15,10],[40,30,20,10],[45,25,20,10],[35,30,25,10],[60,20,15,5]]); const l=r.shuffle(['gamen','sporten','social media','huiswerk','muziek']).slice(0,4); return {d,l,i:r.int(0,3),t:r.pick(['graden','procent'])} },
-  vraag:v=>`Het cirkeldiagram laat zien waaraan leerlingen hun vrije tijd besteden. ${v.t==='graden'?`${v.l[v.i]} is ${v.d[v.i]}%. Hoeveel graden is dat stuk van de cirkel?`:`Het stuk ${v.l[v.i]} is ${nl(v.d[v.i]*3.6)}°. Hoeveel procent is dat?`}`,
+  vraag:v=>`Het cirkeldiagram laat zien waaraan leerlingen hun vrije tijd besteden. ${v.t==='graden'?`${v.l[v.i][0].toUpperCase()+v.l[v.i].slice(1)} is ${v.d[v.i]}%. Hoeveel graden is dat stuk van de cirkel?`:`Het stuk ${v.l[v.i]} is ${nl(v.d[v.i]*3.6)}°. Hoeveel procent is dat?`}`,
   fig:v=>FIG.taart(v.d.map((w,i)=>({w,label:v.l[i]+(i===v.i?'':' '+w+'%')}))),
   antw:v=>v.t==='graden'?rondaf(v.d[v.i]*3.6,1):v.d[v.i], eenheid:v=>v.t==='graden'?'graden':'%',
   stappen:v=>v.t==='graden'?[st(`100% = 360°, dus 1% = 3,6°`,3.6),st(`${v.d[v.i]} × 3,6 = ${nl(v.d[v.i]*3.6)}°`,rondaf(v.d[v.i]*3.6,1))]:[st(`360° = 100%, 1% = 3,6°`,3.6),st(`${nl(v.d[v.i]*3.6)} : 3,6 = ${v.d[v.i]}%`,v.d[v.i])],
@@ -1455,7 +1476,7 @@ L({id:'G2.wisselgeld',niv:2,dom:'G',sub:'komma',naam:'Rekenen met geld: optellen
 });
 L({id:'G2.kommakeer',niv:2,dom:'G',sub:'komma',naam:'Kommagetal keer een heel getal',verwar:['G2.wisselgeld'],
   uitleg:'Reken eerst zonder komma, en zet de komma daarna terug. Schat ook: € 1,35 × 12 is ongeveer € 1 × 12 + nog wat, dus iets meer dan € 12.',
-  gen(r){ const p=r.int(105,395), n=r.int(4,15); return {p,n,c:r.pick([['Een busrit kost','Je reist','keer. Hoeveel betaal je in totaal?'],['Een pak sap kost','Voor het klassenfeest koop je','pakken. Wat kost dat samen?'],['Een kaartje voor de schoolfeest-loterij kost','Je verkoopt er','. Hoeveel geld haal je op?']])} },
+  gen(r){ const p=r.int(105,395), n=r.int(4,15); return {p,n,c:r.pick([['Een busrit kost','Je reist','keer. Hoeveel betaal je in totaal?'],['Een pak sap kost','Voor het klassenfeest koop je','pakken. Wat kost dat samen?'],['Een lot voor de loterij van het schoolfeest kost','Je verkoopt','loten. Hoeveel geld haal je op?']])} },
   vraag:v=>`${v.c[0]} ${eur(c2e(v.p))}. ${v.c[1]} ${v.n} ${v.c[2]}`,
   antw:v=>c2e(v.p*v.n), eenheid:'€',
   stappen:v=>[st(`Zonder komma: ${v.p} × ${v.n} = ${v.p*v.n}`,v.p*v.n),st(`Komma terug (2 cijfers achter de komma): ${eur(c2e(v.p*v.n))}`,c2e(v.p*v.n)),st(`Schatting: ongeveer ${Math.round(v.p/100)} × ${v.n} = ${Math.round(v.p/100)*v.n}, dat past.`)],
@@ -1630,18 +1651,18 @@ const NOEMERPAREN=[[2,3],[2,4],[3,4],[2,5],[3,6],[4,8],[2,6],[4,6],[3,12],[6,8],
 L({id:'G3.breukoptellen',niv:3,dom:'G',sub:'breuken',naam:'Breuken optellen en aftrekken',dec:9,tol:.002,
   uitleg:'Maak de breuken eerst gelijknamig: zoek een noemer waar beide noemers in passen. Tel dan alleen de tellers op. De noemer blijft hetzelfde.',
   toon:x=>fr(x),
-  gen(r){ const [b,d]=r.pick(NOEMERPAREN); const a=r.int(1,b-1), c=r.int(1,d-1); const op=r.ja(.7)||a/b<=c/d?'+':'−'; return {a,b,c,d,op:a/b>c/d?op:'+',ctx:r.pick(['pizza','taart','lasagne','chocoladereep'])} },
+  gen(r){ let a,b,c,d,op; do{ [b,d]=r.pick(NOEMERPAREN); a=r.int(1,b-1); c=r.int(1,d-1); op=r.ja(.7)||a/b<=c/d?'+':'−'; if(a/b<=c/d) op='+' }while(op==='+'&&a/b+c/d>1); return {a,b,c,d,op,ctx:r.pick(['pizza','taart','lasagne','chocoladereep'])} }, // samen nooit meer dan één geheel
   vraag:v=>v.op==='+'?`Je eet ${breuk(v.a,v.b)} van een ${v.ctx} en je vriend eet ${breuk(v.c,v.d)}. Welk deel hebben jullie samen gegeten? Geef je antwoord als breuk, bijvoorbeeld 5/6.`:`Er is nog ${breuk(v.a,v.b)} van een ${v.ctx} over. Jij eet daarvan ${breuk(v.c,v.d)} van de hele ${v.ctx} op. Welk deel is er nu nog over? Geef je antwoord als breuk.`,
   antw:v=>v.op==='+'?v.a/v.b+v.c/v.d:v.a/v.b-v.c/v.d,
   stappen:v=>{ const n=v.b*v.d/ggd(v.b,v.d), x=v.a*n/v.b, y=v.c*n/v.d, z=v.op==='+'?x+y:x-y; return [st(`Gelijke noemer: ${n}`,n),st(`${breuk(v.a,v.b)} = ${breuk(x,n)} en ${breuk(v.c,v.d)} = ${breuk(y,n)}`),st(`${x} ${v.op==='+'?'+':'−'} ${y} = ${z}, dus ${breuk(z,n)}${ggd(z,n)>1?' = '+fr(z/n):''}`,z/n)] },
-  fouten:v=>[[v.op==='+'?(v.a+v.c)/(v.b+v.d):Math.abs(v.a-v.c)/Math.abs(v.b-v.d||1),'Je telde de noemers ook op. De noemer zegt hoe groot de stukjes zijn; die verander je niet door op te tellen.'],[v.op==='+'?(v.a+v.c)/(v.b*v.d):Math.abs(v.a-v.c)/(v.b*v.d),'Je maakte de noemer gelijk, maar vergat de tellers mee te veranderen.']],
+  fouten:v=>[[v.op==='+'?(v.a+v.c)/(v.b+v.d):Math.abs(v.a-v.c)/Math.abs(v.b-v.d||1),'Je telde de noemers ook op. De noemer zegt hoe groot de stukjes zijn; die verander je niet door op te tellen.'],[v.op==='+'?(v.a+v.c)/(v.b*v.d):Math.abs(v.a-v.c)/(v.b*v.d),'Je maakte de noemer gelijk, maar vergat de tellers mee te veranderen.'],[(v.op==='+'?v.a+v.c:Math.abs(v.a-v.c))/Math.max(v.b,v.d),'Je nam de grootste noemer, maar veranderde de teller van de andere breuk niet mee.']],
   anders:v=>({tekst:`Verdeel alles in stukjes van dezelfde grootte. Dan kun je de stukjes gewoon tellen.`,svg:FIG.strook(Math.round((v.op==='+'?v.a/v.b+v.c/v.d:v.a/v.b-v.c/v.d)*(v.b*v.d/ggd(v.b,v.d))),v.b*v.d/ggd(v.b,v.d),`in stukjes van 1/${v.b*v.d/ggd(v.b,v.d)}`)}),
   waarom:{vraag:'Waarom moet je de breuken eerst gelijknamig maken?',opties:['Je kunt alleen stukjes optellen die even groot zijn.','Omdat de grootste noemer altijd wint.','Omdat je anders een kommagetal krijgt.']}
 });
 L({id:'G3.kommadelen',niv:3,dom:'G',sub:'komma',naam:'Delen met geld: prijs per stuk',verwar:['V3.prijsvgl'],
   uitleg:'Bij delen met geld kun je het bedrag in centen zetten, delen, en dan terug naar euro\'s. Schat eerst: past het antwoord?',
-  gen(r){ const p=r.int(5,50)*5, n=r.pick([3,4,5,6,8,12]); return {p,n,tot:p*n,c:r.pick([['Een multipack van','blikjes frisdrank kost','Wat kost één blikje?'],['Met','vrienden betalen jullie samen','voor pizza\'s. Hoeveel betaalt ieder?'],['Een pak met','sportsokken kost','Wat kost één paar?']])} },
-  vraag:v=>`${v.c[0]} ${v.n} ${v.c[1]} ${eur(c2e(v.tot))}. ${v.c[2]}`,
+  gen(r){ const c=r.int(0,2); const p=[r.int(8,24),r.int(90,240),r.int(20,60)][c]*5, n=[r.pick([4,6,8,12]),r.pick([3,4,5,6]),r.pick([3,4,5,6])][c]; return {p,n,tot:p*n,c} },
+  vraag:v=>[`Een multipack van ${v.n} blikjes frisdrank kost ${eur(c2e(v.tot))}. Wat kost één blikje?`,`Met ${v.n} vrienden betalen jullie samen ${eur(c2e(v.tot))} voor pizza's. Hoeveel betaalt ieder?`,`Een pak met ${v.n} paar sportsokken kost ${eur(c2e(v.tot))}. Wat kost één paar?`][v.c],
   antw:v=>c2e(v.p), eenheid:'€',
   stappen:v=>[st(`${eur(c2e(v.tot))} = ${v.tot} cent`,v.tot),st(`${v.tot} : ${v.n} = ${v.p} cent`,v.p),st(`${v.p} cent = ${eur(c2e(v.p))}`,c2e(v.p))],
   fouten:v=>[[c2e(v.p)*10,'De komma staat verkeerd. Schat: '+eur(c2e(v.tot))+' verdelen over '+v.n+' is ongeveer '+eur(Math.round(v.tot/100/v.n))+' per stuk.'],[rondaf(c2e(v.tot)*v.n,2),'Je vermenigvuldigde. Eén stuk is goedkoper dan het hele pak.'],[rondaf(c2e(v.tot)-v.n,2),'Je trok het aantal af. Je moet delen.']],
@@ -1689,7 +1710,7 @@ L({id:'V3.schaal',niv:3,dom:'V',sub:'schaal',naam:'De schaal van een kaart bepal
 });
 L({id:'V3.snelheid',niv:3,dom:'V',sub:'schaal',naam:'Gemiddelde snelheid in km per uur',verwar:['V3.schaal'],
   uitleg:'Snelheid in km/u = hoeveel km je in 1 uur aflegt. Reken met een verhoudingstabel van je minuten naar 60 minuten.',
-  gen(r){ let km,min; do{ min=r.pick([10,12,15,20,30,40,45,50,90]); km=r.int(2,30) }while((km*60)%min!==0||km*60/min>40||km*60/min<4); return {km,min,c:r.pick(['Je fietst naar de sportclub:','Je skeelert een rondje:','Je loopt een stuk van de wandeltocht:','Je fietst naar je oma:'])} },
+  gen(r){ const [c,lo,hi]=r.pick([['Je fietst naar de sportclub:',12,25],['Je skeelert een rondje:',10,20],['Je loopt een stuk van de wandeltocht:',4,6],['Je fietst naar je oma:',12,25]]); let km,min; do{ min=r.pick([10,12,15,20,30,40,45,50,90]); km=r.int(1,30) }while((km*60)%min!==0||km*60/min>hi||km*60/min<lo); return {km,min,c} }, // realistische snelheid per vervoermiddel
   vraag:v=>`${v.c} ${v.km} km in ${v.min} minuten. Wat is je gemiddelde snelheid in km/u?`,
   antw:v=>v.km*60/v.min, eenheid:'km/u',
   stappen:v=>[st(`${v.min} minuten → ${v.km} km`),st(`60 minuten is ${nl(60/v.min)} keer zo lang`,rondaf(60/v.min,4)),st(`${v.km} × ${nl(60/v.min)} = ${nl(v.km*60/v.min)} km/u`,v.km*60/v.min)],
@@ -1715,8 +1736,8 @@ L({id:'V3.prijsvgl',niv:3,dom:'V',sub:'vtabel',naam:'Welke aanbieding is het voo
 const OPPE=[['m²','dm²',100],['dm²','cm²',100],['m²','cm²',10000],['cm²','mm²',100]];
 L({id:'M3.oppeenheden',niv:3,dom:'M',sub:'eenheden',naam:'Oppervlakte-eenheden omrekenen',dec:4,
   uitleg:'1 m = 10 dm, maar 1 m² = 10 × 10 = 100 dm². Bij oppervlakte is elke stap op het trappetje keer 100.',
-  gen(r){ const e=r.pick(OPPE); const naarKlein=r.ja(); const g=r.pick([0.5,1.2,2,2.5,3,4.5,0.25,6]); return {e,naarKlein,g,k:rondaf(g*e[2],4)} },
-  vraag:v=>v.naarKlein?`Een poster is ${nl(v.g)} ${v.e[0]}. Hoeveel ${v.e[1]} is dat?`:`Een tegel is ${nl(v.k)} ${v.e[1]}. Hoeveel ${v.e[0]} is dat?`,
+  gen(r){ const e=r.pick(OPPE); const naarKlein=r.ja(); const [c,gs]={'m²':[r.pick(['Een poster','Een tafelblad','Een raam']),[0.5,1.2,2,2.5,0.25,1.5]],'dm²':['Een vloertegel',[2.5,4,6.25,9]],'cm²':['Een postzegel',[4,6,4.5,7.5]]}[e[0]]; const g=r.pick(gs); return {e,naarKlein,g,c,k:rondaf(g*e[2],4)} }, // grootte past bij het voorwerp
+  vraag:v=>v.naarKlein?`${v.c} is ${nl(v.g)} ${v.e[0]}. Hoeveel ${v.e[1]} is dat?`:`${v.c} is ${nl(v.k)} ${v.e[1]}. Hoeveel ${v.e[0]} is dat?`,
   antw:v=>v.naarKlein?v.k:v.g, eenheid:v=>v.naarKlein?v.e[1]:v.e[0],
   stappen:v=>[st(`1 ${v.e[0]} = ${nl(v.e[2])} ${v.e[1]}`,v.e[2]),st(v.naarKlein?`${nl(v.g)} × ${nl(v.e[2])} = ${nl(v.k)}`:`${nl(v.k)} : ${nl(v.e[2])} = ${nl(v.g)}`,v.naarKlein?v.k:v.g)],
   fouten:v=>{ const f=Math.sqrt(v.e[2]); return v.naarKlein?[[rondaf(v.g*f,4),`Bij lengte is het keer ${f}, maar bij oppervlakte keer ${f} × ${f} = ${v.e[2]}.`],[rondaf(v.g/v.e[2],6),'Naar een kleinere eenheid wordt het getal groter.']]:[[rondaf(v.k/f,4),`Bij oppervlakte deel je door ${v.e[2]}, niet door ${f}.`],[rondaf(v.k*v.e[2],4),'Naar een grotere eenheid wordt het getal kleiner.']] },
@@ -1734,7 +1755,7 @@ L({id:'M3.driehoek',niv:3,dom:'M',sub:'oppervlak',naam:'Oppervlakte van een drie
 });
 L({id:'M3.liters',niv:3,dom:'M',sub:'inhoud',naam:'Inhoud in m³ en liters',
   uitleg:'1 m³ = 1000 liter (1 m = 10 dm, dus 10 × 10 × 10 = 1000 dm³ en 1 dm³ = 1 liter).',
-  gen(r){ return {l:r.pick([2,3,4,5,6]),b:r.pick([1.5,2,2.5,3]),h:r.pick([0.4,0.5,0.6,0.8]),c:r.pick(['Een opblaasbad','Een vijver','Een regenton-bak','Een zandbak'])} },
+  gen(r){ return {l:r.pick([2,3,4,5,6]),b:r.pick([1.5,2,2.5,3]),h:r.pick([0.4,0.5,0.6,0.8]),c:r.pick(['Een opblaasbad','Een vijver','Een plantenbak op het schoolplein','Een zandbak'])} },
   vraag:v=>`${v.c} is ${nl(v.l)} m lang, ${nl(v.b)} m breed en ${nl(v.h)} m diep. Hoeveel liter water gaat erin?`,
   fig:v=>FIG.doos(v.l,v.b,v.h,nl(v.l)+' m',nl(v.b)+' m',nl(v.h)+' m'),
   antw:v=>rondaf(v.l*v.b*v.h*1000,2), eenheid:'liter',
@@ -1808,7 +1829,7 @@ L({id:'G4.afronden',niv:4,dom:'G',sub:'getalbegrip',naam:'Afronden op decimalen 
 });
 L({id:'G4.miljoen',niv:4,dom:'G',sub:'getalbegrip',naam:'Grote getallen: duizend, miljoen, miljard',dec:3,
   uitleg:'1 miljoen = 1.000.000 (6 nullen), 1 miljard = 1.000.000.000 (9 nullen). 2,4 miljoen = 2,4 × 1.000.000 = 2.400.000.',
-  gen(r){ const naarGetal=r.ja(); const x=r.pick([1.2,2.4,3.5,0.8,17.5,4.25,0.35,6.8]); const e=r.pick([['miljoen',1e6],['duizend',1e3],['miljard',1e9]]); const c=r.pick(['Een video heeft','Een stad heeft','Een land heeft','Een game is gedownload door']); return {naarGetal,x,e,c} },
+  gen(r){ const naarGetal=r.ja(); const [c,e,x]=r.pick([['Een video heeft',['miljoen',1e6],r.pick([1.2,2.4,3.5,0.8,17.5,4.25])],['Een video heeft',['miljard',1e9],r.pick([1.2,2.4,3.5])],['Een stad heeft',['duizend',1e3],r.pick([17.5,42.5,85,120,350])],['Een land heeft',['miljoen',1e6],r.pick([17.5,8.6,4.25,11.6,6.8])],['Een game is gedownload door',['miljoen',1e6],r.pick([1.2,2.4,0.8,6.8,0.35])]]); return {naarGetal,x,e,c} }, // aantal past bij de context
   vraag:v=>v.naarGetal?`${v.c} ${nl(v.x)} ${v.e[0]} ${v.c.includes('video')?'views':v.c.includes('game')?'spelers':'inwoners'}. Schrijf dit getal helemaal uit (zonder het woord ${v.e[0]}).`:`${v.c} ${nl(v.x*v.e[1],0)} ${v.c.includes('video')?'views':v.c.includes('game')?'spelers':'inwoners'}. Hoeveel ${v.e[0]} is dat?`,
   antw:v=>v.naarGetal?rondaf(v.x*v.e[1],0):v.x, eenheid:v=>v.naarGetal?'':v.e[0],
   stappen:v=>[st(`1 ${v.e[0]} = ${nl(v.e[1],0)}`,v.e[1]),st(v.naarGetal?`${nl(v.x)} × ${nl(v.e[1],0)} = ${nl(v.x*v.e[1],0)}`:`${nl(v.x*v.e[1],0)} : ${nl(v.e[1],0)} = ${nl(v.x)}`,v.naarGetal?rondaf(v.x*v.e[1],0):v.x)],
@@ -1837,7 +1858,7 @@ L({id:'G4.kommakeerkomma',niv:4,dom:'G',sub:'komma',naam:'Kommagetal keer kommag
 // ---------- Verhoudingen ----------
 L({id:'V4.terugrekenen',niv:4,dom:'V',sub:'pverandering',naam:'Terugrekenen naar de oude prijs',verwar:['V3.korting','V4.btw'],rm:true,
   uitleg:'De nieuwe prijs is een percentage van de OUDE prijs. Bij 20% korting is de nieuwe prijs 80%. Reken via 1% terug naar 100%.',
-  gen(r){ let k,o; do{ k=r.pick([10,15,20,25,30,40]); o=r.pick([40,60,70,80,90,120,150,200,240,300,450,600,1200,1800]) }while((o*(100-k))%100!==0); const omhoog=r.ja(.3); return {k,o,omhoog,n:rondaf(o*(omhoog?100+k:100-k)/100,2),d:r.pick(['e-bike','telefoon','scooterhelm','wintercoat','gameconsole','tent'])} },
+  gen(r){ let k,o; do{ k=r.pick([10,15,20,25,30,40]); o=r.pick([40,60,70,80,90,120,150,200,240,300,450,600,1200,1800]) }while((o*(100-k))%100!==0); const omhoog=r.ja(.3); return {k,o,omhoog,n:rondaf(o*(omhoog?100+k:100-k)/100,2),d:({40:'pet',60:'scooterhelm',70:'sporttas',80:'winterjas',90:'paar voetbalschoenen',120:'skateboard',150:'tent',200:'gameconsole',240:'telefoon',300:'telefoon',450:'laptop',600:'laptop',1200:'e-bike',1800:'e-bike'})[o]} }, // product past bij de prijs
   vraag:v=>v.omhoog?`De prijs van een ${v.d} is met ${v.k}% verhoogd. Nu kost hij ${eur(v.n)}. Wat was de oude prijs?`:`Na ${v.k}% korting kost een ${v.d} nog ${eur(v.n)}. Wat was de oude prijs?`,
   antw:v=>v.o, eenheid:'€',
   stappen:v=>{ const p=v.omhoog?100+v.k:100-v.k; return [st(`${eur(v.n)} is ${p}% van de oude prijs`,p),st(`1% = ${nl(v.n)} : ${p} = ${nl(v.n/p)}`,rondaf(v.n/p,4)),st(`100% = ${nl(v.n/p)} × 100 = ${eur(v.o)}`,v.o)] },
@@ -1893,10 +1914,10 @@ L({id:'M4.snelheid',niv:4,dom:'M',sub:'tijd',naam:'Afstand, snelheid en tijd',rm
 });
 L({id:'M4.cirkel',niv:4,dom:'M',sub:'oppervlak',naam:'Omtrek en oppervlakte van een cirkel',rm:true,dec:1,tol:v=>Math.max(.06,(v.wat==='omtrek'?2*Math.PI*v.r:Math.PI*v.r*v.r)*.0012),
   uitleg:'Omtrek = π × diameter (= 2 × π × straal). Oppervlakte = π × straal × straal. Gebruik π ≈ 3,14 of de π-toets.',
-  gen(r){ return {r:r.pick([3,4,5,6,7,8,10,12,15,20,25]),wat:r.pick(['omtrek','opp']),c:r.pick(['Een trampoline','Een ronde tafel','Een pizza','Een rond zwembadje','Een cirkelvormig grasveld']),geefD:r.ja()} },
-  vraag:v=>`${v.c} heeft een ${v.geefD?'diameter van '+(2*v.r):'straal van '+v.r} ${v.r>=10?'dm':'cm'}. Bereken de ${v.wat==='omtrek'?'omtrek':'oppervlakte'}. Rond af op 1 decimaal.`,
+  gen(r){ const [c,rs,eh]=r.pick([['Een trampoline',[15,18,20,25],'dm'],['Een ronde tafel',[5,6,7,8],'dm'],['Een pizza',[12,14,15,16],'cm'],['Een rond zwembadje',[10,12,15,20],'dm'],['Een cirkelvormig grasveld',[5,6,8,10,12],'m'],['Een bierviltje',[4,5,6],'cm']]); return {r:r.pick(rs),wat:r.pick(['omtrek','opp']),c,eh,geefD:r.ja()} }, // realistische maat per voorwerp
+  vraag:v=>`${v.c} heeft een ${v.geefD?'diameter van '+(2*v.r):'straal van '+v.r} ${v.eh}. Bereken de ${v.wat==='omtrek'?'omtrek':'oppervlakte'}. Rond af op 1 decimaal.`,
   fig:v=>FIG.cirkel(v.r,v.geefD?'d = '+(2*v.r):'r = '+v.r),
-  antw:v=>rondaf(v.wat==='omtrek'?2*Math.PI*v.r:Math.PI*v.r*v.r,1), eenheid:v=>v.wat==='omtrek'?(v.r>=10?'dm':'cm'):(v.r>=10?'dm²':cm2),
+  antw:v=>rondaf(v.wat==='omtrek'?2*Math.PI*v.r:Math.PI*v.r*v.r,1), eenheid:v=>v.wat==='omtrek'?v.eh:v.eh+'²',
   stappen:v=>v.wat==='omtrek'?[st(`Diameter = ${2*v.r}`,2*v.r),st(`Omtrek = π × ${2*v.r} ≈ ${nl(rondaf(2*Math.PI*v.r,1))}`,rondaf(2*Math.PI*v.r,1))]:[st(`Straal = ${v.r}`,v.r),st(`Oppervlakte = π × ${v.r} × ${v.r} = π × ${v.r*v.r} ≈ ${nl(rondaf(Math.PI*v.r*v.r,1))}`,rondaf(Math.PI*v.r*v.r,1))],
   fouten:v=>v.wat==='omtrek'?[[rondaf(Math.PI*v.r,1),'Je gebruikte de straal. Omtrek = π × diameter.'],[rondaf(Math.PI*v.r*v.r,1),'Dat is de oppervlakte.'],[rondaf(4*Math.PI*v.r,1),'Je verdubbelde de diameter nog een keer.']]:[[rondaf(Math.PI*4*v.r*v.r,1),'Je gebruikte de diameter in plaats van de straal.'],[rondaf(2*Math.PI*v.r,1),'Dat is de omtrek.'],[rondaf(Math.PI*2*v.r,1),'Oppervlakte = π × straal × straal.']],
   anders:v=>v.wat==='omtrek'?`Leg een touw om de cirkel en dan langs de diameter: het touw is iets meer dan 3 keer zo lang als de diameter. Dat "iets meer dan 3" is π.`:`Een cirkel past in een vierkant van ${2*v.r} bij ${2*v.r}. De cirkel is iets meer dan driekwart daarvan: ongeveer 3,14 × ${v.r} × ${v.r}.`
@@ -1924,7 +1945,7 @@ L({id:'M4.plattegrond',niv:4,dom:'M',sub:'oppervlak',naam:'Oppervlakte via een p
 // ---------- Verbanden ----------
 L({id:'B4.formuleterug',niv:4,dom:'B',sub:'formules',naam:'Terugrekenen met een formule',verwar:['B3.formule'],rm:true,
   uitleg:'Weet je de uitkomst en zoek je het getal dat erin ging? Werk terug: eerst het vaste bedrag eraf, dan delen door het getal dat ervoor staat.',
-  gen(r){ const c=r.pick([['taxirit','K','a','km',[2,2.5,3],[3,4,5]],['schaatsbaan','K','u','uur',[3,4,5],[5,7.5,10]],['belbundel','K','m','minuten',[0.1,0.2,0.25],[5,7.5,10]]]); const a=r.pick(c[4]),b=r.pick(c[5]),x=r.int(3,30); return {c,a,b,x,K:rondaf(a*x+b,2)} },
+  gen(r){ const c=r.pick([['taxirit','K','a','km',[2,2.5,3],[3,4,5]],['schaatsbaan','K','u','uur',[3,4,5],[5,7.5,10]],['belbundel','K','m','minuten',[0.1,0.2,0.25],[5,7.5,10]]]); const a=r.pick(c[4]),b=r.pick(c[5]),x=c[0]==='schaatsbaan'?r.int(1,4):r.int(3,30); return {c,a,b,x,K:rondaf(a*x+b,2)} }, // niet 19 uur schaatsen
   vraag:v=>`Voor een ${v.c[0]} geldt <b>${v.c[1]} = ${nl(v.a)}${v.c[2]} + ${nl(v.b)}</b> (${v.c[1]} in euro, ${v.c[2]} in ${v.c[3]}). Iemand betaalt ${eur(v.K)}. Hoeveel ${v.c[3]} was dat?`,
   antw:v=>v.x, eenheid:v=>v.c[3],
   stappen:v=>[st(`${nl(v.a)}${v.c[2]} + ${nl(v.b)} = ${nl(v.K)}`),st(`Vaste bedrag eraf: ${nl(v.K)} − ${nl(v.b)} = ${nl(v.K-v.b)}`,rondaf(v.K-v.b,2)),st(`Delen: ${nl(v.K-v.b)} : ${nl(v.a)} = ${v.x}`,v.x)],
@@ -2040,7 +2061,7 @@ L({id:'V5.procentvan',niv:5,dom:'V',sub:'procent',naam:'Procent van procent: dee
 // ---------- Meten en meetkunde ----------
 L({id:'M5.kmums',niv:5,dom:'M',sub:'eenheden',naam:'Snelheid omrekenen: km/u en m/s',rm:true,dec:2,
   uitleg:'1 m/s = 3,6 km/u (in een uur zitten 3600 seconden: 3600 m = 3,6 km). Van m/s naar km/u: keer 3,6. Van km/u naar m/s: delen door 3,6.',
-  gen(r){ const naarKmu=r.ja(); const ms=r.pick([5,10,12.5,15,20,25,30,2.5,7.5]); return {naarKmu,ms,kmu:rondaf(ms*3.6,2),c:r.pick(['Een sprinter loopt','Een trein rijdt','Een windvlaag waait','Een scooter rijdt'])} },
+  gen(r){ const naarKmu=r.ja(); const [c,ms]=r.pick([['Een sprinter loopt',r.pick([7.5,10])],['Een wielrenner rijdt',r.pick([10,12.5])],['Een scooter rijdt',r.pick([7.5,12.5])],['Een windvlaag waait',r.pick([15,20,25])],['Een trein rijdt',r.pick([25,30,40])],['Een wandelaar loopt',r.pick([1.25,1.5])]]); return {naarKmu,ms,kmu:rondaf(ms*3.6,2),c} }, // snelheid past bij wie of wat er beweegt
   vraag:v=>v.naarKmu?`${v.c} ${nl(v.ms)} m/s. Hoeveel km/u is dat?`:`${v.c} ${nl(v.kmu)} km/u. Hoeveel m/s is dat?`,
   antw:v=>v.naarKmu?v.kmu:v.ms, eenheid:v=>v.naarKmu?'km/u':'m/s',
   stappen:v=>v.naarKmu?[st(`In 1 uur (3600 s): ${nl(v.ms)} × 3600 = ${nl(v.ms*3600)} m`,v.ms*3600),st(`${nl(v.ms*3600)} m = ${nl(v.kmu)} km, dus ${nl(v.kmu)} km/u`,v.kmu)]:[st(`${nl(v.kmu)} km/u = ${nl(v.kmu*1000)} m per 3600 s`,v.kmu*1000),st(`${nl(v.kmu*1000)} : 3600 = ${nl(v.ms)} m/s`,v.ms)],
@@ -2049,7 +2070,7 @@ L({id:'M5.kmums',niv:5,dom:'M',sub:'eenheden',naam:'Snelheid omrekenen: km/u en 
 });
 L({id:'M5.cilinder',niv:5,dom:'M',sub:'inhoud',naam:'Inhoud van een cilinder',rm:true,dec:1,tol:v=>Math.max(.06,Math.PI*v.r*v.r*v.h/1000*.0015),
   uitleg:'Inhoud cilinder = oppervlakte grondvlak × hoogte = π × r × r × h. In cm krijg je cm³; 1000 cm³ = 1 liter.',
-  gen(r){ return {r:r.pick([3,4,5,6,8,10,12,15]),h:r.pick([10,12,15,20,25,30,40]),c:r.pick(['Een blik','Een regenton','Een vaas','Een theelicht-houder','Een drinkfles'])} },
+  gen(r){ const [c,rs,hs]=r.pick([['Een blik',[3,4,5],[10,12,15]],['Een regenton',[25,30],[80,90,100]],['Een vaas',[5,6,8],[20,25,30]],['Een emmer',[12,15],[25,30]],['Een drinkfles',[3,4],[20,25]]]); return {r:r.pick(rs),h:r.pick(hs),c} }, // realistische maten
   vraag:v=>`${v.c} is een cilinder met een straal van ${v.r} cm en een hoogte van ${v.h} cm. Hoeveel liter past erin? Rond af op 1 decimaal.`,
   antw:v=>rondaf(Math.PI*v.r*v.r*v.h/1000,1), eenheid:'liter',
   stappen:v=>[st(`Grondvlak: π × ${v.r} × ${v.r} ≈ ${nl(rondaf(Math.PI*v.r*v.r,2))} cm²`,rondaf(Math.PI*v.r*v.r,2)),st(`Inhoud: ${nl(rondaf(Math.PI*v.r*v.r,2))} × ${v.h} ≈ ${nl(rondaf(Math.PI*v.r*v.r*v.h,0))} cm³`,rondaf(Math.PI*v.r*v.r*v.h,0)),st(`: 1000 ≈ ${nl(rondaf(Math.PI*v.r*v.r*v.h/1000,1))} liter`,rondaf(Math.PI*v.r*v.r*v.h/1000,1))],
@@ -2173,7 +2194,7 @@ L({id:'V6.groeinperioden',niv:6,dom:'V',sub:'groei',naam:'Groei over meerdere pe
   stappen:v=>[st(`Groeifactor per ${v.per}: ${nl(v.g)}`,v.g),st(`Na ${v.n} keer: ${nl(v.b)} × ${nl(v.g)}${SUP(v.n)}`),st(`= ${nl(rondaf(v.b*v.g**v.n,v.d))}`,rondaf(v.b*v.g**v.n,v.d))],
   fouten:v=>[[rondaf(v.b*(1+(v.up?1:-1)*v.n*v.p/100),v.d),'Je nam elke '+v.per+' hetzelfde bedrag. Maar het percentage gaat steeds over de nieuwe waarde.'],[rondaf(v.b*v.g*v.n,v.d),'Je vermenigvuldigde met '+v.n+'. Je moet '+v.n+' keer met '+nl(v.g)+' vermenigvuldigen: tot de macht '+v.n+'.'],[rondaf(v.b*v.g**(v.n-1),v.d),'Tel de perioden: het zijn er '+v.n+'.']],
   anders:v=>({tekst:'Maak een tabel per '+v.per+'. Elke stap is × '+nl(v.g)+'.',tabel:{kop:[v.per,'waarde'],rijen:[0,1,2,3].map(i=>[i,nl(rondaf(v.b*v.g**i,2))]).concat([[v.n,nl(rondaf(v.b*v.g**v.n,v.d))]])}}),
-  sab:v=>({intro:`Beginwaarde ${nl(v.b)}, elke ${v.per} ${nl(v.p)}% ${v.up?'erbij':'eraf'}. Sem rekent de waarde na ${v.n} keer uit.`,stappen:[`${nl(v.p)}% van ${nl(v.b)} is ${nl(v.b*v.p/100)}.`,`Na ${v.n} keer is dat ${v.n} × ${nl(v.b*v.p/100)} = ${nl(v.n*v.b*v.p/100)} ${v.up?'erbij':'eraf'}.`,`Antwoord: ${nl(rondaf(v.b*(1+(v.up?1:-1)*v.n*v.p/100),v.d))}`],fout:1,juist:rondaf(v.b*v.g**v.n,v.d),check:rondaf(v.b*(1+(v.up?1:-1)*v.n*v.p/100),v.d),eenheid:v.eh,vraag:'Wat is de waarde echt?',uitleg:'Het percentage gaat elke '+v.per+' over de nieuwe waarde. Daarom vermenigvuldig je met de groeifactor tot de macht '+v.n+'.',goed:[`Groeifactor ${nl(v.g)}`,`${nl(v.b)} × ${nl(v.g)}${SUP(v.n)} = ${nl(rondaf(v.b*v.g**v.n,v.d))}`]})
+  sab:v=>({intro:`Beginwaarde ${nl(v.b)}, ${v.per==='jaar'?'elk':'elke'} ${v.per} ${nl(v.p)}% ${v.up?'erbij':'eraf'}. Sem rekent de waarde na ${v.n} keer uit.`,stappen:[`${nl(v.p)}% van ${nl(v.b)} is ${nl(v.b*v.p/100)}.`,`Na ${v.n} keer is dat ${v.n} × ${nl(v.b*v.p/100)} = ${nl(v.n*v.b*v.p/100)} ${v.up?'erbij':'eraf'}.`,`Antwoord: ${nl(rondaf(v.b*(1+(v.up?1:-1)*v.n*v.p/100),v.d))}`],fout:1,juist:rondaf(v.b*v.g**v.n,v.d),check:rondaf(v.b*(1+(v.up?1:-1)*v.n*v.p/100),v.d),eenheid:v.eh,vraag:'Wat is de waarde echt?'+(v.d===0?' (rond af op een heel getal)':v.d===2?' (rond af op 2 decimalen)':''),uitleg:'Het percentage gaat '+(v.per==='jaar'?'elk':'elke')+' '+v.per+' over de nieuwe waarde. Daarom vermenigvuldig je met de groeifactor tot de macht '+v.n+'.',goed:[`Groeifactor ${nl(v.g)}`,`${nl(v.b)} × ${nl(v.g)}${SUP(v.n)} = ${nl(rondaf(v.b*v.g**v.n,v.d))}`]})
 });
 L({id:'V6.btwexcl',niv:6,dom:'V',sub:'procent',naam:'Prijs zonder btw terugrekenen',rm:true,verwar:['V4.terugrekenen','V4.btw'],
   uitleg:'De btw gaat over de prijs zónder btw. Een prijs met 21% btw is dus 121% van de prijs zonder btw. Deel door 1,21 (of door 1,09 bij 9% btw).',
@@ -2216,7 +2237,7 @@ L({id:'M6.pythagoras',niv:6,dom:'M',sub:'meetkunde',naam:'Stelling van Pythagora
   stappen:v=>v.t==='schuin'?[st(`${v.a}² + ${v.b}² = ${v.a*v.a} + ${v.b*v.b} = ${v.a*v.a+v.b*v.b}`,v.a*v.a+v.b*v.b),st(`√${v.a*v.a+v.b*v.b} ≈ ${nl(rondaf(Math.sqrt(v.a*v.a+v.b*v.b),1))}`,rondaf(Math.sqrt(v.a*v.a+v.b*v.b),1))]:[st(`Schuine zijde is ${v.c}: ${v.c}² − ${v.a}² = ${v.c*v.c} − ${v.a*v.a} = ${v.c*v.c-v.a*v.a}`,v.c*v.c-v.a*v.a),st(`√${v.c*v.c-v.a*v.a} ≈ ${nl(rondaf(Math.sqrt(v.c*v.c-v.a*v.a),1))}`,rondaf(Math.sqrt(v.c*v.c-v.a*v.a),1))],
   fouten:v=>v.t==='schuin'?[[v.a+v.b,'De schuine zijde is korter dan de twee andere samen. Gebruik a² + b² = c².'],[v.a*v.a+v.b*v.b,'Je vergat de wortel te trekken.'],[rondaf(Math.sqrt(Math.abs(v.b*v.b-v.a*v.a)),1),'Bij de schuine zijde tel je de kwadraten op.']]:[[rondaf(Math.sqrt(v.c*v.c+v.a*v.a),1),'De ladder (of het touw) is al de schuine zijde. Trek de kwadraten af.'],[v.c-v.a,'Zijden mag je niet zomaar aftrekken. Werk met de kwadraten.'],[v.c*v.c-v.a*v.a,'Je vergat de wortel te trekken.']],
   anders:v=>`Teken de driehoek en zet een boogje bij de rechte hoek. De langste zijde ligt daar tegenover. ${v.t==='schuin'?'Die zoek je: kwadraten optellen, dan de wortel.':'Die ken je al ('+v.c+'): kwadraten aftrekken, dan de wortel.'} Controle: de schuine zijde is altijd de langste.`,
-  sab:v=>v.t==='schuin'?({intro:`Een rechthoek is ${v.a} bij ${v.b}. Mila rekent de diagonaal uit.`,stappen:[`De diagonaal gaat langs beide zijden.`,`${v.a} + ${v.b} = ${v.a+v.b}`,`Antwoord: ${v.a+v.b}`],fout:0,juist:rondaf(Math.sqrt(v.a*v.a+v.b*v.b),1),check:v.a+v.b,vraag:'Hoe lang is de diagonaal echt (1 decimaal)?',uitleg:'Schuin oversteken is korter dan langs de randen lopen. Gebruik Pythagoras: a² + b² = c².',goed:[`${v.a}² + ${v.b}² = ${v.a*v.a+v.b*v.b}`,`√${v.a*v.a+v.b*v.b} ≈ ${nl(rondaf(Math.sqrt(v.a*v.a+v.b*v.b),1))}`]}):({intro:`Een ladder van ${v.c} m staat ${v.a} m van de muur. Mila rekent uit hoe hoog hij komt.`,stappen:[`${v.c}² + ${v.a}² = ${v.c*v.c+v.a*v.a}`,`√${v.c*v.c+v.a*v.a} ≈ ${nl(rondaf(Math.sqrt(v.c*v.c+v.a*v.a),1))}`,`Antwoord: ${nl(rondaf(Math.sqrt(v.c*v.c+v.a*v.a),1))} m`],fout:0,juist:rondaf(Math.sqrt(v.c*v.c-v.a*v.a),1),check:rondaf(Math.sqrt(v.c*v.c+v.a*v.a),1),eenheid:'m',vraag:'Hoe hoog komt de ladder echt?',uitleg:'De ladder is de schuine zijde. Dan trek je de kwadraten af. De hoogte kan nooit langer zijn dan de ladder.',goed:[`${v.c}² − ${v.a}² = ${v.c*v.c-v.a*v.a}`,`√${v.c*v.c-v.a*v.a} ≈ ${nl(rondaf(Math.sqrt(v.c*v.c-v.a*v.a),1))}`]})
+  sab:v=>v.t==='schuin'?({intro:`Een rechthoek is ${v.a} bij ${v.b}. Mila rekent de diagonaal uit.`,stappen:[`De diagonaal gaat langs beide zijden.`,`${v.a} + ${v.b} = ${v.a+v.b}`,`Antwoord: ${v.a+v.b}`],fout:0,juist:rondaf(Math.sqrt(v.a*v.a+v.b*v.b),1),check:v.a+v.b,vraag:'Hoe lang is de diagonaal echt (1 decimaal)?',uitleg:'Schuin oversteken is korter dan langs de randen lopen. Gebruik Pythagoras: a² + b² = c².',goed:[`${v.a}² + ${v.b}² = ${v.a*v.a+v.b*v.b}`,`√${v.a*v.a+v.b*v.b} ≈ ${nl(rondaf(Math.sqrt(v.a*v.a+v.b*v.b),1))}`]}):({intro:`Een ladder van ${v.c} m staat ${v.a} m van de muur. Mila rekent uit hoe hoog hij komt.`,stappen:[`${v.c}² + ${v.a}² = ${v.c*v.c+v.a*v.a}`,`√${v.c*v.c+v.a*v.a} ≈ ${nl(rondaf(Math.sqrt(v.c*v.c+v.a*v.a),1))}`,`Antwoord: ${nl(rondaf(Math.sqrt(v.c*v.c+v.a*v.a),1))} m`],fout:0,juist:rondaf(Math.sqrt(v.c*v.c-v.a*v.a),1),check:rondaf(Math.sqrt(v.c*v.c+v.a*v.a),1),eenheid:'m',vraag:'Hoe hoog komt de ladder echt (1 decimaal)?',uitleg:'De ladder is de schuine zijde. Dan trek je de kwadraten af. De hoogte kan nooit langer zijn dan de ladder.',goed:[`${v.c}² − ${v.a}² = ${v.c*v.c-v.a*v.a}`,`√${v.c*v.c-v.a*v.a} ≈ ${nl(rondaf(Math.sqrt(v.c*v.c-v.a*v.a),1))}`]})
 });
 L({id:'M6.prisma',niv:6,dom:'M',sub:'inhoud',naam:'Inhoud van een prisma',rm:true,verwar:['M5.cilinder'],
   uitleg:'Inhoud van een prisma = oppervlakte grondvlak × hoogte (lengte). Is het grondvlak een driehoek, dan is dat ½ × basis × hoogte van de driehoek.',
@@ -2282,7 +2303,7 @@ L({id:'B6.snijpunt',niv:6,dom:'B',sub:'formules',naam:'Wanneer zijn twee abonnem
 });
 L({id:'B6.gemhalen',niv:6,dom:'B',sub:'statistiek',naam:'Welk cijfer moet je halen?',rm:true,dec:1,verwar:['B5.gewogen'],
   uitleg:'Gemiddelde × aantal = totaal. Reken uit welk totaal je nodig hebt, trek af wat je al hebt: dat moet je nog halen.',
-  gen(r){ let c,k,G,s,x; do{ k=r.int(2,4); c=Array.from({length:k},()=>r.int(40,85)/10); G=r.pick([5.5,6,6.5,7,7.5]); s=rondaf(c.reduce((a,b)=>a+b,0),1); x=rondaf(G*(k+1)-s,1) }while(x<1||x>10); return {c,k,G,s,x,vak:r.pick(CTX.vak)} },
+  gen(r){ let c,k,G,s,x; do{ k=r.int(2,4); c=Array.from({length:k},()=>r.int(40,85)/10); G=r.pick([5.5,6,6.5,7,7.5]); s=rondaf(c.reduce((a,b)=>a+b,0),1); x=rondaf(G*(k+1)-s,1) }while(x<5.5||x>9.5); return {c,k,G,s,x,vak:r.pick(CTX.vak)} }, // haalbaar cijfer, geen 1,7
   vraag:v=>`Voor ${v.vak} heb je ${v.k} cijfers: ${v.c.map(nl).join(', ')}. Er komt nog één toets bij, die even zwaar telt. Welk cijfer moet je halen om precies een ${nl(v.G)} gemiddeld te staan?`,
   antw:v=>v.x,
   stappen:v=>[st(`Nodig totaal: ${nl(v.G)} × ${v.k+1} = ${nl(v.G*(v.k+1))}`,rondaf(v.G*(v.k+1),1)),st(`Je hebt al: ${v.c.map(nl).join(' + ')} = ${nl(v.s)}`,v.s),st(`Nog nodig: ${nl(v.G*(v.k+1))} − ${nl(v.s)} = ${nl(v.x)}`,v.x)],
@@ -2343,7 +2364,7 @@ L({id:'V7.rentejaren',niv:7,dom:'V',sub:'groei',naam:'Na hoeveel jaar? (rente op
 });
 L({id:'V7.index',niv:7,dom:'V',sub:'procent',naam:'Indexcijfers',rm:true,dec:2,verwar:['V7.procentpunt'],
   uitleg:'Een indexcijfer vergelijkt met een basisjaar, dat altijd 100 is. Index 112 betekent: 112% van de prijs in het basisjaar, dus 12% duurder.',
-  gen(r){ const P=r.pick([2,2.5,4,8,20,50,150,250]),I=r.pick([104,108,110,112.5,115,120,125,96,90]); return {P,I,N:rondaf(P*I/100,2),type:r.pick(['prijs','index']),j:r.pick([[2015,2024],[2020,2025],[2010,2023]]),d:r.pick(['een bioscoopkaartje','een liter melk','een voetbalshirt','een abonnement'])} },
+  gen(r){ const [d,P]=r.pick([['een bioscoopkaartje',r.pick([8,10,12])],['een liter melk',r.pick([1,1.2,1.5])],['een voetbalshirt',r.pick([50,60,80])],['een abonnement op een sportschool',r.pick([20,25,40])],['een ijsje',r.pick([2,2.5])]]),I=r.pick([104,108,110,112.5,115,120,125,96,90]); return {P,I,N:rondaf(P*I/100,2),type:r.pick(['prijs','index']),j:r.pick([[2015,2024],[2020,2025],[2010,2023]]),d} }, // prijs past bij het product
   vraag:v=>v.type==='prijs'?`In ${v.j[0]} (index = 100) kostte ${v.d} ${eur(v.P,true)}. In ${v.j[1]} is het indexcijfer ${nl(v.I)}. Wat kost het in ${v.j[1]}?`:`In ${v.j[0]} (index = 100) kostte ${v.d} ${eur(v.P,true)}. In ${v.j[1]} kost het ${eur(v.N,true)}. Wat is het indexcijfer in ${v.j[1]}?`,
   antw:v=>v.type==='prijs'?v.N:v.I, eenheid:v=>v.type==='prijs'?'€':'',
   stappen:v=>v.type==='prijs'?[st(`Index ${nl(v.I)} = ${nl(v.I)}% van de prijs in ${v.j[0]}`,v.I),st(`${nl(v.I/100)} × ${nl(v.P)} = ${eur(v.N,true)}`,v.N)]:[st(`Nieuw : oud = ${nl(v.N)} : ${nl(v.P)} = ${nl(v.I/100)}`,rondaf(v.I/100,4)),st(`× 100 = index ${nl(v.I)}`,v.I)],
@@ -2372,7 +2393,7 @@ L({id:'V7.terugfactor',niv:7,dom:'V',sub:'groei',naam:'Terugrekenen bij groei ov
   stappen:v=>[st(`Groeifactor: ${nl(v.g)}`,v.g),st(`${nl(v.g)}${SUP(v.n)} ≈ ${nl(rondaf(v.g**v.n,4))}`,rondaf(v.g**v.n,4)),st(`${nl(v.W)} : ${nl(rondaf(v.g**v.n,4))} ≈ ${eur(rondaf(v.W/v.g**v.n,v.d))}`,rondaf(v.W/v.g**v.n,v.d))],
   fouten:v=>[[rondaf(v.W*(v.up?1-v.p/100:1+v.p/100)**v.n,v.d),`Je vermenigvuldigde met ${nl(v.up?1-v.p/100:1+v.p/100)}. Maar het omgekeerde van × ${nl(v.g)} is : ${nl(v.g)}.`],[rondaf(v.W*(1-(v.up?1:-1)*v.n*v.p/100),v.d),'Je haalde '+v.n+' keer hetzelfde percentage van het eindbedrag af. Reken met de groeifactor.'],[rondaf(v.W/(v.g*v.n),v.d),'Deel door de groeifactor tot de macht '+v.n+', niet door groeifactor × '+v.n+'.']],
   anders:v=>`Vooruit is × ${nl(v.g)} per jaar, dus terug is : ${nl(v.g)} per jaar. Dat doe je ${v.n} keer: in één keer delen door ${nl(v.g)}${SUP(v.n)}.`,
-  sab:v=>({intro:`Nu is het ${eur(v.W,true)}. Het veranderde ${v.n} jaar lang met ${nl(v.p)}% per jaar. Daan rekent terug.`,stappen:[`Terug betekent het omgekeerde percentage.`,`De factor is ${nl(v.up?1-v.p/100:1+v.p/100)} per jaar.`,`${nl(v.W)} × ${nl(v.up?1-v.p/100:1+v.p/100)}${SUP(v.n)} ≈ ${eur(rondaf(v.W*(v.up?1-v.p/100:1+v.p/100)**v.n,v.d))}`],fout:1,juist:rondaf(v.W/v.g**v.n,v.d),check:rondaf(v.W*(v.up?1-v.p/100:1+v.p/100)**v.n,v.d),eenheid:'€',vraag:'Wat was de beginwaarde echt?',uitleg:'Het percentage ging over de oude waarde. Terugrekenen doe je door te delen door de groeifactor, niet door met het omgekeerde percentage te vermenigvuldigen.',goed:[`Groeifactor ${nl(v.g)}`,`${nl(v.W)} : ${nl(v.g)}${SUP(v.n)} ≈ ${eur(rondaf(v.W/v.g**v.n,v.d))}`]})
+  sab:v=>({intro:`Nu is het ${eur(v.W,true)}. Het ${v.up?'steeg':'daalde'} ${v.n} jaar lang met ${nl(v.p)}% per jaar. Daan rekent terug.`,stappen:[`Terug betekent het omgekeerde percentage.`,`De factor is ${nl(v.up?1-v.p/100:1+v.p/100)} per jaar.`,`${nl(v.W)} × ${nl(v.up?1-v.p/100:1+v.p/100)}${SUP(v.n)} ≈ ${eur(rondaf(v.W*(v.up?1-v.p/100:1+v.p/100)**v.n,v.d))}`],fout:1,juist:rondaf(v.W/v.g**v.n,v.d),check:rondaf(v.W*(v.up?1-v.p/100:1+v.p/100)**v.n,v.d),eenheid:'€',vraag:'Wat was de beginwaarde echt?'+(v.d===0?' (op hele euro’s)':' (op centen)'),uitleg:'Het percentage ging over de oude waarde. Terugrekenen doe je door te delen door de groeifactor, niet door met het omgekeerde percentage te vermenigvuldigen.',goed:[`Groeifactor ${nl(v.g)}`,`${nl(v.W)} : ${nl(v.g)}${SUP(v.n)} ≈ ${eur(rondaf(v.W/v.g**v.n,v.d))}`]})
 });
 // ---------- Meten en meetkunde ----------
 L({id:'M7.gelijkvormig',niv:7,dom:'M',sub:'meetkunde',naam:'Gelijkvormigheid: schaduwen en foto’s',rm:true,verwar:['V3.schaal'],
@@ -2387,7 +2408,7 @@ L({id:'M7.gelijkvormig',niv:7,dom:'M',sub:'meetkunde',naam:'Gelijkvormigheid: sc
 });
 L({id:'M7.inhoudk3',niv:7,dom:'M',sub:'inhoud',naam:'Vergroten: wat gebeurt er met de inhoud?',dec:4,verwar:['M5.vergroten'],
   uitleg:'Worden alle lengtes k keer zo groot, dan wordt de oppervlakte k² keer zo groot en de inhoud k³ keer zo groot. Twee keer zo lang, breed en hoog = 2 × 2 × 2 = 8 keer zoveel inhoud.',
-  gen(r){ const k=r.pick([2,3,4,1.5,0.5,10]); return {k,V:r.pick([20,40,50,100,250]),type:r.pick(['factor','inhoud']),c:r.pick(['Een beeldje','Een kartonnen doos','Een aquarium','Een schaalmodel van een stadion'])} },
+  gen(r){ const k=r.pick([2,3,4,1.5,0.5,10]); return {k,V:r.pick([20,40,50,100,250]),type:r.pick(['factor','inhoud']),c:r.pick(['Een beeldje','Een sieradendoosje','Een kaars','Een schaalmodel van een stadion'])} },
   vraag:v=>v.type==='factor'?`${v.c} wordt nagemaakt, maar alle lengtes worden ${nl(v.k)} keer zo groot. Hoeveel keer zo groot wordt de inhoud?`:`${v.c} heeft een inhoud van ${v.V} cm³. Er komt een versie waarbij alle lengtes ${nl(v.k)} keer zo groot zijn. Wat is de inhoud daarvan?`,
   antw:v=>v.type==='factor'?rondaf(v.k**3,4):rondaf(v.V*v.k**3,4), eenheid:v=>v.type==='factor'?'':cm3,
   stappen:v=>[st(`Lengtes × ${nl(v.k)}`,v.k),st(`Inhoud × ${nl(v.k)} × ${nl(v.k)} × ${nl(v.k)} = × ${nl(v.k**3)}`,rondaf(v.k**3,4)),...(v.type==='inhoud'?[st(`${v.V} × ${nl(v.k**3)} = ${nl(v.V*v.k**3)} cm³`,rondaf(v.V*v.k**3,4))]:[])],
@@ -2408,7 +2429,7 @@ L({id:'M7.piramide',niv:7,dom:'M',sub:'inhoud',naam:'Inhoud van een piramide',rm
 L({id:'M7.atletiekbaan',niv:7,dom:'M',sub:'oppervlak',naam:'Samengestelde figuren met cirkels',rm:true,dec:1,verwar:['M4.cirkel'],
   tol:v=>v.type==='opp'?Math.max(1,v.l*v.d*.004):.3,
   uitleg:'Een sportveld met twee halve cirkels aan de korte kanten = een rechthoek + één hele cirkel. Oppervlakte cirkel = π × r × r. Omtrek cirkel = π × diameter.',
-  gen(r){ return {l:r.pick([60,80,84,100]),d:r.pick([40,50,60,70]),type:r.pick(['opp','omtrek']),c:r.pick(['Een atletiekveld','Een ijsbaan','Een skatepark','Een schoolplein'])} },
+  gen(r){ return {l:r.pick([80,84,100,110]),d:r.pick([40,50,60,70]),type:r.pick(['opp','omtrek']),c:r.pick(['Een atletiekveld','Een ijsbaan','Een skatepark','Een schoolplein'])} },
   vraag:v=>`${v.c} bestaat uit een rechthoek van ${v.l} m bij ${v.d} m met aan beide korte kanten een halve cirkel. ${v.type==='opp'?'Wat is de oppervlakte? Rond af op hele m².':'Hoe lang is de rand eromheen? Rond af op 1 decimaal.'}`,
   antw:v=>v.type==='opp'?rondaf(v.l*v.d+Math.PI*(v.d/2)**2,0):rondaf(2*v.l+Math.PI*v.d,1), eenheid:v=>v.type==='opp'?m2:'m',
   stappen:v=>v.type==='opp'?[st(`Rechthoek: ${v.l} × ${v.d} = ${v.l*v.d} m²`,v.l*v.d),st(`Twee halve cirkels = één cirkel met r = ${v.d/2}: π × ${v.d/2} × ${v.d/2} ≈ ${nl(rondaf(Math.PI*(v.d/2)**2,1))} m²`,rondaf(Math.PI*(v.d/2)**2,1)),st(`Samen ≈ ${nl(rondaf(v.l*v.d+Math.PI*(v.d/2)**2,0))} m²`,rondaf(v.l*v.d+Math.PI*(v.d/2)**2,0))]:[st(`Rechte stukken: 2 × ${v.l} = ${2*v.l} m`,2*v.l),st(`Twee halve cirkels = één omtrek: π × ${v.d} ≈ ${nl(rondaf(Math.PI*v.d,1))} m`,rondaf(Math.PI*v.d,1)),st(`Samen ≈ ${nl(rondaf(2*v.l+Math.PI*v.d,1))} m`,rondaf(2*v.l+Math.PI*v.d,1))],
@@ -2427,8 +2448,8 @@ L({id:'B7.expformule',niv:7,dom:'B',sub:'formules',naam:'Exponentiële formules 
   fouten:v=>[[rondaf(v.b*v.g*v.t,v.d),'Je vermenigvuldigde met '+v.t+'. Maar t is de exponent: '+v.t+' keer met '+nl(v.g)+' vermenigvuldigen.'],[rondaf(Math.min((v.b*v.g)**v.t,1e12),v.d),'Je deed eerst '+v.b+' × '+nl(v.g)+' en daarna de macht. De macht hoort alleen bij '+nl(v.g)+'.'],[rondaf(v.b*v.g**(v.t-1),v.d),'Bij t = 0 heb je de beginwaarde. Tel de stappen vanaf 0.']],
   anders:v=>({tekst:'Maak een tabel: elke tijdstap × '+nl(v.g)+'.',tabel:{kop:['t',v.L],rijen:Array.from({length:v.t+1},(_,i)=>[i,nl(rondaf(v.b*v.g**i,2))])}}),
   v3:v=>({vraag:`In de formule ${v.L} = ${v.b} × ${nl(v.g)}<sup>t</sup>: wat betekenen ${v.b} en ${nl(v.g)}?`,
-    goed:`${v.b} is de hoeveelheid bij t = 0 (de beginwaarde). ${nl(v.g)} is de groeifactor: elke ${v.e==='dagen'?'dag':'uur'} wordt het ${nl(v.g)} keer zo veel, dus ${v.g>1?nl(rondaf((v.g-1)*100,2))+'% erbij':nl(rondaf((1-v.g)*100,2))+'% eraf'}.`,
-    bijna:`${v.b} is de beginwaarde en ${nl(v.g)} is hoeveel er elke ${v.e==='dagen'?'dag':'uur'} bijkomt.`,
+    goed:`${v.b} is de hoeveelheid bij t = 0 (de beginwaarde). ${nl(v.g)} is de groeifactor: ${v.e==='dagen'?'elke dag':'elk uur'} wordt het ${nl(v.g)} keer zo veel, dus ${v.g>1?nl(rondaf((v.g-1)*100,2))+'% erbij':nl(rondaf((1-v.g)*100,2))+'% eraf'}.`,
+    bijna:`${v.b} is de beginwaarde en ${nl(v.g)} is hoeveel er ${v.e==='dagen'?'elke dag':'elk uur'} bijkomt.`,
     fout:`${v.b} is het maximum en ${nl(v.g)} is het aantal ${v.e}.`,
     kijkwijzer:['Wordt het getal vóór × uitgelegd als beginwaarde bij t = 0?','Wordt de groeifactor uitgelegd als "keer zo veel per tijdstap"?','Wordt de groeifactor omgezet naar een percentage?']})
 });
@@ -2601,7 +2622,7 @@ L({id:'B8.linexp',niv:8,dom:'B',sub:'tabellen',naam:'Lineair tegen exponentieel'
 L({id:'B8.klassen',niv:8,dom:'B',sub:'statistiek',naam:'Gemiddelde uit een tabel met klassen',rm:true,dec:1,verwar:['B4.frequentie','B5.gewogen'],
   uitleg:'Bij een tabel met klassen ken je de precieze waarden niet. Neem het klassenmidden als schatting, vermenigvuldig met de frequentie, tel op en deel door het totaal aantal.',
   gen(r){ const w=r.pick([5,10,20]),s=r.pick([0,10,20]); let f,tot,som; do{ f=[r.int(2,9),r.int(5,15),r.int(5,15),r.int(2,9)]; tot=f.reduce((a,b)=>a+b,0); som=f.reduce((a,x,i)=>a+x*(s+w*i+w/2),0) }while(Math.abs(som/tot*10-Math.round(som/tot*10))>1e-9&&false); return {w,s,f,tot,som,c:r.pick(['minuten reistijd naar school','minuten per dag op social media','minuten huiswerk per dag'])} },
-  vraag:v=>`Een enquête onder ${v.tot} leerlingen over ${v.c}:<div class="vtabel">${vtabelHtml(['Klasse','Aantal'],v.f.map((x,i)=>[`${v.s+v.w*i} – &lt; ${v.s+v.w*(i+1)}`,x]))}</div>Schat het gemiddelde met de klassenmiddens. Rond af op 1 decimaal.`,
+  vraag:v=>`Een enquête onder ${v.tot} leerlingen over ${v.c}:<div class="vtabel">${vtabelHtml(['Klasse','Aantal'],v.f.map((x,i)=>[`${v.s+v.w*i} – < ${v.s+v.w*(i+1)}`,x]))}</div>Schat het gemiddelde met de klassenmiddens. Rond af op 1 decimaal.`,
   antw:v=>rondaf(v.som/v.tot,1), eenheid:'minuten',
   stappen:v=>[st(`Klassenmiddens: ${v.f.map((_,i)=>nl(v.s+v.w*i+v.w/2)).join(', ')}`),st(`Midden × aantal: ${v.f.map((x,i)=>`${nl(v.s+v.w*i+v.w/2)}×${x}`).join(' + ')} = ${nl(v.som)}`,v.som),st(`${nl(v.som)} : ${v.tot} ≈ ${nl(rondaf(v.som/v.tot,1))}`,rondaf(v.som/v.tot,1))],
   fouten:v=>[[rondaf(v.f.reduce((a,x,i)=>a+x*(v.s+v.w*i),0)/v.tot,1),'Je gebruikte de ondergrens van elke klasse. Neem het midden.'],[rondaf(v.som/4,1),'Deel door het aantal leerlingen, niet door het aantal klassen.'],[rondaf(v.s+2*v.w,1),'Dat is het midden van de hele tabel. De klassen hebben niet evenveel leerlingen.']],
@@ -2686,7 +2707,7 @@ const kampRecept=[['spaghetti',100,'g',500,1.29],['gehakt',125,'g',500,4.49],['t
 L({id:'X3.kamp',niv:3,dom:'V',sub:'vtabel',naam:'Toetsopgave: boodschappen voor het kamp',rm:true,ctx:true,verwar:['V4.recept'],
   uitleg:'Reken eerst uit hoeveel je in totaal nodig hebt. Je kunt alleen hele pakken kopen: rond dus naar boven af.',
   gen(r){ const i=r.int(0,3); let n; do{ n=r.int(18,64) }while((n*kampRecept[i][1])%kampRecept[i][3]===0); return {i,n} },
-  vraag:v=>{ const x=kampRecept[v.i]; return `${bron('🏕️ Kampmenu dag 2: spaghetti bolognese','<p>Per persoon:</p>'+bronTabel(['Ingrediënt','Per persoon','Verpakking','Prijs'],kampRecept.map(y=>[y[0],y[1]+' '+y[2],y[3]+' '+y[2],eur(y[4],true)]))+'<p class="bronvoet">Kookploeg: 4 leerlingen · Eten om 18:00 · Afwas: groep 2</p>')}Er gaan ${v.n} leerlingen en begeleiders mee. Wat kost de ${x[0]} voor het hele kamp?` },
+  vraag:v=>{ const x=kampRecept[v.i]; return `${bron('🏕️ Kampmenu dag 2: spaghetti bolognese','<p>Per persoon:</p>'+bronTabel(['Ingrediënt','Per persoon','Verpakking','Prijs'],kampRecept.map(y=>[y[0],y[1]+' '+y[2],y[3]+' '+y[2],eur(y[4],true)]))+'<p class="bronvoet">Kookploeg: 4 leerlingen · Eten om 18:00 · Afwas: tent 2</p>')}Er gaan ${v.n} leerlingen en begeleiders mee. Wat kost de ${x[0]} voor het hele kamp?` },
   antw:v=>{ const x=kampRecept[v.i]; return rondaf(Math.ceil(v.n*x[1]/x[3])*x[4],2) }, eenheid:'€',
   stappen:v=>{ const x=kampRecept[v.i],tot=v.n*x[1],p=Math.ceil(tot/x[3]); return [st(`Nodig: ${v.n} × ${x[1]} = ${tot} ${x[2]}`,tot),st(`Pakken: ${tot} : ${x[3]} = ${nl(rondaf(tot/x[3],2))}, dus ${p} pakken (naar boven)`,p),st(`Kosten: ${p} × ${nl(x[4])} = ${eur(p*x[4],true)}`,rondaf(p*x[4],2))] },
   fouten:v=>{ const x=kampRecept[v.i],tot=v.n*x[1]; return [[rondaf(Math.floor(tot/x[3])*x[4],2),'Je rondde naar beneden af. Dan heb je te weinig: koop een pak extra.'],[rondaf(tot/x[3]*x[4],2),'Je kunt geen deel van een pak kopen.'],[rondaf(v.n*x[4],2),'Niet iedereen krijgt een heel pak.']] },
@@ -2970,16 +2991,24 @@ function quizHtml(){
    <div class="voet" id="qknoppen">${knoppen}</div></div></div><div id="rekenmachine" hidden></div>`;
 }
 function naRender(){
+  if(Q&&!Q.t0) Q.t0=Date.now();
   try{ woordenMarkeren($('#qbody')) }catch(e){}
   schatNaRender();
   try{ schemaNaRender() }catch(e){ console.warn(e) }
   const a=$('#antw'); if(a&&!('ontouchstart' in window)) a.focus();
-  $$('#qbody input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); indienen(true) } }));
+  $$('#qbody input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); enterGedrukt() } }));
   if(Q.it.vorm==='v3') $('#kCheck').textContent='Verder';
+}
+// Enter is geen keuze: de leerling kiest zelf Zeker of Gok (anders klopt "Zeker én fout" niet)
+function enterGedrukt(){
+  if(!Q||Q.klaar) return; if(Q.it.vorm==='faded1'||Q.it.vorm==='v3') return indienen(null);
+  const k=$$('.zekerknop,.gokknop'); k.forEach(b=>{ b.classList.toggle('pols',false); void b.offsetWidth; b.classList.add('pols') }); if(k[0]) k[0].focus();
+  melding('Kies <b>! Zeker</b> of <b>? Gok</b>.',2500);
 }
 function stopSessie(){
   if(SES&&SES.soort==='toets'&&!confirm('Wil je stoppen met de toets? Je antwoorden tellen dan niet.')) return;
   if(SES&&SES.soort==='instap'&&!confirm('Wil je stoppen met de instaptoets? Je kunt hem later opnieuw starten.')) return;
+  try{ if(Q&&!Q.klaar&&Q.it&&Q.t0&&Date.now()-Q.t0>15000) itemEvent(Q.it,{},true) }catch(e){}   // gestopt midden in een opgave = overgeslagen
   bewaar(); go(S.niv?'home':'instapIntro');
 }
 
@@ -2988,9 +3017,12 @@ function indienen(zeker){
   const it=Q.it;
   if(it.vorm==='v3') return v3Stap();
   if(!heeftAntwoord()){ melding('Vul eerst je antwoord in.'); return }
+  { const a=$('#antw'), w=a&&!a.disabled?a.value.trim():''; // 2.125: duizendtal of komma bedoeld?
+    if(!Q.puntGevraagd&&/^-?\d{1,3}\.\d{3}$/.test(w)&&typeof it.antw==='number'&&!Number.isInteger(it.antw)){ Q.puntGevraagd=true; melding(`Bedoel je <b>${esc(w.replace('.',''))}</b> of <b>${esc(w.replace('.',','))}</b>? Een kommagetal schrijf je met een komma. Pas je antwoord aan of druk nog een keer.`,6000); a.focus(); return } }
   Q.klaar=true; const res=nakijk(); res.zeker=zeker; Q.res=res;
   $$('#qbody input,#qbody select,#qbody textarea').forEach(x=>x.disabled=true);
   if(it.vorm==='sab'&&res.goed) S.sabGoed=(S.sabGoed||0)+1;
+  try{ itemEvent(it,res) }catch(e){}
   if(SES.soort==='instap') return instapAntwoord(res);
   if(SES.soort==='toets'){ SES.res.push(res.goed); SES.antw.push({it,res}); SES.i++; return volgendeItem() }
   // oefenen: verwerken + feedback
@@ -3053,6 +3085,7 @@ function v3Stap(){
   }
   if(Q.zelf==null){ Q.v3fase=2; melding('Kies hoe jouw eigen aanpak was.'); return }
   Q.klaar=true; const res={goed:Q.v3goed,zeker:null,gegeven:'Eigen aanpak: '+['goed','bijna','nog niet'][Q.zelf]+' · '+($('#eigen').value||'').slice(0,120),juist:'',mis:''};
+  try{ itemEvent(it,res) }catch(e){}
   if(SES.soort==='toets'){ SES.res.push(res.goed); SES.antw.push({it,res}); SES.i++; return volgendeItem() }
   verwerk(it,res); SES.res.push(res.goed); SES.recent.push(it.ld);
   $('#qknoppen').innerHTML=`<button class="knop" onclick="naVraag()">Volgende →</button>`;
@@ -3066,7 +3099,35 @@ function start(){
   if(location.hash==='#docent') return go('docentLogin');
   if(!S||!S.naam) return go('welkom');
   if(!S.niv) return go('instapIntro');
-  go('home'); planSync(1500);
+  go('home'); planSync(1500); setTimeout(()=>{ try{ haalSjablonen() }catch(e){} },2500);
+}
+
+// ===== Automatische kwaliteitscontrole van opgaven (itemanalyse per opgavesjabloon) =====
+// Een opgavesjabloon = leerdoel + vraagvorm (bv. "V4.terugrekenen|mc"). Na elke opgave stuurt de app
+// een klein event naar de Sheet: goed/fout, Zeker/Gok, tijd, overgeslagen, en of de leerling sterk is.
+// Code.gs telt alles op en zet sjablonen die slecht werken op "Geblokkeerd" (bv. bijna iedereen fout,
+// vaak overgeslagen, of sterke leerlingen maken hem vaker fout dan zwakke). De app haalt die lijst op
+// en biedt geblokkeerde sjablonen niet meer aan; sjablonen die goed werken krijgen vaker een beurt.
+const SJ_KEY='rekentrainer-sjablonen';
+let SJ=(()=>{ try{ const x=JSON.parse(localStorage.getItem(SJ_KEY)||'null'); if(x&&x.blok) return x }catch(e){} return {blok:[],sterk:[],t:0} })();
+const sjKey = (ld,vorm) => ld+'|'+vorm;
+const sjGeblokkeerd = k => SJ.blok.includes(k);
+// welke vormen mag maakItem kiezen? geblokkeerde eruit (behalve als er dan niets overblijft), sterke dubbel
+function sjabloonFilter(ld,vs){
+  const ok=vs.filter(v=>!sjGeblokkeerd(sjKey(ld.id,v))); const l=ok.length?ok:vs;
+  return l.concat(l.filter(v=>SJ.sterk.includes(sjKey(ld.id,v))));
+}
+async function haalSjablonen(){
+  if(!serverModus()||demoModus) return;
+  if(Date.now()-(SJ.t||0)<6*36e5) return;          // hooguit eens per 6 uur
+  try{ const j=await api('sjablonen',{}); SJ={blok:j.blok||[],sterk:j.sterk||[],t:Date.now()}; localStorage.setItem(SJ_KEY,JSON.stringify(SJ)) }catch(e){ /* offline: laatste lijst blijft gelden */ }
+}
+// is de leerling sterk op dit onderdeel? (voor de discriminatie: maken sterke leerlingen hem vaker goed?)
+const leerlingSterk = it => !!S&&(it.niv<(S.niv||1)||domB(it.niv,it.dom)>=DREMPEL);
+function itemEvent(it,res,skip=false){
+  if(!it||!S||['spiegel','herhaal'].includes(it.bron)) return;   // die zijn gekozen op zwakte: geen eerlijke meting
+  const sec=Math.round((Date.now()-(Q&&Q.t0||Date.now()))/1000);
+  event({t:'item',sj:sjKey(it.ld,it.vorm),ld:it.ld,vorm:it.vorm,niv:it.niv,soort:SES?SES.soort:'',goed:skip?null:!!res.goed,zeker:skip?null:res.zeker,skip:!!skip,sec:Math.min(sec,1800),sterk:leerlingSterk(it)});
 }
 
 // ===== Gespreide herhaling, zichtbaar voor de leerling =====
@@ -3677,6 +3738,7 @@ async function docAnalyse(){
   let items;
   if(DOC.data.lokaal){ items=Object.keys(S.ld).filter(k=>S.ld[k].p3).map(k=>({ld:k,pogingen:S.ld[k].p3,goed:S.ld[k].g3||0,zekerFout:S.ld[k].zf3||0,leerlingen:1})) }
   else try{ items=(await api('analyse',{docentcode:DOC.code,klas:DOC.klas})).items }catch(e){ melding(esc(e.message)); return }
+  DOC.sj=null; if(!DOC.data.lokaal) try{ const j=await api('itemanalyse',{docentcode:DOC.code}); DOC.sj=j.sjablonen||[]; DOC.sjMin=j.min||30 }catch(e){ DOC.sj=null }
   DOC.analyse=items.filter(x=>LD[x.ld]).map(x=>Object.assign(x,{p:Math.round(100*x.goed/x.pogingen),zf:Math.round(100*x.zekerFout/x.pogingen)})); go('docentAnalyse');
 }
 const signaal = x => x.pogingen<10?['te weinig data','zacht']:x.p>=90?['erg makkelijk: eerder overslaan of naar een lager niveau','groen']:x.p<40?['erg moeilijk: extra instructie of later aanbieden','rood']:x.zf>=25?['veel zeker-fout: hardnekkige misconceptie','rood']:['passend','groen'];
@@ -3684,9 +3746,29 @@ SCHERMEN.docentAnalyse=function(){
   const a=(DOC.analyse||[]).slice().sort((x,y)=>LD[x.ld].niv-LD[y.ld].niv||x.p-y.p);
   return `<div class="wrap"><div class="top"><button class="terug" onclick="go('docent')">← Dashboard</button><h1>Analyse van de vragen${DOC.klas?' · '+esc(DOC.klas):''}</h1><button class="knop zacht klein" onclick="analyseCsv()">CSV</button></div>
    <p class="zacht">Per leerdoel: het percentage goed bij de <b>eerste zelfstandige poging</b> (p-waarde). Tussen 40% en 90% is een opgave goed op niveau. Gebruik dit om instructie te plannen en om de indeling van leerdoelen over niveaus bij te stellen.</p>
-   ${a.length?`<div class="kaart tabelwrap"><table><thead><tr><th>Leerdoel</th><th>Niveau</th><th>Pogingen</th><th>Leerlingen</th><th>% goed</th><th>% zeker-fout</th><th>Signaal</th></tr></thead><tbody>${a.map(x=>{ const [t,k]=signaal(x); return `<tr><td>${esc(LD[x.ld].naam)}</td><td>${LD[x.ld].niv}</td><td>${x.pogingen}</td><td>${x.leerlingen}</td><td>${balk(x.p)} ${x.p}%</td><td>${x.zf}%</td><td><span class="chip ${k}">${t}</span></td></tr>` }).join('')}</tbody></table></div>`:'<div class="kaart"><p>Nog geen gegevens. Zodra leerlingen oefenen, verschijnt hier per leerdoel hoe moeilijk het is.</p></div>'}</div>${VOET()}`;
+   ${a.length?`<div class="kaart tabelwrap"><table><thead><tr><th>Leerdoel</th><th>Niveau</th><th>Pogingen</th><th>Leerlingen</th><th>% goed</th><th>% zeker-fout</th><th>Signaal</th></tr></thead><tbody>${a.map(x=>{ const [t,k]=signaal(x); return `<tr><td>${esc(LD[x.ld].naam)}</td><td>${LD[x.ld].niv}</td><td>${x.pogingen}</td><td>${x.leerlingen}</td><td>${balk(x.p)} ${x.p}%</td><td>${x.zf}%</td><td><span class="chip ${k}">${t}</span></td></tr>` }).join('')}</tbody></table></div>`:'<div class="kaart"><p>Nog geen gegevens. Zodra leerlingen oefenen, verschijnt hier per leerdoel hoe moeilijk het is.</p></div>'}${sjabloonHtml()}</div>${VOET()}`;
 };
 function analyseCsv(){ download('itemanalyse-'+vandaag()+'.csv',['leerdoel;niveau;domein;pogingen;leerlingen;% goed;% zeker-fout'].concat((DOC.analyse||[]).map(x=>[x.ld,LD[x.ld].niv,LD[x.ld].dom,x.pogingen,x.leerlingen,x.p,x.zf].join(';'))).join('\n'),'text/csv') }
+
+// ---------- automatische kwaliteitscontrole per opgavesjabloon (leerdoel + vraagvorm) ----------
+const VORMNAAM={open:'Zelf doen',mc:'Meerkeuze',sab:'Saboteur',tabel:'Verhoudingstabel',volgorde:'Volgorde',koppel:'Koppel',v3:'Drie antwoorden',faded1:'Voorbeeld (fase 1)',faded2:'Invulsom (fase 2)'};
+function sjabloonHtml(){
+  if(DOC.data&&DOC.data.lokaal) return '<div class="kaart"><p class="zacht">De automatische kwaliteitscontrole werkt met de gegevens van alle leerlingen in de Sheet. In de lokale test is die niet beschikbaar.</p></div>';
+  if(!DOC.sj) return '<div class="kaart"><p class="zacht">De kwaliteitscontrole kon niet worden geladen. Staat de nieuwste Code.gs in Apps Script (Implementeren › Nieuwe versie)?</p></div>';
+  const rang={Geblokkeerd:0,'Werkt goed':2,Actief:1,'Te weinig gegevens':3};
+  const l=DOC.sj.filter(x=>x.Sjabloon).sort((a,b)=>(rang[a.Status]??4)-(rang[b.Status]??4)||(b.Pogingen||0)-(a.Pogingen||0));
+  const tel=st=>l.filter(x=>x.Status===st).length;
+  const knop=x=>{ const sj=esc(x.Sjabloon); return x.Docent?`<button class="knop zacht klein" onclick="zetSjabloon('${sj}','')">Automatisch</button>`:x.Status==='Geblokkeerd'?`<button class="knop klein" onclick="zetSjabloon('${sj}','vrijgegeven')">Herstel</button>`:`<button class="knop zacht klein" onclick="zetSjabloon('${sj}','geblokkeerd')">Blokkeer</button>` };
+  const chip={Geblokkeerd:'rood','Werkt goed':'groen',Actief:'groen','Te weinig gegevens':'zacht'};
+  return `<h2 style="margin-top:28px">Automatische kwaliteitscontrole</h2>
+   <p class="zacht">Per opgavesjabloon (leerdoel + vraagvorm) houdt het systeem bij hoe vaak hij goed gaat, hoe lang het duurt, hoe vaak leerlingen afhaken, en of <b>sterke leerlingen</b> hem vaker goed hebben dan zwakke (discriminatie). Vanaf ${DOC.sjMin} pogingen wordt een sjabloon dat slecht werkt automatisch <b>geblokkeerd</b>: de app biedt hem dan niet meer aan. Sjablonen die goed onderscheiden krijgen vaker een beurt. Met <b>Herstel</b> zet je een sjabloon terug.</p>
+   <div class="hteller" style="max-width:520px"><div><b>${tel('Geblokkeerd')}</b><small>geblokkeerd</small></div><div><b>${tel('Werkt goed')}</b><small>werkt goed</small></div><div><b>${tel('Te weinig gegevens')}</b><small>te weinig gegevens</small></div></div>
+   ${l.length?`<div class="kaart tabelwrap"><table><thead><tr><th>Leerdoel</th><th>Vorm</th><th>Pogingen</th><th>% goed</th><th>Discr.</th><th>Afgehaakt</th><th>Tijd</th><th>Status</th><th></th></tr></thead><tbody>${l.map(x=>{ const ld=LD[x.Leerdoel]; const n=+x.Pogingen||0, sk=+x.Overgeslagen||0;
+     return `<tr><td>${esc(ld?ld.naam:x.Leerdoel)}<br><small class="zacht">Niveau ${ld?ld.niv:x.Niveau} · ${esc(x.Leerdoel)}</small></td><td>${esc(VORMNAAM[x.Vorm]||x.Vorm)}</td><td>${n}</td><td>${n?Math.round(100*(+x.Goed||0)/n)+'%':'–'}</td><td>${x.Discriminatie===''||x.Discriminatie==null?'–':nl(+x.Discriminatie,2)}</td><td>${n+sk?Math.round(100*sk/(n+sk))+'%':'–'}</td><td>${x['Gem. tijd (s)']?x['Gem. tijd (s)']+' s':'–'}</td><td><span class="chip ${chip[x.Status]||'zacht'}">${esc(x.Status||'')}</span>${x.Reden?`<br><small class="zacht">${esc(x.Reden)}</small>`:''}</td><td>${knop(x)}</td></tr>` }).join('')}</tbody></table></div>`:'<div class="kaart"><p class="zacht">Nog geen gegevens. Na elke gemaakte opgave komt er een regel bij in het tabblad Sjablonen van de Sheet.</p></div>'}`;
+}
+async function zetSjabloon(sj,status){
+  try{ await api('sjabloonstatus',{docentcode:DOC.code,sj,status}); const j=await api('itemanalyse',{docentcode:DOC.code}); DOC.sj=j.sjablonen||[]; SJ.t=0; melding(status==='vrijgegeven'?'Sjabloon hersteld: hij wordt weer aangeboden.':status==='geblokkeerd'?'Sjabloon geblokkeerd.':'Sjabloon staat weer op automatisch.'); go('docentAnalyse') }catch(e){ melding(esc(e.message)) }
+}
 
 start();
 </script>

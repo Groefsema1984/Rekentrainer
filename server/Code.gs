@@ -27,7 +27,13 @@ const CFG = {
   KLASSEN: ['1e klas', '2e klas', '3e klas', '4e klas', '5e klas', '6e klas', 'Thuis'], // gelijk aan KLASSEN in de app
   // Het echte startniveau bepaalt de instaptoets in de app. Dit is alleen het startpunt van die toets.
   START_NIVEAU: { '1e klas': 2, '2e klas': 3, '3e klas': 4, '4e klas': 5, '5e klas': 6, '6e klas': 6, 'Thuis': 2 },
-  MAX_MISLUKT: 10                       // na zoveel foute herstelpogingen wordt herstellen geblokkeerd
+  MAX_MISLUKT: 10,                      // na zoveel foute herstelpogingen wordt herstellen geblokkeerd
+  // Automatische kwaliteitscontrole van opgavesjablonen (leerdoel + vraagvorm)
+  ITEM_MIN: 30,                         // pas vanaf zoveel pogingen oordeelt het systeem
+  ITEM_P_MIN: 0.15,                     // minder dan 15% goed: bijna iedereen fout → blokkeren
+  ITEM_SKIP_MAX: 0.25,                  // meer dan 25% overgeslagen/vastgelopen → blokkeren
+  ITEM_TIJD_MAX: 300,                   // gemiddeld langer dan 5 minuten → blokkeren
+  ITEM_STERK_MIN: 0.30                  // sterke leerlingen minder dan 30% goed → blokkeren
 };
 
 const DOMEINEN = { G: 'Getallen', V: 'Verhoudingen', M: 'Meten en meetkunde', B: 'Verbanden' };
@@ -47,7 +53,10 @@ const KOP = {
   Toetsen: ['Event-ID', 'Datum/tijd', 'Leerling-ID', 'Naam', 'Klas', 'Soort', 'Niveau', 'Poging', 'Totaal %',
     'Getallen %', 'Verhoudingen %', 'Meten en meetkunde %', 'Verbanden %', 'Geslaagd', 'Duur (min)', 'Terug naar domeinen'],
   Data: ['Leerling-ID', 'Bijgewerkt', 'Staat (deel 1)', 'Staat (deel 2)', 'Staat (deel 3)', 'Staat (deel 4)'],
-  Logboek: ['Tijd', 'Leerling-ID', 'Naam', 'Klas', 'Actie', 'Details']
+  Logboek: ['Tijd', 'Leerling-ID', 'Naam', 'Klas', 'Actie', 'Details'],
+  Sjablonen: ['Sjabloon', 'Leerdoel', 'Vorm', 'Niveau', 'Pogingen', 'Goed', 'Zeker en fout', 'Overgeslagen', 'Tijd totaal (s)',
+    'Sterk pogingen', 'Sterk goed', 'Zwak pogingen', 'Zwak goed', 'p-waarde', 'Discriminatie', 'Gem. tijd (s)',
+    'Status', 'Reden', 'Docent', 'Bijgewerkt']
 };
 const KOL_MISLUKT = KOP.Leerlingen.length;  // laatste kolom van Leerlingen
 const STATUS = { oefenen: 'Oefenen', check: 'Klaar voor de check', beheerst: 'Beheerst', herkansing: 'Terug naar oefenen' };
@@ -103,6 +112,9 @@ function doPost(e) {
       case 'klasinstelling': return uit_(klasinstelling_(d));
       case 'vrijgeven': return uit_(vrijgeven_(d));
       case 'analyse': return uit_(analyse_(d));
+      case 'sjablonen': return uit_(sjablonen_());
+      case 'itemanalyse': return uit_(itemanalyse_(d));
+      case 'sjabloonstatus': return uit_(sjabloonStatus_(d));
       default: return uit_({ ok: false, fout: 'Onbekende actie' });
     }
   } catch (err) {
@@ -245,7 +257,7 @@ function verwerkEvents_(r, events) {
   const gezien = {};
   laatsteIds_(fl, 3000).forEach(function (x) { gezien[x] = 1; });
   laatsteIds_(tt, 1000).forEach(function (x) { gezien[x] = 1; });
-  const fRij = [], tRij = [], ok = [];
+  const fRij = [], tRij = [], ok = [], items = [];
   events.slice(0, 500).forEach(function (ev) {
     const eid = String(ev.eid || '').slice(0, 40);
     if (!eid) return;
@@ -264,6 +276,8 @@ function verwerkEvents_(r, events) {
         num_(p.G), num_(p.V), num_(p.M), num_(p.B), ev.geslaagd ? 'ja' : 'nee', num_(ev.duurMin),
         (ev.terug || []).map(function (k) { return DOMEINEN[k] || k; }).join(', ')]);
       ok.push(eid);
+    } else if (ev.t === 'item') {
+      items.push(ev); ok.push(eid);
     } else if (ev.t === 'niveau') {
       log_(r.id, r.naam, r.klas, 'niveau', 'van ' + num_(ev.van) + ' naar ' + num_(ev.naar) + (ev.reden ? ' (' + tekst_(ev.reden) + ')' : ''));
       ok.push(eid);
@@ -273,7 +287,79 @@ function verwerkEvents_(r, events) {
   });
   if (fRij.length) fl.getRange(fl.getLastRow() + 1, 1, fRij.length, fRij[0].length).setValues(fRij);
   if (tRij.length) tt.getRange(tt.getLastRow() + 1, 1, tRij.length, tRij[0].length).setValues(tRij);
+  if (items.length) werkSjablonenBij_(items);
   return ok;
+}
+
+// =====================================================================
+// Kwaliteitscontrole: itemanalyse per opgavesjabloon
+// =====================================================================
+function sjBlad_() { return sheet_('Sjablonen') || blad_('Sjablonen', KOP.Sjablonen); }
+function leesSjablonen_() {
+  const b = sjBlad_(); const n = b.getLastRow() - 1; const K = KOP.Sjablonen.length;
+  return { b: b, rijen: n > 0 ? b.getRange(2, 1, n, K).getValues() : [] };
+}
+// tellers bijwerken met nieuwe item-events en de status opnieuw bepalen
+function werkSjablonenBij_(items) {
+  const L = leesSjablonen_(); const pos = {};
+  L.rijen.forEach(function (x, i) { pos[x[0]] = i; });
+  items.forEach(function (ev) {
+    const sj = String(ev.sj || '').slice(0, 60); if (!sj) return;
+    let i = pos[sj];
+    if (i === undefined) { i = L.rijen.length; pos[sj] = i; L.rijen.push([sj, tekst_(ev.ld), tekst_(ev.vorm), num_(ev.niv), 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', '', '', '', '', '']); }
+    const x = L.rijen[i];
+    if (ev.skip) { x[7] = (+x[7] || 0) + 1; }
+    else {
+      x[4] = (+x[4] || 0) + 1; if (ev.goed) x[5] = (+x[5] || 0) + 1; else if (ev.zeker === true) x[6] = (+x[6] || 0) + 1;
+      x[8] = (+x[8] || 0) + Math.min(1800, +ev.sec || 0);
+      if (ev.sterk) { x[9] = (+x[9] || 0) + 1; if (ev.goed) x[10] = (+x[10] || 0) + 1; }
+      else { x[11] = (+x[11] || 0) + 1; if (ev.goed) x[12] = (+x[12] || 0) + 1; }
+    }
+    x[19] = new Date();
+  });
+  L.rijen.forEach(beoordeel_);
+  if (L.rijen.length) L.b.getRange(2, 1, L.rijen.length, KOP.Sjablonen.length).setValues(L.rijen);
+}
+// regels: genoeg pogingen → slecht werkende sjablonen blokkeren, goed onderscheidende sjablonen "Werkt goed"
+function beoordeel_(x) {
+  const n = +x[4] || 0, g = +x[5] || 0, skip = +x[7] || 0, sN = +x[9] || 0, sG = +x[10] || 0, zN = +x[11] || 0, zG = +x[12] || 0;
+  const p = n ? g / n : 0, pS = sN ? sG / sN : null, pZ = zN ? zG / zN : null, D = pS !== null && pZ !== null ? pS - pZ : null, tijd = n ? (+x[8] || 0) / n : 0;
+  x[13] = n ? Math.round(p * 100) / 100 : ''; x[14] = D !== null && sN >= 5 && zN >= 5 ? Math.round(D * 100) / 100 : ''; x[15] = n ? Math.round(tijd) : '';
+  const docent = String(x[18] || '');
+  if (docent === 'vrijgegeven') { x[16] = 'Actief'; x[17] = 'Door docent vrijgegeven'; return; }
+  if (docent === 'geblokkeerd') { x[16] = 'Geblokkeerd'; x[17] = 'Door docent geblokkeerd'; return; }
+  if (n + skip < CFG.ITEM_MIN) { x[16] = 'Te weinig gegevens'; x[17] = (n + skip) + ' van ' + CFG.ITEM_MIN + ' pogingen'; return; }
+  const reden = [];
+  if (p < CFG.ITEM_P_MIN) reden.push('bijna iedereen fout (' + Math.round(p * 100) + '% goed)');
+  if (skip / (n + skip) > CFG.ITEM_SKIP_MAX) reden.push('vaak overgeslagen of vastgelopen (' + Math.round(100 * skip / (n + skip)) + '%)');
+  if (tijd > CFG.ITEM_TIJD_MAX) reden.push('duurt gemiddeld ' + Math.round(tijd / 60) + ' minuten');
+  if (sN >= 10 && pS < CFG.ITEM_STERK_MIN) reden.push('ook sterke leerlingen fout (' + Math.round(pS * 100) + '% goed)');
+  if (sN >= 10 && zN >= 10 && D < -0.1) reden.push('sterke leerlingen doen het slechter dan zwakke');
+  if (reden.length) { x[16] = 'Geblokkeerd'; x[17] = reden.join('; '); return; }
+  if (D !== null && sN >= 10 && zN >= 10 && D >= 0.2 && p >= 0.3 && p <= 0.9) { x[16] = 'Werkt goed'; x[17] = 'onderscheidt goed tussen sterk en zwak'; return; }
+  x[16] = 'Actief'; x[17] = p > 0.97 ? 'erg makkelijk' : '';
+}
+// openbaar: alleen de lijst sjabloon-sleutels (geen leerlinggegevens)
+function sjablonen_() {
+  const L = leesSjablonen_(); const blok = [], sterk = [];
+  L.rijen.forEach(function (x) { if (x[16] === 'Geblokkeerd') blok.push(x[0]); else if (x[16] === 'Werkt goed') sterk.push(x[0]); });
+  return { ok: true, blok: blok, sterk: sterk };
+}
+function itemanalyse_(d) {
+  checkDocent_(d);
+  const L = leesSjablonen_(); const k = KOP.Sjablonen;
+  return { ok: true, min: CFG.ITEM_MIN, sjablonen: L.rijen.map(function (x) { const o = {}; k.forEach(function (h, i) { o[h] = x[i] instanceof Date ? x[i].toISOString() : x[i]; }); return o; }) };
+}
+// docent: sjabloon handmatig vrijgeven, blokkeren, of terug naar automatisch ('')
+function sjabloonStatus_(d) {
+  checkDocent_(d);
+  const L = leesSjablonen_(); const sj = String(d.sj || ''); const st = ['vrijgegeven', 'geblokkeerd', ''].indexOf(d.status) >= 0 ? d.status : '';
+  let i = -1; L.rijen.forEach(function (x, j) { if (x[0] === sj) i = j; });
+  if (i < 0) { L.rijen.push([sj, sj.split('|')[0], sj.split('|')[1] || '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', '', '', '', '', '']); i = L.rijen.length - 1; }
+  L.rijen[i][18] = st; L.rijen[i][19] = new Date(); beoordeel_(L.rijen[i]);
+  L.b.getRange(2, 1, L.rijen.length, KOP.Sjablonen.length).setValues(L.rijen);
+  log_('', 'docent', '', 'sjabloon', sj + ' → ' + (st || 'automatisch'));
+  return { ok: true, status: L.rijen[i][16] };
 }
 function laatsteIds_(b, max) {
   const n = b.getLastRow() - 1; if (n <= 0) return [];

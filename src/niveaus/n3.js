@@ -19,18 +19,18 @@ const NOEMERPAREN=[[2,3],[2,4],[3,4],[2,5],[3,6],[4,8],[2,6],[4,6],[3,12],[6,8],
 L({id:'G3.breukoptellen',niv:3,dom:'G',sub:'breuken',naam:'Breuken optellen en aftrekken',dec:9,tol:.002,
   uitleg:'Maak de breuken eerst gelijknamig: zoek een noemer waar beide noemers in passen. Tel dan alleen de tellers op. De noemer blijft hetzelfde.',
   toon:x=>fr(x),
-  gen(r){ const [b,d]=r.pick(NOEMERPAREN); const a=r.int(1,b-1), c=r.int(1,d-1); const op=r.ja(.7)||a/b<=c/d?'+':'−'; return {a,b,c,d,op:a/b>c/d?op:'+',ctx:r.pick(['pizza','taart','lasagne','chocoladereep'])} },
+  gen(r){ let a,b,c,d,op; do{ [b,d]=r.pick(NOEMERPAREN); a=r.int(1,b-1); c=r.int(1,d-1); op=r.ja(.7)||a/b<=c/d?'+':'−'; if(a/b<=c/d) op='+' }while(op==='+'&&a/b+c/d>1); return {a,b,c,d,op,ctx:r.pick(['pizza','taart','lasagne','chocoladereep'])} }, // samen nooit meer dan één geheel
   vraag:v=>v.op==='+'?`Je eet ${breuk(v.a,v.b)} van een ${v.ctx} en je vriend eet ${breuk(v.c,v.d)}. Welk deel hebben jullie samen gegeten? Geef je antwoord als breuk, bijvoorbeeld 5/6.`:`Er is nog ${breuk(v.a,v.b)} van een ${v.ctx} over. Jij eet daarvan ${breuk(v.c,v.d)} van de hele ${v.ctx} op. Welk deel is er nu nog over? Geef je antwoord als breuk.`,
   antw:v=>v.op==='+'?v.a/v.b+v.c/v.d:v.a/v.b-v.c/v.d,
   stappen:v=>{ const n=v.b*v.d/ggd(v.b,v.d), x=v.a*n/v.b, y=v.c*n/v.d, z=v.op==='+'?x+y:x-y; return [st(`Gelijke noemer: ${n}`,n),st(`${breuk(v.a,v.b)} = ${breuk(x,n)} en ${breuk(v.c,v.d)} = ${breuk(y,n)}`),st(`${x} ${v.op==='+'?'+':'−'} ${y} = ${z}, dus ${breuk(z,n)}${ggd(z,n)>1?' = '+fr(z/n):''}`,z/n)] },
-  fouten:v=>[[v.op==='+'?(v.a+v.c)/(v.b+v.d):Math.abs(v.a-v.c)/Math.abs(v.b-v.d||1),'Je telde de noemers ook op. De noemer zegt hoe groot de stukjes zijn; die verander je niet door op te tellen.'],[v.op==='+'?(v.a+v.c)/(v.b*v.d):Math.abs(v.a-v.c)/(v.b*v.d),'Je maakte de noemer gelijk, maar vergat de tellers mee te veranderen.']],
+  fouten:v=>[[v.op==='+'?(v.a+v.c)/(v.b+v.d):Math.abs(v.a-v.c)/Math.abs(v.b-v.d||1),'Je telde de noemers ook op. De noemer zegt hoe groot de stukjes zijn; die verander je niet door op te tellen.'],[v.op==='+'?(v.a+v.c)/(v.b*v.d):Math.abs(v.a-v.c)/(v.b*v.d),'Je maakte de noemer gelijk, maar vergat de tellers mee te veranderen.'],[(v.op==='+'?v.a+v.c:Math.abs(v.a-v.c))/Math.max(v.b,v.d),'Je nam de grootste noemer, maar veranderde de teller van de andere breuk niet mee.']],
   anders:v=>({tekst:`Verdeel alles in stukjes van dezelfde grootte. Dan kun je de stukjes gewoon tellen.`,svg:FIG.strook(Math.round((v.op==='+'?v.a/v.b+v.c/v.d:v.a/v.b-v.c/v.d)*(v.b*v.d/ggd(v.b,v.d))),v.b*v.d/ggd(v.b,v.d),`in stukjes van 1/${v.b*v.d/ggd(v.b,v.d)}`)}),
   waarom:{vraag:'Waarom moet je de breuken eerst gelijknamig maken?',opties:['Je kunt alleen stukjes optellen die even groot zijn.','Omdat de grootste noemer altijd wint.','Omdat je anders een kommagetal krijgt.']}
 });
 L({id:'G3.kommadelen',niv:3,dom:'G',sub:'komma',naam:'Delen met geld: prijs per stuk',verwar:['V3.prijsvgl'],
   uitleg:'Bij delen met geld kun je het bedrag in centen zetten, delen, en dan terug naar euro\'s. Schat eerst: past het antwoord?',
-  gen(r){ const p=r.int(5,50)*5, n=r.pick([3,4,5,6,8,12]); return {p,n,tot:p*n,c:r.pick([['Een multipack van','blikjes frisdrank kost','Wat kost één blikje?'],['Met','vrienden betalen jullie samen','voor pizza\'s. Hoeveel betaalt ieder?'],['Een pak met','sportsokken kost','Wat kost één paar?']])} },
-  vraag:v=>`${v.c[0]} ${v.n} ${v.c[1]} ${eur(c2e(v.tot))}. ${v.c[2]}`,
+  gen(r){ const c=r.int(0,2); const p=[r.int(8,24),r.int(90,240),r.int(20,60)][c]*5, n=[r.pick([4,6,8,12]),r.pick([3,4,5,6]),r.pick([3,4,5,6])][c]; return {p,n,tot:p*n,c} },
+  vraag:v=>[`Een multipack van ${v.n} blikjes frisdrank kost ${eur(c2e(v.tot))}. Wat kost één blikje?`,`Met ${v.n} vrienden betalen jullie samen ${eur(c2e(v.tot))} voor pizza's. Hoeveel betaalt ieder?`,`Een pak met ${v.n} paar sportsokken kost ${eur(c2e(v.tot))}. Wat kost één paar?`][v.c],
   antw:v=>c2e(v.p), eenheid:'€',
   stappen:v=>[st(`${eur(c2e(v.tot))} = ${v.tot} cent`,v.tot),st(`${v.tot} : ${v.n} = ${v.p} cent`,v.p),st(`${v.p} cent = ${eur(c2e(v.p))}`,c2e(v.p))],
   fouten:v=>[[c2e(v.p)*10,'De komma staat verkeerd. Schat: '+eur(c2e(v.tot))+' verdelen over '+v.n+' is ongeveer '+eur(Math.round(v.tot/100/v.n))+' per stuk.'],[rondaf(c2e(v.tot)*v.n,2),'Je vermenigvuldigde. Eén stuk is goedkoper dan het hele pak.'],[rondaf(c2e(v.tot)-v.n,2),'Je trok het aantal af. Je moet delen.']],
@@ -78,7 +78,7 @@ L({id:'V3.schaal',niv:3,dom:'V',sub:'schaal',naam:'De schaal van een kaart bepal
 });
 L({id:'V3.snelheid',niv:3,dom:'V',sub:'schaal',naam:'Gemiddelde snelheid in km per uur',verwar:['V3.schaal'],
   uitleg:'Snelheid in km/u = hoeveel km je in 1 uur aflegt. Reken met een verhoudingstabel van je minuten naar 60 minuten.',
-  gen(r){ let km,min; do{ min=r.pick([10,12,15,20,30,40,45,50,90]); km=r.int(2,30) }while((km*60)%min!==0||km*60/min>40||km*60/min<4); return {km,min,c:r.pick(['Je fietst naar de sportclub:','Je skeelert een rondje:','Je loopt een stuk van de wandeltocht:','Je fietst naar je oma:'])} },
+  gen(r){ const [c,lo,hi]=r.pick([['Je fietst naar de sportclub:',12,25],['Je skeelert een rondje:',10,20],['Je loopt een stuk van de wandeltocht:',4,6],['Je fietst naar je oma:',12,25]]); let km,min; do{ min=r.pick([10,12,15,20,30,40,45,50,90]); km=r.int(1,30) }while((km*60)%min!==0||km*60/min>hi||km*60/min<lo); return {km,min,c} }, // realistische snelheid per vervoermiddel
   vraag:v=>`${v.c} ${v.km} km in ${v.min} minuten. Wat is je gemiddelde snelheid in km/u?`,
   antw:v=>v.km*60/v.min, eenheid:'km/u',
   stappen:v=>[st(`${v.min} minuten → ${v.km} km`),st(`60 minuten is ${nl(60/v.min)} keer zo lang`,rondaf(60/v.min,4)),st(`${v.km} × ${nl(60/v.min)} = ${nl(v.km*60/v.min)} km/u`,v.km*60/v.min)],
@@ -104,8 +104,8 @@ L({id:'V3.prijsvgl',niv:3,dom:'V',sub:'vtabel',naam:'Welke aanbieding is het voo
 const OPPE=[['m²','dm²',100],['dm²','cm²',100],['m²','cm²',10000],['cm²','mm²',100]];
 L({id:'M3.oppeenheden',niv:3,dom:'M',sub:'eenheden',naam:'Oppervlakte-eenheden omrekenen',dec:4,
   uitleg:'1 m = 10 dm, maar 1 m² = 10 × 10 = 100 dm². Bij oppervlakte is elke stap op het trappetje keer 100.',
-  gen(r){ const e=r.pick(OPPE); const naarKlein=r.ja(); const g=r.pick([0.5,1.2,2,2.5,3,4.5,0.25,6]); return {e,naarKlein,g,k:rondaf(g*e[2],4)} },
-  vraag:v=>v.naarKlein?`Een poster is ${nl(v.g)} ${v.e[0]}. Hoeveel ${v.e[1]} is dat?`:`Een tegel is ${nl(v.k)} ${v.e[1]}. Hoeveel ${v.e[0]} is dat?`,
+  gen(r){ const e=r.pick(OPPE); const naarKlein=r.ja(); const [c,gs]={'m²':[r.pick(['Een poster','Een tafelblad','Een raam']),[0.5,1.2,2,2.5,0.25,1.5]],'dm²':['Een vloertegel',[2.5,4,6.25,9]],'cm²':['Een postzegel',[4,6,4.5,7.5]]}[e[0]]; const g=r.pick(gs); return {e,naarKlein,g,c,k:rondaf(g*e[2],4)} }, // grootte past bij het voorwerp
+  vraag:v=>v.naarKlein?`${v.c} is ${nl(v.g)} ${v.e[0]}. Hoeveel ${v.e[1]} is dat?`:`${v.c} is ${nl(v.k)} ${v.e[1]}. Hoeveel ${v.e[0]} is dat?`,
   antw:v=>v.naarKlein?v.k:v.g, eenheid:v=>v.naarKlein?v.e[1]:v.e[0],
   stappen:v=>[st(`1 ${v.e[0]} = ${nl(v.e[2])} ${v.e[1]}`,v.e[2]),st(v.naarKlein?`${nl(v.g)} × ${nl(v.e[2])} = ${nl(v.k)}`:`${nl(v.k)} : ${nl(v.e[2])} = ${nl(v.g)}`,v.naarKlein?v.k:v.g)],
   fouten:v=>{ const f=Math.sqrt(v.e[2]); return v.naarKlein?[[rondaf(v.g*f,4),`Bij lengte is het keer ${f}, maar bij oppervlakte keer ${f} × ${f} = ${v.e[2]}.`],[rondaf(v.g/v.e[2],6),'Naar een kleinere eenheid wordt het getal groter.']]:[[rondaf(v.k/f,4),`Bij oppervlakte deel je door ${v.e[2]}, niet door ${f}.`],[rondaf(v.k*v.e[2],4),'Naar een grotere eenheid wordt het getal kleiner.']] },
@@ -123,7 +123,7 @@ L({id:'M3.driehoek',niv:3,dom:'M',sub:'oppervlak',naam:'Oppervlakte van een drie
 });
 L({id:'M3.liters',niv:3,dom:'M',sub:'inhoud',naam:'Inhoud in m³ en liters',
   uitleg:'1 m³ = 1000 liter (1 m = 10 dm, dus 10 × 10 × 10 = 1000 dm³ en 1 dm³ = 1 liter).',
-  gen(r){ return {l:r.pick([2,3,4,5,6]),b:r.pick([1.5,2,2.5,3]),h:r.pick([0.4,0.5,0.6,0.8]),c:r.pick(['Een opblaasbad','Een vijver','Een regenton-bak','Een zandbak'])} },
+  gen(r){ return {l:r.pick([2,3,4,5,6]),b:r.pick([1.5,2,2.5,3]),h:r.pick([0.4,0.5,0.6,0.8]),c:r.pick(['Een opblaasbad','Een vijver','Een plantenbak op het schoolplein','Een zandbak'])} },
   vraag:v=>`${v.c} is ${nl(v.l)} m lang, ${nl(v.b)} m breed en ${nl(v.h)} m diep. Hoeveel liter water gaat erin?`,
   fig:v=>FIG.doos(v.l,v.b,v.h,nl(v.l)+' m',nl(v.b)+' m',nl(v.h)+' m'),
   antw:v=>rondaf(v.l*v.b*v.h*1000,2), eenheid:'liter',
