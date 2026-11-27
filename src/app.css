@@ -270,3 +270,4 @@ body[data-fase=jong] .optie,body[data-fase=midden] .optie{min-height:76px;font-s
 @media print{header,.topnav,.voettekst,.voet,#menu{display:none!important}body{background:#fff}.kaart{box-shadow:none;border:1px solid #ccc;break-inside:avoid}}
 .ouders .statstrook b{display:block;font:800 28px/1.1 var(--kop)}.ouders .statstrook span{font-size:14px;color:var(--zacht)}
 .groepjes{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.toetsklok{font-variant-numeric:tabular-nums;margin-left:auto}.toetsklok.bijna{background:var(--fout);color:#fff;border-color:var(--fout)}

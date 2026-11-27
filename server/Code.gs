@@ -310,7 +310,7 @@ function verwerkEvents_(r, events) {
       ok.push(eid);
     } else if (ev.t === 'toets') {
       const p = ev.perDomein || {};
-      tRij.push([eid, tijd, r.id, r.naam, r.klas, ev.soort === 'Instaptoets' ? 'Instaptoets' : 'Rekentoets', num_(ev.niveau), num_(ev.poging), num_(ev.totaal),
+      tRij.push([eid, tijd, r.id, r.naam, r.klas, ['Instaptoets', 'Oefentoets', 'Voormeting', 'Nameting'].indexOf(ev.soort) >= 0 ? (ev.soort + (ev.examen ? ' ' + ev.examen : '')) : 'Rekentoets', num_(ev.niveau), num_(ev.poging), num_(ev.totaal),
         num_(p.G), num_(p.V), num_(p.M), num_(p.B), ev.geslaagd ? 'ja' : 'nee', num_(ev.duurMin),
         (ev.terug || []).map(function (k) { return DOMEINEN[k] || k; }).join(', ')]);
       ok.push(eid);
