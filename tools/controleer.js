@@ -6,8 +6,8 @@ const ctx={console,Math,Date,JSON,Number,String,Object,Array,Set,Map,isFinite,is
   window:{addEventListener(){}},document:{addEventListener(){},visibilityState:'visible'},localStorage:{getItem(){return null},setItem(){},removeItem(){}},melding(){},navigator:{}};
 vm.createContext(ctx);
 const files=['core.js','svg.js','vraag.js','adaptief.js'].map(f=>path.join(src,f)).concat(fs.readdirSync(path.join(src,'niveaus')).filter(f=>/^n\d+\.js$/.test(f)).sort().map(f=>path.join(src,'niveaus',f)));
-vm.runInContext(files.map(f=>fs.readFileSync(f,'utf8')).join('\n')+'\n;globalThis.LDS=LDS;globalThis.maakItem=maakItem;globalThis.vormen=vormen;globalThis.SUBDOMEINEN=SUBDOMEINEN;globalThis.LD=LD;',ctx,{filename:'alles.js'});
-const {LDS,maakItem,vormen,SUBDOMEINEN,LD}=ctx; let fouten=0; const meld=(ld,m)=>{ if(fouten<60) console.log('✗',ld.id,m); fouten++ };
+vm.runInContext(files.map(f=>fs.readFileSync(f,'utf8')).join('\n')+'\n;globalThis.LDS=LDS;globalThis.maakItem=maakItem;globalThis.vormen=vormen;globalThis.SUBDOMEINEN=SUBDOMEINEN;globalThis.LD=LD;globalThis.NIVEAUS=NIVEAUS;',ctx,{filename:'alles.js'});
+const {LDS,maakItem,vormen,SUBDOMEINEN,LD,NIVEAUS}=ctx; let fouten=0; const meld=(ld,m)=>{ if(fouten<60) console.log('✗',ld.id,m); fouten++ };
 const dec=x=>{ const s=String(Math.abs(x)); return s.includes('e')?9:(s.split('.')[1]||'').length };
 const tekst=s=>String(s).replace(/<[^>]+>/g,'');
 for(const ld of LDS){
@@ -44,6 +44,6 @@ for(const ld of LDS){
 }
 // dekking: elk niveau elk domein minstens 3 leerdoelen
 const tel={}; LDS.forEach(l=>{ const k=l.niv+'.'+l.dom; tel[k]=(tel[k]||0)+1 });
-for(let n=1;n<=8;n++) for(const d of ['G','V','M','B']){ if((tel[n+'.'+d]||0)<3) console.log('… nog niet compleet: Niveau '+n+' '+d+' ('+(tel[n+'.'+d]||0)+' leerdoelen)') }
+for(let n=1;n<=NIVEAUS.length;n++) for(const d of ['G','V','M','B']){ if((tel[n+'.'+d]||0)<3) console.log('… nog niet compleet: Niveau '+n+' '+d+' ('+(tel[n+'.'+d]||0)+' leerdoelen)') }
 console.log(LDS.length+' leerdoelen gecontroleerd, '+fouten+' fouten');
 process.exit(fouten?1:0);
