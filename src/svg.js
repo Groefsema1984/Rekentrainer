@@ -70,10 +70,10 @@ const FIG = {
     return FIG.wrap(o,W,H);
   },
   staaf(labels,waarden,as){
-    const W=560,H=300,L=56,R=16,T=16,B=46,n=labels.length,bw=(W-L-R)/n, Y=v=>H-B-v/as.ymax*(H-T-B);
+    const W=560,H=300,L=56,R=16,T=16,B=46,n=labels.length,bw=(W-L-R)/n,y0=as.ymin||0, Y=v=>H-B-(v-y0)/(as.ymax-y0)*(H-T-B);
     let o='';
-    for(let v=0; v<=as.ymax+1e-9; v=rondaf(v+as.ys,6)) o+=`<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" class="rast"/>`+FIG.t(L-8,Y(v)+5,nl(v),{a:'end',c:'zacht',fs:14});
-    labels.forEach((l,i)=>{ o+=`<rect x="${L+i*bw+bw*.18}" y="${Y(waarden[i])}" width="${bw*.64}" height="${Y(0)-Y(waarden[i])}" class="vlak a"/>`+FIG.t(L+i*bw+bw/2,H-B+20,l,{fs:14}) });
+    for(let v=y0; v<=as.ymax+1e-9; v=rondaf(v+as.ys,6)) o+=`<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" class="rast"/>`+FIG.t(L-8,Y(v)+5,nl(v),{a:'end',c:'zacht',fs:14});
+    labels.forEach((l,i)=>{ o+=`<rect x="${L+i*bw+bw*.18}" y="${Y(waarden[i])}" width="${bw*.64}" height="${Y(y0)-Y(waarden[i])}" class="vlak a"/>`+FIG.t(L+i*bw+bw/2,H-B+20,l,{fs:14}) });
     o+=`<line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" class="ax"/>`+`<text x="14" y="${(T+H-B)/2}" transform="rotate(-90 14 ${(T+H-B)/2})" text-anchor="middle" font-size="15">${esc(as.yl||'')}</text>`;
     return FIG.wrap(o,W,H);
   },
