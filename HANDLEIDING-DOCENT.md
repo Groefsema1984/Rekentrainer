@@ -1,12 +1,19 @@
-# Rekentrainer: handleiding voor de docent
+# RekenKracht: handleiding voor de docent
+
+RekenKracht werkt volgens **De RekenLijn**: één adaptieve leerlijn van 12 niveaus zonder klasgrenzen.
+Niveau 1–4 = groep 3–6, niveau 5 = groep 7 (1F), niveau 6 = groep 8 (1S), niveau 7–12 = klas 1–6 vwo. Niveau 8 is 2F, niveau 12 is 3F.
+Het doel hangt af van het schooltype: vmbo tot niveau 8, havo tot niveau 11, vwo tot niveau 12.
+
+De vormgeving past zich aan het niveau aan: op niveau 1–4 grotere tekst en knoppen, korte zinnen en plaatjes (rekenrek, klok, munten, blokjes, beeldgrafieken). De rekenmachine is uit op niveau 1–6 en wordt vanaf niveau 7 per opgave bepaald.
 
 ## Voor leerlingen
 1. Open de app op de iPad. Tip: Deel › Zet op beginscherm.
-2. Kies "Nieuw account": vul je naam en klas in. Je krijgt een **leerling-ID** en een **6-cijferige herstelcode**. Schrijf die op.
-3. Daarna maak je de **instaptoets** (16 opgaven). Die begint op het niveau van je klas (Thuis = groep 7/8) en past zich per vraag aan: na een fout een niveau lager, na twee goed achter elkaar een niveau hoger.
+2. Kies "Nieuw account": vul je naam in en kies je groep of klas (vanaf klas 1 met vmbo, havo of vwo). Je krijgt een **leerling-ID** en een **6-cijferige herstelcode**. Schrijf die op.
+3. Daarna maak je de **instaptoets** (16 opgaven). Die begint op het niveau van je groep of klas (groep 3 op niveau 1, groep 8 op niveau 6, klas 2 havo op niveau 7, …) en past zich per vraag aan: na een fout een niveau lager, na twee goed achter elkaar een niveau hoger.
 4. Oefen met "Verder oefenen". Bij elk antwoord kies je **Zeker!** of **Gok?**. Een fout antwoord geeft uitleg, een uitwerking en daarna een spiegelvraag.
 5. Staan alle vier domeinen op 80%, dan gaat de **rekentoets** open. Haal je die (elk domein en het totaal ≥ 80%), dan ga je naar het volgende niveau.
-6. Op een ander apparaat: kies "Ik heb al een account" en vul je ID en herstelcode in.
+6. Van groep of klas gewisseld? Via het account-scherm › *groep of klas wijzigen*.
+7. Op een ander apparaat: kies "Ik heb al een account" en vul je ID en herstelcode in.
 
 ## Extra's voor leerlingen
 - **Rekenfit (2 minuten):** kale sommen op niveau (tafels, ×10, breuk–komma–procent, …). Goed als warming-up aan het begin van de les.
