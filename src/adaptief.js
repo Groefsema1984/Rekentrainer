@@ -128,7 +128,7 @@ function itemVoor(id){ const x=ldS(id); return maakItem(id,{trede:x.tr===0?3:x.t
 // ---------- niveau omlaag ----------
 // als op het huidige niveau 24 zelfstandige vragen gemaakt zijn en minder dan 40% goed is, gaat de leerling een niveau terug
 function checkNiveauOmlaag(){
-  if(!S.niv||S.niv<=1||S.recNiv!==S.niv||S.rec.length<24) return false;
+  if(!S.niv||S.niv<=nivMin()||S.recNiv!==S.niv||S.rec.length<24) return false;
   const p=S.rec.reduce((a,b)=>a+b,0)/S.rec.length;
   if(p>=.4) return false;
   const van=S.niv; S.niv=van-1; S.rec=[]; S.recNiv=S.niv;
@@ -145,7 +145,7 @@ const BADGES = [
   {id:'fb10',e:'🧹',naam:'Opruimer',uit:'10 fouten uit je foutenbank opgelost',test:()=>Object.values(S.fb).filter(f=>f.opgelost).length>=10},
   {id:'zilver4',e:'🎯',naam:'Klaar voor de check',uit:'Alle vier domeinen op zilver',test:()=>S.niv&&DOMEINEN.every(d=>domB(S.niv,d.id)>=80)},
   {id:'dip1',e:'🎓',naam:'Eerste diploma',uit:'Een rekentoets gehaald',test:()=>Object.keys(S.diplomas).length>=1},
-  {id:'2f',e:'🏅',naam:'2F gehaald',uit:'Rekentoets van Niveau 4 gehaald',test:()=>!!S.diplomas[4]},
-  {id:'3f',e:'🏆',naam:'3F gehaald',uit:'Rekentoets van Niveau 8 gehaald',test:()=>!!S.diplomas[8]}
+  {id:'2f',e:'🏅',naam:'2F gehaald',uit:'Rekentoets van Niveau 8 gehaald',test:()=>!!S.diplomas[8]},
+  {id:'3f',e:'🏆',naam:'3F gehaald',uit:'Rekentoets van Niveau 12 gehaald',test:()=>!!S.diplomas[12]}
 ];
 function badgesBijwerken(){ BADGES.forEach(b=>{ if(!S.badges.includes(b.id)&&b.test()){ S.badges=S.badges.concat([b.id]); setTimeout(()=>melding(`${b.e} Badge: ${b.naam}`),600) } }) }

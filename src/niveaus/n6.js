@@ -2,7 +2,7 @@
 const SUP = n => String(n).split('').map(c=>'⁰¹²³⁴⁵⁶⁷⁸⁹⁻'['0123456789-'.indexOf(c)]).join('');
 const wn = (m,n) => `${nl(m)} × 10${SUP(n)}`;           // wetenschappelijke notatie als tekst
 // ---------- Getallen ----------
-L({id:'G6.wetnot',niv:6,dom:'G',sub:'getalbegrip',naam:'Wetenschappelijke notatie',
+L({id:'G6.wetnot',niv:10,dom:'G',sub:'getalbegrip',naam:'Wetenschappelijke notatie',
   uitleg:'Grote getallen schrijf je kort als getal × macht van 10. 4 500 000 = 4,5 × 10⁶: de komma schuift 6 plaatsen. Het eerste getal ligt altijd tussen 1 en 10.',
   gen(r){ const m=r.pick([1.2,2.5,3.2,4.5,6,7.8,9.1,1.05,8.4]),n=r.int(3,9); return {m,n,x:rondaf(m*10**n,0),type:r.pick(['getal','exp']),c:r.pick(['Een land heeft','Een filmpje heeft','Een game is','De zon staat op'])} },
   vraag:v=>v.type==='getal'?`Een getal is in wetenschappelijke notatie <b>${wn(v.m,v.n)}</b>. Schrijf het als gewoon getal.`:`Je schrijft <b>${nl(v.x)}</b> in wetenschappelijke notatie als ${nl(v.m)} × 10<sup>?</sup>. Wat is de exponent?`,
@@ -12,7 +12,7 @@ L({id:'G6.wetnot',niv:6,dom:'G',sub:'getalbegrip',naam:'Wetenschappelijke notati
   anders:v=>`Elke keer × 10 schuift de komma één plaats. ${nl(v.m)} → ${[1,2,3].map(i=>nl(rondaf(v.m*10**i,2))).join(' → ')} → … Na ${v.n} keer heb je ${nl(v.x)}.`,
   koppel:(v,r)=>({vraag:'Koppel de getallen die even groot zijn.',paren:r.shuffle([['3 × 10³','3000'],['3 × 10⁴','30 000'],['3,5 × 10³','3500'],['3,5 × 10⁴','35 000'],['3 × 10⁶','3 000 000'],['3,5 × 10⁶','3 500 000']]).slice(0,4)})
 });
-L({id:'G6.rekenvolgorde',niv:6,dom:'G',sub:'bewerkingen',naam:'Rekenvolgorde met machten',verwar:['G3.volgorde'],
+L({id:'G6.rekenvolgorde',niv:10,dom:'G',sub:'bewerkingen',naam:'Rekenvolgorde met machten',verwar:['G3.volgorde'],
   uitleg:'Volgorde: eerst haakjes, dan machten, dan × en :, dan + en −. 3 + 2 × 4² = 3 + 2 × 16 = 35.',
   gen(r){ const t=r.pick(['a','b','c']); let a,b,c; do{ a=r.int(2,9);b=r.int(2,9);c=r.int(2,6) }while(t==='c'&&a*a<=b*c); return {t,a,b,c} },
   vraag:v=>`Reken uit: <b>${v.t==='a'?`${v.a} + ${v.b} × ${v.c}²`:v.t==='b'?`(${v.a} + ${v.b})² − ${v.c}`:`${v.a}² − ${v.b} × ${v.c}`}</b>`,
@@ -22,7 +22,7 @@ L({id:'G6.rekenvolgorde',niv:6,dom:'G',sub:'bewerkingen',naam:'Rekenvolgorde met
   anders:v=>`Zet in gedachten haakjes om wat eerst moet. Machten binden het sterkst, dan × en :, en pas als laatste + en −.`,
   volgorde:true
 });
-L({id:'G6.breukrekenen',niv:6,dom:'G',sub:'breuken',naam:'Breuken vermenigvuldigen en delen',toon:x=>fr(x),verwar:['G5.breukdelen'],
+L({id:'G6.breukrekenen',niv:10,dom:'G',sub:'breuken',naam:'Breuken vermenigvuldigen en delen',toon:x=>fr(x),verwar:['G5.breukdelen'],
   uitleg:'Breuken vermenigvuldigen: teller × teller en noemer × noemer. ⅔ × ¾ = 6/12 = ½. Delen door een breuk: vermenigvuldigen met het omgekeerde.',
   gen(r){ const B=[[1,2],[1,3],[2,3],[1,4],[3,4],[2,5],[3,5],[5,6],[3,8]]; let p,q; do{ p=r.pick(B);q=r.pick(B) }while(p===q); return {t1:p[0],n1:p[1],t2:q[0],n2:q[1],op:r.pick(['×',':'])} },
   vraag:v=>`Reken uit en schrijf als breuk: <b>${breuk(v.t1,v.n1)} ${v.op} ${breuk(v.t2,v.n2)}</b>`,
@@ -31,7 +31,7 @@ L({id:'G6.breukrekenen',niv:6,dom:'G',sub:'breuken',naam:'Breuken vermenigvuldig
   fouten:v=>v.op==='×'?[[(v.t1+v.t2)/(v.n1+v.n2),'Bij vermenigvuldigen tel je tellers en noemers niet op.'],[(v.t1*v.t2)/v.n1,'Vermenigvuldig ook de noemers.'],[(v.t1*v.n2)/(v.n1*v.t2),'Je deelde. Hier moet je vermenigvuldigen.']]:[[(v.t1*v.t2)/(v.n1*v.n2),'Je vermenigvuldigde. Delen = vermenigvuldigen met het omgekeerde.'],[(v.n1*v.t2)/(v.t1*v.n2),'Je draaide de verkeerde breuk om. Alleen de tweede breuk draai je om.']],
   anders:v=>v.op==='×'?`"${fr(v.t1/v.n1)} × ${fr(v.t2/v.n2)}" betekent ${fr(v.t1/v.n1)} deel van ${fr(v.t2/v.n2)}. Neem eerst ${fr(v.t2/v.n2)} van een pizza en daarvan weer ${fr(v.t1/v.n1)}: dat stuk is kleiner dan allebei.`:`"${fr(v.t1/v.n1)} : ${fr(v.t2/v.n2)}" betekent: hoe vaak past ${fr(v.t2/v.n2)} in ${fr(v.t1/v.n1)}? Maak eerst dezelfde noemer, dan kun je de tellers delen.`
 });
-L({id:'G6.wortelschatten',niv:6,dom:'G',sub:'negatief',naam:'Wortel uitrekenen in een context',rm:true,dec:1,verwar:['G5.wortel'],
+L({id:'G6.wortelschatten',niv:10,dom:'G',sub:'negatief',naam:'Wortel uitrekenen in een context',rm:true,dec:1,verwar:['G5.wortel'],
   uitleg:'Bij een vierkant is zijde × zijde = oppervlakte. Ken je de oppervlakte, dan is de zijde de wortel: √oppervlakte. Schat eerst tussen welke hele getallen het ligt.',
   gen(r){ let x; do{ x=r.int(20,500) }while(Number.isInteger(Math.sqrt(x))); return {x,a:Math.floor(Math.sqrt(x)),c:r.pick(['grasveld','schoolplein','zwembad','moestuintje','podium'])} },
   vraag:v=>`Een vierkant ${v.c} heeft een oppervlakte van ${v.x} m². Hoe lang is één zijde? Rond af op 1 decimaal.`,
@@ -41,7 +41,7 @@ L({id:'G6.wortelschatten',niv:6,dom:'G',sub:'negatief',naam:'Wortel uitrekenen i
   anders:v=>`Probeer: ${nl(v.a+.5)} × ${nl(v.a+.5)} = ${nl((v.a+.5)**2)}. Is dat meer of minder dan ${v.x}? Zo kom je steeds dichterbij. De rekenmachine doet het met √.`
 });
 // ---------- Verhoudingen ----------
-L({id:'V6.groeinperioden',niv:6,dom:'V',sub:'groei',naam:'Groei over meerdere perioden',rm:true,verwar:['V5.groeifactor','V5.tweekortingen'],
+L({id:'V6.groeinperioden',niv:10,dom:'V',sub:'groei',naam:'Groei over meerdere perioden',rm:true,verwar:['V5.groeifactor','V5.tweekortingen'],
   uitleg:'Groeit iets elke periode met hetzelfde percentage, dan vermenigvuldig je elke periode met dezelfde groeifactor. Na n perioden: beginwaarde × groeifactorⁿ.',
   gen(r){ const t=r.pick(['sparen','auto','volgers']); const D={sparen:{b:r.pick([500,1000,1500,2000,2500]),p:r.pick([1.5,2,2.5,3,4]),n:r.int(3,10),up:true,d:2,eh:'€',per:'jaar',zin:'Je zet {b} op een spaarrekening met {p}% rente per jaar (rente op rente). Hoeveel staat er na {n} jaar op?'},
     auto:{b:r.pick([12000,15000,18000,20000,24000]),p:r.pick([10,12,15,20]),n:r.int(2,6),up:false,d:2,eh:'€',per:'jaar',zin:'Een auto kost nieuw {b}. De waarde daalt elk jaar met {p}%. Wat is hij na {n} jaar waard?'},
@@ -54,7 +54,7 @@ L({id:'V6.groeinperioden',niv:6,dom:'V',sub:'groei',naam:'Groei over meerdere pe
   anders:v=>({tekst:'Maak een tabel per '+v.per+'. Elke stap is × '+nl(v.g)+'.',tabel:{kop:[v.per,'waarde'],rijen:[0,1,2,3].map(i=>[i,nl(rondaf(v.b*v.g**i,2))]).concat([[v.n,nl(rondaf(v.b*v.g**v.n,v.d))]])}}),
   sab:v=>({intro:`Beginwaarde ${nl(v.b)}, ${v.per==='jaar'?'elk':'elke'} ${v.per} ${nl(v.p)}% ${v.up?'erbij':'eraf'}. Sem rekent de waarde na ${v.n} keer uit.`,stappen:[`${nl(v.p)}% van ${nl(v.b)} is ${nl(v.b*v.p/100)}.`,`Na ${v.n} keer is dat ${v.n} × ${nl(v.b*v.p/100)} = ${nl(v.n*v.b*v.p/100)} ${v.up?'erbij':'eraf'}.`,`Antwoord: ${nl(rondaf(v.b*(1+(v.up?1:-1)*v.n*v.p/100),v.d))}`],fout:1,juist:rondaf(v.b*v.g**v.n,v.d),check:rondaf(v.b*(1+(v.up?1:-1)*v.n*v.p/100),v.d),eenheid:v.eh,vraag:'Wat is de waarde echt?'+(v.d===0?' (rond af op een heel getal)':v.d===2?' (rond af op 2 decimalen)':''),uitleg:'Het percentage gaat '+(v.per==='jaar'?'elk':'elke')+' '+v.per+' over de nieuwe waarde. Daarom vermenigvuldig je met de groeifactor tot de macht '+v.n+'.',goed:[`Groeifactor ${nl(v.g)}`,`${nl(v.b)} × ${nl(v.g)}${SUP(v.n)} = ${nl(rondaf(v.b*v.g**v.n,v.d))}`]})
 });
-L({id:'V6.btwexcl',niv:6,dom:'V',sub:'procent',naam:'Prijs zonder btw terugrekenen',rm:true,verwar:['V4.terugrekenen','V4.btw'],
+L({id:'V6.btwexcl',niv:10,dom:'V',sub:'procent',naam:'Prijs zonder btw terugrekenen',rm:true,verwar:['V4.terugrekenen','V4.btw'],
   uitleg:'De btw gaat over de prijs zónder btw. Een prijs met 21% btw is dus 121% van de prijs zonder btw. Deel door 1,21 (of door 1,09 bij 9% btw).',
   gen(r){ const b=r.pick([21,21,9]); const ex=b===21?r.pick([20,40,50,80,100,150,200,250,300,500]):r.pick([4,5,8,10,12,20,25,40]); return {b,ex,inc:rondaf(ex*(100+b)/100,2),d:b===21?r.pick(['koptelefoon','spelcomputer','fiets','gamestoel']):r.pick(['taart','boodschappen','schoolkantine-bestelling','lunch'])} },
   vraag:v=>`De ${v.d} kost ${eur(v.inc)} inclusief ${v.b}% btw. Wat is de prijs zonder btw?`,
@@ -65,7 +65,7 @@ L({id:'V6.btwexcl',niv:6,dom:'V',sub:'procent',naam:'Prijs zonder btw terugreken
   tabel:v=>({kop:['Procent','Bedrag (€)'],rijen:[[100+v.b,v.inc],[100,v.ex]],leeg:[[1,1]]}),
   sab:v=>({intro:`De ${v.d} kost ${eur(v.inc)} inclusief ${v.b}% btw. Lars rekent de prijs zonder btw uit.`,stappen:[`De btw is ${v.b}% van ${eur(v.inc)}.`,`${nl(v.b/100)} × ${nl(v.inc)} = ${nl(rondaf(v.inc*v.b/100,2))}`,`Zonder btw: ${eur(rondaf(v.inc*(100-v.b)/100,2))}`],fout:0,juist:v.ex,check:rondaf(v.inc*(100-v.b)/100,2),eenheid:'€',vraag:'Wat is de prijs zonder btw echt?',uitleg:'De btw is '+v.b+'% van de prijs zonder btw, niet van de prijs met btw. Deel door '+nl((100+v.b)/100)+'.',goed:[`${eur(v.inc)} = ${100+v.b}%`,`${nl(v.inc)} : ${nl((100+v.b)/100)} = ${eur(v.ex)}`]})
 });
-L({id:'V6.wisselkoers',niv:6,dom:'V',sub:'vtabel',naam:'Wisselkoersen',rm:true,dec:2,
+L({id:'V6.wisselkoers',niv:10,dom:'V',sub:'vtabel',naam:'Wisselkoersen',rm:true,dec:2,
   uitleg:'Een wisselkoers is een verhouding: 1 euro = 1,08 dollar. Van euro naar dollar: keer 1,08. Van dollar naar euro: delen door 1,08. Controleer: in de munt met het kleinere bedrag per eenheid krijg je meer.',
   gen(r){ const [munt,k]=r.pick([['Amerikaanse dollar',1.08],['Britse pond',0.85],['Zwitserse frank',0.95],['Turkse lira',35],['Japanse yen',160],['Zweedse kroon',11.5]]); return {munt,k,naarEur:r.ja(),b:r.pick([20,50,75,120,250,400]),c:r.pick(['voor een concertkaartje','voor je vakantie','voor een game in een buitenlandse webshop','voor souvenirs'])} },
   vraag:v=>v.naarEur?`Je betaalt ${nl(v.b)} ${v.munt} ${v.c}. De koers is 1 euro = ${nl(v.k)} ${v.munt}. Hoeveel euro is dat (op 2 decimalen)?`:`Je wisselt ${eur(v.b)} ${v.c}. De koers is 1 euro = ${nl(v.k)} ${v.munt}. Hoeveel ${v.munt} krijg je?`,
@@ -75,7 +75,7 @@ L({id:'V6.wisselkoers',niv:6,dom:'V',sub:'vtabel',naam:'Wisselkoersen',rm:true,d
   anders:v=>({tekst:'Zet het in een verhoudingstabel. Wat je met de ene rij doet, doe je met de andere.',tabel:{kop:['euro',v.munt],rijen:v.naarEur?[['1',nl(v.k)],['?',nl(v.b)]]:[['1',nl(v.k)],[nl(v.b),'?']]}}),
   tabel:v=>v.naarEur?{kop:['Euro',v.munt],rijen:[[1,v.k],[rondaf(v.b/v.k,2),v.b]],leeg:[[1,0]]}:{kop:['Euro',v.munt],rijen:[[1,v.k],[v.b,rondaf(v.b*v.k,2)]],leeg:[[1,1]]}
 });
-L({id:'V6.verdelen3',niv:6,dom:'V',sub:'vtabel',naam:'Verdelen in een verhouding met drie delen',rm:true,verwar:['V5.mengverhouding'],
+L({id:'V6.verdelen3',niv:10,dom:'V',sub:'vtabel',naam:'Verdelen in een verhouding met drie delen',rm:true,verwar:['V5.mengverhouding'],
   uitleg:'Bij een verhouding 2 : 3 : 5 zijn er 2 + 3 + 5 = 10 delen. Reken uit hoeveel 1 deel is en vermenigvuldig.',
   gen(r){ const a=r.int(1,4),b=r.int(1,5),c=r.int(2,6),k=r.pick([5,10,12,15,20,25,40]); const [n1,n2,n3]=r.shuffle(NAMEN).slice(0,3); return {a,b,c,k,T:k*(a+b+c),n1,n2,n3,wat:r.pick(['het prijzengeld van een gametoernooi','de opbrengst van een sponsorloop','de winst van een schoolproject'])} },
   vraag:v=>`${v.n1}, ${v.n2} en ${v.n3} verdelen ${v.wat}: ${eur(v.T)}. Ze verdelen in de verhouding ${v.a} : ${v.b} : ${v.c}. Hoeveel krijgt ${v.n2}?`,
@@ -86,7 +86,7 @@ L({id:'V6.verdelen3',niv:6,dom:'V',sub:'vtabel',naam:'Verdelen in een verhouding
   tabel:v=>({kop:['Delen','Bedrag (€)'],rijen:[[v.a+v.b+v.c,v.T],[1,v.k],[v.b,v.b*v.k]],leeg:[[1,1],[2,1]]})
 });
 // ---------- Meten en meetkunde ----------
-L({id:'M6.pythagoras',niv:6,dom:'M',sub:'meetkunde',naam:'Stelling van Pythagoras',rm:true,dec:1,
+L({id:'M6.pythagoras',niv:10,dom:'M',sub:'meetkunde',naam:'Stelling van Pythagoras',rm:true,dec:1,
   uitleg:'In een rechthoekige driehoek geldt: a² + b² = c², waarbij c de schuine zijde is (tegenover de rechte hoek). Schuine zijde zoeken: optellen en wortel. Rechthoekszijde zoeken: aftrekken en wortel.',
   gen(r){ const t=r.pick(['schuin','schuin','zijde']); const a=r.int(3,12); let b,c; if(t==='schuin'){ do{ b=r.int(4,16) }while(b===a) } else c=r.int(a+2,a+12);
     return {t,a,b,c,ctx:r.pick(t==='schuin'?['Een rechthoekig grasveld is {a} m bij {b} m. Je steekt schuin over. Hoe lang is die route?','Een tv-scherm is {a} dm hoog en {b} dm breed. Hoe lang is de diagonaal?','Een skatehelling is {a} dm hoog en {b} dm lang (vlakke kant). Hoe lang is de schuine plank?']:['Een ladder van {c} m staat tegen een muur. De voet staat {a} m van de muur. Hoe hoog komt de ladder?','Een vlieger hangt aan een touw van {c} m. Je staat {a} m van het punt recht onder de vlieger. Hoe hoog hangt hij?'])} },
@@ -97,7 +97,7 @@ L({id:'M6.pythagoras',niv:6,dom:'M',sub:'meetkunde',naam:'Stelling van Pythagora
   anders:v=>`Teken de driehoek en zet een boogje bij de rechte hoek. De langste zijde ligt daar tegenover. ${v.t==='schuin'?'Die zoek je: kwadraten optellen, dan de wortel.':'Die ken je al ('+v.c+'): kwadraten aftrekken, dan de wortel.'} Controle: de schuine zijde is altijd de langste.`,
   sab:v=>v.t==='schuin'?({intro:`Een rechthoek is ${v.a} bij ${v.b}. Mila rekent de diagonaal uit.`,stappen:[`De diagonaal gaat langs beide zijden.`,`${v.a} + ${v.b} = ${v.a+v.b}`,`Antwoord: ${v.a+v.b}`],fout:0,juist:rondaf(Math.sqrt(v.a*v.a+v.b*v.b),1),check:v.a+v.b,vraag:'Hoe lang is de diagonaal echt (1 decimaal)?',uitleg:'Schuin oversteken is korter dan langs de randen lopen. Gebruik Pythagoras: a² + b² = c².',goed:[`${v.a}² + ${v.b}² = ${v.a*v.a+v.b*v.b}`,`√${v.a*v.a+v.b*v.b} ≈ ${nl(rondaf(Math.sqrt(v.a*v.a+v.b*v.b),1))}`]}):({intro:`Een ladder van ${v.c} m staat ${v.a} m van de muur. Mila rekent uit hoe hoog hij komt.`,stappen:[`${v.c}² + ${v.a}² = ${v.c*v.c+v.a*v.a}`,`√${v.c*v.c+v.a*v.a} ≈ ${nl(rondaf(Math.sqrt(v.c*v.c+v.a*v.a),1))}`,`Antwoord: ${nl(rondaf(Math.sqrt(v.c*v.c+v.a*v.a),1))} m`],fout:0,juist:rondaf(Math.sqrt(v.c*v.c-v.a*v.a),1),check:rondaf(Math.sqrt(v.c*v.c+v.a*v.a),1),eenheid:'m',vraag:'Hoe hoog komt de ladder echt (1 decimaal)?',uitleg:'De ladder is de schuine zijde. Dan trek je de kwadraten af. De hoogte kan nooit langer zijn dan de ladder.',goed:[`${v.c}² − ${v.a}² = ${v.c*v.c-v.a*v.a}`,`√${v.c*v.c-v.a*v.a} ≈ ${nl(rondaf(Math.sqrt(v.c*v.c-v.a*v.a),1))}`]})
 });
-L({id:'M6.prisma',niv:6,dom:'M',sub:'inhoud',naam:'Inhoud van een prisma',rm:true,verwar:['M5.cilinder'],
+L({id:'M6.prisma',niv:10,dom:'M',sub:'inhoud',naam:'Inhoud van een prisma',rm:true,verwar:['M5.cilinder'],
   uitleg:'Inhoud van een prisma = oppervlakte grondvlak × hoogte (lengte). Is het grondvlak een driehoek, dan is dat ½ × basis × hoogte van de driehoek.',
   gen(r){ const t=r.pick(['doos','tent']); return t==='doos'?{t,b:r.pick([4,5,6,8]),h:r.pick([3,4,5,6]),l:r.pick([15,20,25,30]),eh:cm3,c:'Een chocoladedoos heeft de vorm van een driehoekig prisma. De driehoek is {b} cm breed en {h} cm hoog. De doos is {l} cm lang.'}:{t,b:r.pick([2,3,4]),h:r.pick([1.5,2,2.5]),l:r.pick([2,3,4]),eh:m3,c:'Een tent heeft de vorm van een driehoekig prisma. De voorkant is een driehoek van {b} m breed en {h} m hoog. De tent is {l} m lang.'} },
   vraag:v=>v.c.replace('{b}',nl(v.b)).replace('{h}',nl(v.h)).replace('{l}',nl(v.l))+' Wat is de inhoud?',
@@ -106,7 +106,7 @@ L({id:'M6.prisma',niv:6,dom:'M',sub:'inhoud',naam:'Inhoud van een prisma',rm:tru
   fouten:v=>[[rondaf(v.b*v.h*v.l,2),'Je vergat ½: het grondvlak is een driehoek, geen rechthoek.'],[rondaf(v.b*v.h/2,3),'Dat is alleen de oppervlakte van de driehoek. Vermenigvuldig nog met de lengte.'],[rondaf(v.b*v.h/2*v.l/3,2),'Delen door 3 hoort bij een piramide, niet bij een prisma.']],
   anders:v=>`Een prisma is een stapel gelijke plakjes. Eén plakje van 1 ${v.eh===cm3?'cm':'m'} dik heeft de vorm van de driehoek (½ × ${nl(v.b)} × ${nl(v.h)}). Er liggen ${nl(v.l)} plakjes achter elkaar.`
 });
-L({id:'M6.inhoudeenheden',niv:6,dom:'M',sub:'eenheden',naam:'Inhoudsmaten in grote stappen',rm:true,dec:4,verwar:['M4.inhoudmaten'],
+L({id:'M6.inhoudeenheden',niv:10,dom:'M',sub:'eenheden',naam:'Inhoudsmaten in grote stappen',rm:true,dec:4,verwar:['M4.inhoudmaten'],
   uitleg:'Bij inhoud is elke stap in het metriek stelsel × 1000: 1 m³ = 1000 dm³ = 1 000 000 cm³. 1 dm³ = 1 liter en 1 cm³ = 1 ml.',
   gen(r){ const [u1,u2,f]=r.pick([['m³','liter',1000],['m³','cm³',1000000],['dm³','cm³',1000],['liter','ml',1000],['liter','cl',100],['m³','dl',10000],['cl','ml',10]]); const y=r.pick([0.25,0.5,1.2,2.5,3.75,4.5,0.08,6]); const omlaag=r.ja(); return omlaag?{van:u1,naar:u2,x:y,y:rondaf(y*f,6),f,omlaag}:{van:u2,naar:u1,x:rondaf(y*f,6),y,f,omlaag} },
   vraag:v=>`Reken om: ${nl(v.x)} ${v.van} = … ${v.naar}`,
@@ -116,7 +116,7 @@ L({id:'M6.inhoudeenheden',niv:6,dom:'M',sub:'eenheden',naam:'Inhoudsmaten in gro
   anders:v=>({tekst:'Gebruik het inhoudstrapje. Elke trede is × 1000 (bij liters en ml: dl en cl tussendoor, elk × 10).',tabel:{kop:['m³','dm³ = liter','cm³ = ml'],rijen:[['1','1000','1 000 000']]}}),
   koppel:(v,r)=>({vraag:'Koppel de inhouden die even groot zijn.',paren:r.shuffle([['2,5 m³','2500 liter'],['0,5 m³','500 000 cm³'],['3 liter','300 cl'],['75 cl','0,75 liter'],['4 dm³','4000 ml'],['0,2 m³','2000 dl']]).slice(0,4)})
 });
-L({id:'M6.schaalopp',niv:6,dom:'M',sub:'oppervlak',naam:'Oppervlakte op een kaart met schaal',rm:true,dec:4,verwar:['M5.vergroten','V3.schaal'],
+L({id:'M6.schaalopp',niv:10,dom:'M',sub:'oppervlak',naam:'Oppervlakte op een kaart met schaal',rm:true,dec:4,verwar:['M5.vergroten','V3.schaal'],
   uitleg:'Reken eerst de lengtes om naar echte lengtes in km. Vermenigvuldig dan pas. Doe je het andersom, dan moet je de schaal twee keer gebruiken (in de lengte én in de breedte).',
   gen(r){ return {s:r.pick([10000,20000,50000,100000]),a:r.int(2,8),b:r.int(2,8),c:r.pick(['natuurgebied','meer','vakantiepark','bos','festivalterrein'])} },
   vraag:v=>`Op een kaart met schaal 1 : ${nl(v.s)} is een ${v.c} een rechthoek van ${v.a} cm bij ${v.b} cm. Hoeveel km² is het in het echt?`,
@@ -126,7 +126,7 @@ L({id:'M6.schaalopp',niv:6,dom:'M',sub:'oppervlak',naam:'Oppervlakte op een kaar
   anders:v=>`1 cm op de kaart is ${nl(v.s/100000)} km echt. Een vierkantje van 1 cm bij 1 cm op de kaart is dus ${nl(v.s/100000)} × ${nl(v.s/100000)} = ${nl((v.s/100000)**2)} km². Het gebied is ${v.a*v.b} van die vierkantjes.`
 });
 // ---------- Verbanden ----------
-L({id:'B6.tweepunten',niv:6,dom:'B',sub:'formules',naam:'Formule uit twee gegevens',rm:true,verwar:['B5.tabelformule'],
+L({id:'B6.tweepunten',niv:10,dom:'B',sub:'formules',naam:'Formule uit twee gegevens',rm:true,verwar:['B5.tabelformule'],
   uitleg:'Bij een lineair verband: toename per stap = (verschil in uitkomst) : (verschil in invoer). Het vaste bedrag reken je terug vanuit één gegeven.',
   gen(r){ const a=r.pick([1.5,2,2.5,3,0.5]),b=r.pick([3,4,5,6,7.5]); const x1=r.int(2,8),x2=x1+r.int(3,9),n=r.pick([15,20,25,30]); const c=r.pick([['Een taxirit van','km','kost'],['Een feestzaal huren voor','personen','kost'],['Een bowlingavond met','spelletjes','kost']]); return {a,b,x1,x2,n,y1:rondaf(a*x1+b,2),y2:rondaf(a*x2+b,2),c} },
   vraag:v=>`${v.c[0]} ${v.x1} ${v.c[1]} ${v.c[2]} ${eur(v.y1)}. ${v.c[0]} ${v.x2} ${v.c[1]} ${v.c[2]} ${eur(v.y2)}. Er is een vast bedrag plus een bedrag per stuk. Wat kost het voor ${v.n} ${v.c[1]}?`,
@@ -140,7 +140,7 @@ L({id:'B6.tweepunten',niv:6,dom:'B',sub:'formules',naam:'Formule uit twee gegeve
     fout:`${eur(v.y1)} : ${v.x1} = ${eur(rondaf(v.y1/v.x1,2))} per stuk, dus er is geen vast bedrag.`,
     kijkwijzer:['Is de prijs per stuk uit het verschil gehaald?','Is het vaste bedrag teruggerekend met alle stuks, niet met één?','Klopt de formule voor allebei de gegevens?']})
 });
-L({id:'B6.exptabel',niv:6,dom:'B',sub:'tabellen',naam:'Exponentiële groei in een tabel',rm:true,verwar:['B5.tabelformule'],
+L({id:'B6.exptabel',niv:10,dom:'B',sub:'tabellen',naam:'Exponentiële groei in een tabel',rm:true,verwar:['B5.tabelformule'],
   uitleg:'Bij lineaire groei komt er steeds hetzelfde getal bij. Bij exponentiële groei wordt het steeds met hetzelfde getal vermenigvuldigd: de groeifactor = waarde : vorige waarde.',
   gen(r){ return {b:r.pick([100,200,400,500,1000]),g:r.pick([1.1,1.2,1.5,2,0.8,0.5,0.9]),type:r.pick(['factor','verder']),n:r.int(5,7),c:r.pick([['Week','Aantal'],['Uur','Aantal bacteriën'],['Jaar','Waarde (€)'],['Dag','Views']])} },
   vraag:v=>`De waarden in de tabel groeien exponentieel.<div class="vtabel">${vtabelHtml(v.c,[0,1,2,3].map(t=>[t,nl(rondaf(v.b*v.g**t,2))]))}</div>${v.type==='factor'?'Wat is de groeifactor?':`Welke waarde hoort bij ${v.c[0].toLowerCase()} ${v.n}? Rond af op 2 decimalen.`}`,
@@ -150,7 +150,7 @@ L({id:'B6.exptabel',niv:6,dom:'B',sub:'tabellen',naam:'Exponentiële groei in ee
   anders:v=>`Kijk tussen twee kolommen: van ${nl(v.b)} naar ${nl(rondaf(v.b*v.g,2))} is × ${nl(v.g)}. Van ${nl(rondaf(v.b*v.g,2))} naar ${nl(rondaf(v.b*v.g*v.g,2))} ook. Dat is exponentieel.`,
   koppel:(v,r)=>({vraag:'Koppel elke tabel aan het soort groei.',paren:r.shuffle([['10, 20, 40, 80','× 2 per stap'],['10, 20, 30, 40','+ 10 per stap'],['80, 40, 20, 10','× 0,5 per stap'],['100, 110, 121, 133,1','× 1,1 per stap'],['100, 110, 120, 130','+ 10 per stap (vanaf 100)'],['50, 45, 40, 35','− 5 per stap']]).slice(0,4)})
 });
-L({id:'B6.snijpunt',niv:6,dom:'B',sub:'formules',naam:'Wanneer zijn twee abonnementen even duur?',rm:true,verwar:['B3.tweelijnen'],
+L({id:'B6.snijpunt',niv:10,dom:'B',sub:'formules',naam:'Wanneer zijn twee abonnementen even duur?',rm:true,verwar:['B3.tweelijnen'],
   uitleg:'Het ene abonnement heeft een hoog vast bedrag en een lage prijs per keer, het andere andersom. Het verschil in vast bedrag wordt elke keer kleiner met het verschil per keer. Deel het ene verschil door het andere.',
   gen(r){ const x0=r.int(5,30),p2=r.pick([0,1,2,2.5,3]),d=r.pick([1,1.5,2,2.5,4,5]),a1=r.pick([0,5,10,15]); const c=r.pick([['een sportschool','bezoeken','per bezoek'],['een fietsverhuur','dagen','per dag'],['een streamingdienst met huurfilms','films','per film']]); return {x0,p1:p2+d,p2,a1,a2:a1+x0*d,c} },
   vraag:v=>`Bij ${v.c[0]} kies je uit twee abonnementen. A: ${eur(v.a1)} vast plus ${eur(v.p1,true)} ${v.c[2]}. B: ${eur(v.a2)} vast plus ${eur(v.p2,true)} ${v.c[2]}. Bij hoeveel ${v.c[1]} zijn A en B even duur?`,
@@ -159,7 +159,7 @@ L({id:'B6.snijpunt',niv:6,dom:'B',sub:'formules',naam:'Wanneer zijn twee abonnem
   fouten:v=>[[v.a2-v.a1,'Dat is het verschil in vast bedrag. Deel nog door het verschil per keer.'],[rondaf((v.a2-v.a1)/(v.p1+v.p2),2),'Deel door het verschil per keer, niet door de som.'],[rondaf(v.a2/v.p1,2),'Je moet de verschillen gebruiken, niet één abonnement.']],
   anders:v=>({tekst:'Maak een tabel en kijk wanneer de bedragen gelijk zijn.',tabel:{kop:[v.c[1],'A (€)','B (€)'],rijen:[0,Math.round(v.x0/2),v.x0,v.x0+5].map(x=>[x,nl(v.a1+v.p1*x),nl(v.a2+v.p2*x)])}})
 });
-L({id:'B6.gemhalen',niv:6,dom:'B',sub:'statistiek',naam:'Welk cijfer moet je halen?',rm:true,dec:1,verwar:['B5.gewogen'],
+L({id:'B6.gemhalen',niv:10,dom:'B',sub:'statistiek',naam:'Welk cijfer moet je halen?',rm:true,dec:1,verwar:['B5.gewogen'],
   uitleg:'Gemiddelde × aantal = totaal. Reken uit welk totaal je nodig hebt, trek af wat je al hebt: dat moet je nog halen.',
   gen(r){ let c,k,G,s,x; do{ k=r.int(2,4); c=Array.from({length:k},()=>r.int(40,85)/10); G=r.pick([5.5,6,6.5,7,7.5]); s=rondaf(c.reduce((a,b)=>a+b,0),1); x=rondaf(G*(k+1)-s,1) }while(x<5.5||x>9.5); return {c,k,G,s,x,vak:r.pick(CTX.vak)} }, // haalbaar cijfer, geen 1,7
   vraag:v=>`Voor ${v.vak} heb je ${v.k} cijfers: ${v.c.map(nl).join(', ')}. Er komt nog één toets bij, die even zwaar telt. Welk cijfer moet je halen om precies een ${nl(v.G)} gemiddeld te staan?`,

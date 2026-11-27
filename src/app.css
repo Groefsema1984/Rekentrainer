@@ -1,4 +1,4 @@
-/* ===== Rekentrainer: Got It-indeling in Vellesan-huisstijl ===== */
+/* ===== RekenKracht: dashboard-indeling in de oranje/antraciet-huisstijl ===== */
 :root{--ring:#ebe9e4;--ring-leeg:#f1efea}
 body.th-nacht{--ring:#2b323d;--ring-leeg:#232a33}
 .klein{font-size:14px}
@@ -226,3 +226,16 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .schema .vtab input{width:84px}.schema td.zoek{font:900 20px var(--kop);color:var(--knop)}
 .schvak.goed{border-color:var(--goed);background:color-mix(in srgb,var(--goed) 12%,transparent)}.schvak.fout{border-color:var(--fout);background:color-mix(in srgb,var(--fout) 10%,transparent)}
 .pols{animation:pols .5s ease 2}@keyframes pols{50%{transform:scale(1.08);box-shadow:0 0 0 4px var(--acc)}}
+/* ===== vormgeving per fase van De RekenLijn: jonger = groter, rustiger en visueler ===== */
+body[data-fase=jong] .vraag,body[data-fase=midden] .vraag{line-height:1.55}
+body[data-fase=jong] .vraag{font-size:27px;font-weight:600}
+body[data-fase=midden] .vraag{font-size:23px}
+body[data-fase=jong] .optie,body[data-fase=midden] .optie{min-height:62px;font-size:21px;border-radius:14px}
+body[data-fase=jong] .optie{font-size:24px;min-height:72px}
+body[data-fase=jong] #antw,body[data-fase=midden] #antw{font-size:28px;min-height:62px;max-width:260px}
+body[data-fase=jong] .knop,body[data-fase=midden] .knop{border-radius:14px}
+body[data-fase=jong] #qknoppen .knop{min-height:62px;font-size:20px;padding:0 28px}
+body[data-fase=jong] .qkop .rmknop:first-of-type{font-size:16px;padding:10px 18px;background:var(--acc);color:#fff;border-color:var(--acc)}
+body[data-fase=jong] .kaart,body[data-fase=midden] .kaart{border-radius:18px}
+body[data-fase=jong] .stappen li{font-size:20px}
+body[data-fase=jong] .figuur svg{min-height:120px}

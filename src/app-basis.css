@@ -1,4 +1,4 @@
-/* ===== Vellesan College huisstijl: oranje #F08A09, antraciet #171C24, Raleway =====
+/* ===== RekenKracht huisstijl: oranje #F08A09, antraciet #171C24, Raleway =====
    Layout geïnspireerd op moderne nieuws-, shop- en sportdashboards: witte topnavigatie,
    grote fotokoppen met donkere overlay, fotokaarten en een dashboard in kolommen. */
 :root{--bg:#f4f4f2;--kaart:#ffffff;--ink:#171c24;--zacht:#626873;--lijn:#e5e3df;--acc:#f08a09;--knop:#e47f00;--donker:#171c24;--goed:#1f9e6e;--fout:#d6453d;--goud:#d9a521;--r:10px;
@@ -23,7 +23,8 @@ a{color:var(--knop)}
 .logo .lw{display:flex;flex-direction:column;line-height:1}
 .logo .lw b{font:800 23px/1 var(--kop);color:#4a4d52;letter-spacing:-.02em}
 body.th-nacht .logo .lw b{color:#e8eaee}
-.logo .lw small{font:700 11px/1.2 var(--kop);color:var(--acc);letter-spacing:.18em;margin-top:3px}
+.logo .lw small{font:700 11px/1.2 var(--kop);color:var(--acc);letter-spacing:.12em;margin-top:3px;text-transform:uppercase}
+.logo .lw b i{font-style:normal;color:var(--acc)}
 .logo .vak{font:700 14px/1.2 var(--kop);color:var(--zacht);border-left:1px solid var(--lijn);padding-left:12px;margin-left:4px}
 .topnav .rechts{margin-left:auto;display:flex;align-items:center;gap:10px}
 .profiel{display:flex;align-items:center;gap:10px;border:2px solid var(--acc);border-radius:8px;background:none;padding:5px 12px 5px 5px;color:var(--knop);font:700 15px var(--kop);max-width:240px}

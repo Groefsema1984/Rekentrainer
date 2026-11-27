@@ -1,6 +1,6 @@
-// Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
+// RekenKracht © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 /**
- * Rekentrainer Vellesan College – server (Google Apps Script)
+ * RekenKracht (De RekenLijn) – server (Google Apps Script)
  * Zelfde opzet als de economie-apps: leerling maakt een account met naam + klas,
  * krijgt een leerling-ID + herstelcode (6 cijfers), de docent kijkt mee met een docentcode.
  *
@@ -24,9 +24,11 @@
  */
 const CFG = {
   DOCENT_CODE: 'VERANDER-MIJ',          // code voor het docentenscherm in de app (zelf wijzigen!)
-  KLASSEN: ['1e klas', '2e klas', '3e klas', '4e klas', '5e klas', '6e klas', 'Thuis'], // gelijk aan KLASSEN in de app
+  // gelijk aan KLASSEN in de app: groep 3 t/m 8, daarna klas 1 t/m 4 vmbo, 1 t/m 5 havo, 1 t/m 6 vwo
+  KLASSEN: ['groep 3', 'groep 4', 'groep 5', 'groep 6', 'groep 7', 'groep 8',
+    'klas 1 vmbo', 'klas 2 vmbo', 'klas 3 vmbo', 'klas 4 vmbo', 'klas 1 havo', 'klas 2 havo', 'klas 3 havo', 'klas 4 havo', 'klas 5 havo',
+    'klas 1 vwo', 'klas 2 vwo', 'klas 3 vwo', 'klas 4 vwo', 'klas 5 vwo', 'klas 6 vwo'],
   // Het echte startniveau bepaalt de instaptoets in de app. Dit is alleen het startpunt van die toets.
-  START_NIVEAU: { '1e klas': 2, '2e klas': 3, '3e klas': 4, '4e klas': 5, '5e klas': 6, '6e klas': 6, 'Thuis': 2 },
   MAX_MISLUKT: 10,                      // na zoveel foute herstelpogingen wordt herstellen geblokkeerd
   // Automatische kwaliteitscontrole van opgavesjablonen (leerdoel + vraagvorm)
   ITEM_MIN: 30,                         // pas vanaf zoveel pogingen oordeelt het systeem
@@ -38,7 +40,36 @@ const CFG = {
 
 const DOMEINEN = { G: 'Getallen', V: 'Verhoudingen', M: 'Meten en meetkunde', B: 'Verbanden' };
 const DOMEIN_IDS = ['G', 'V', 'M', 'B'];
-const NIVEAUS = [1, 2, 3, 4, 5, 6, 7, 8];
+const NIVEAUS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];   // De RekenLijn: Niveau 1 (groep 3) t/m 12 (vwo-eindniveau)
+const VER = 2;
+// startniveau van de instaptoets per groep/klas (zelfde regel als in de app)
+function startNiveau_(klas) {
+  const g = String(klas).match(/^groep (\d)/); if (g) return Number(g[1]) - 2;
+  const m = String(klas).match(/^klas (\d) (\w+)/); if (!m) return 5;
+  const t = { vmbo: [4, 8], havo: [5, 11], vwo: [6, 12] }[m[2]] || [6, 12];
+  return Math.min(t[1], t[0] + Number(m[1]));
+}
+// oude namen (8 niveaus) → nieuwe namen
+const KLAS_OUD = { '1e klas': 'klas 1 vwo', '2e klas': 'klas 2 vwo', '3e klas': 'klas 3 vwo', '4e klas': 'klas 4 vwo', '5e klas': 'klas 5 vwo', '6e klas': 'klas 6 vwo', 'Thuis': 'groep 6' };
+// staat van 8 naar 12 niveaus: Niveau n wordt n + 4 (zelfde regel als migreer() in de app)
+function migreer_(st) {
+  if (!st || (st.ver || 1) >= VER) return st;
+  const p = function (x) { return typeof x === 'number' && x > 0 ? x + 4 : x; };
+  st.niv = p(st.niv); st.max = p(st.max); st.recNiv = p(st.recNiv);
+  if (st.plaatsing && st.plaatsing.niv) st.plaatsing.niv = p(st.plaatsing.niv);
+  const dom = {}; Object.keys(st.dom || {}).forEach(function (k) { const a = k.split('.'); dom[(Number(a[0]) + 4) + '.' + a[1]] = st.dom[k]; }); st.dom = dom;
+  const dip = {}; Object.keys(st.diplomas || {}).forEach(function (k) { dip[String(Number(k) + 4)] = st.diplomas[k]; }); st.diplomas = dip;
+  Object.keys(st.fb || {}).forEach(function (k) { const f = st.fb[k]; if (f && f.niv) f.niv = p(f.niv); });
+  (st.toetsen || []).forEach(function (t) { if (t && t.niveau) t.niveau = p(t.niveau); if (t && t.niv) t.niv = p(t.niv); });
+  if (KLAS_OUD[st.klas]) st.klas = KLAS_OUD[st.klas];
+  st.ver = VER; return st;
+}
+// leerling uit de oude opzet: klas omzetten en de oude voortgangsregels (oude niveaunummers) weghalen
+function migreerLeerling_(r) {
+  if (KLAS_OUD[r.klas]) { r.klas = KLAS_OUD[r.klas]; sheet_('Leerlingen').getRange(r.rij, 3).setValue(r.klas); }
+  const vg = sheet_('Voortgang'); const ids = kolom_(vg, 3).map(String);
+  for (let i = ids.length - 1; i >= 0; i--) if (ids[i].toUpperCase() === r.id.toUpperCase()) vg.deleteRow(i + 2);
+}
 
 const KOP = {
   Leerlingen: ['Leerling-ID', 'Naam', 'Klas', 'Herstelcode', 'Aangemaakt', 'Laatst gezien', 'Huidig niveau',
@@ -104,9 +135,11 @@ function doPost(e) {
     lock.waitLock(20000);
     const d = JSON.parse(e.postData.contents);
     switch (d.actie) {
-      case 'nieuw': return uit_(nieuw_(d));
-      case 'herstel': return uit_(herstel_(d));
-      case 'sync': return uit_(sync_(d));
+      case 'nieuw2': return uit_(nieuw_(d));
+      case 'herstel2': return uit_(herstel_(d));
+      case 'sync2': return uit_(sync_(d));
+      case 'nieuw': case 'herstel': case 'sync':   // oude app-versie (8 niveaus): niet meer mengen met de nieuwe niveaunummers
+        return uit_({ ok: false, fout: 'Er is een nieuwe versie van RekenKracht. Herlaad de pagina.' });
       case 'overzicht': return uit_(overzicht_(d));
       case 'leerling': return uit_(leerling_(d));
       case 'klasinstelling': return uit_(klasinstelling_(d));
@@ -132,7 +165,7 @@ function nieuw_(d) {
   if (naam.length < 3) throw new Error('Vul je voor- en achternaam in');
   if (CFG.KLASSEN.indexOf(klas) < 0) throw new Error('Onbekende klas');
   const sp = sheet_('Leerlingen'); const ids = kolom_(sp, 1); const codes = kolom_(sp, 4).map(String);
-  const pre = klas === 'Thuis' ? 'TH' : 'K' + (klas.match(/\d/) || ['0'])[0];   // K1 … K6, TH
+  const pre = /^groep/.test(klas) ? 'G' + klas.match(/\d/)[0] : ({ vmbo: 'VM', havo: 'HA', vwo: 'VW' }[klas.split(' ')[2]] || 'K') + klas.match(/\d/)[0];   // G3 … G8, VM1, HA2, VW6
   let id; do { id = pre + '-' + rndTekst_(4); } while (ids.indexOf(id) >= 0);
   let code; do { code = String(Math.floor(100000 + Math.random() * 900000)); } while (codes.indexOf("'" + code) >= 0 || codes.indexOf(code) >= 0);
   const nu = new Date(); const ki = klasInst_(klas);
@@ -145,8 +178,9 @@ function nieuw_(d) {
 function herstel_(d) {
   const r = zoek_(d.id); if (!r) throw new Error('Dit leerling-ID bestaat niet. Controleer je invoer.');
   controleerCode_(r, d.code);
-  const staat = leesStaat_(r.id) || {};
-  staat.id = r.id; staat.naam = r.naam; staat.klas = r.klas; staat.code = String(d.code);
+  let staat = leesStaat_(r.id) || {};
+  if (staat.niv && (staat.ver || 1) < VER) { staat = migreer_(staat); schrijfStaat_(r.id, staat); migreerLeerling_(r); }
+  staat.ver = VER; staat.id = r.id; staat.naam = r.naam; staat.klas = r.klas; staat.code = String(d.code);
   log_(r.id, r.naam, r.klas, 'herstel', '');
   return { ok: true, staat: staat, klasinst: klasInst_(r.klas) };
 }
@@ -160,10 +194,14 @@ function herstel_(d) {
 function sync_(d) {
   const r = zoek_(d.id); if (!r) throw new Error('Onbekend leerling-ID');
   controleerCode_(r, d.code);
-  const binnen = d.staat || {};
-  const oud = leesStaat_(r.id);
+  const binnen = migreer_(d.staat || {});
+  let oud = leesStaat_(r.id);
+  if (oud && (oud.ver || 1) < VER) { oud = migreer_(oud); migreerLeerling_(r); }
+  if (KLAS_OUD[r.klas]) migreerLeerling_(r);
+  // de leerling mag zelf zijn groep/klas aanpassen (nieuw schooljaar); de server controleert de naam
+  if (binnen.klas && binnen.klas !== r.klas && CFG.KLASSEN.indexOf(binnen.klas) >= 0) { sheet_('Leerlingen').getRange(r.rij, 3).setValue(binnen.klas); log_(r.id, r.naam, binnen.klas, 'klas', r.klas + ' → ' + binnen.klas); r.klas = binnen.klas; }
   const nieuw = oud ? mergeStaat_(oud, binnen) : binnen;
-  nieuw.id = r.id; nieuw.naam = r.naam; nieuw.klas = r.klas;   // naam en klas bepaalt de server
+  nieuw.id = r.id; nieuw.naam = r.naam; nieuw.klas = r.klas; nieuw.ver = VER;   // naam bepaalt de server
   delete nieuw.code;                                             // code niet in de data opslaan
   schrijfStaat_(r.id, nieuw);
 
@@ -244,7 +282,7 @@ function leesKlasInst_() {
 }
 function klasInst_(klas) {
   const k = leesKlasInst_()[klas] || {};
-  return { start: k.start || CFG.START_NIVEAU[klas] || 2, max: k.max || 8, toetsVrij: k.toetsVrij !== false };
+  return { start: k.start || startNiveau_(klas), max: k.max || 12, toetsVrij: k.toetsVrij !== false };
 }
 
 // =====================================================================
@@ -550,11 +588,11 @@ function merge_(a, b, pad) {
 }
 
 // =====================================================================
-// Testfunctie: draai in de editor om te controleren of alles werkt (maakt een testleerling 'Thuis')
+// Testfunctie: draai in de editor om te controleren of alles werkt (maakt een testleerling in de laatste klas)
 // =====================================================================
 function test() {
   const n = nieuw_({ naam: 'Test Leerling', klas: CFG.KLASSEN[CFG.KLASSEN.length - 1] });
-  const staat = { upd: Date.now(), niv: 3, max: 3, tijd: 120, aantal: 5,
+  const staat = { ver: 2, upd: Date.now(), niv: 3, max: 3, tijd: 120, aantal: 5,
     dom: { '3.G': { b: 64, st: 'oefenen', n: 5, l: Date.now(), u: Date.now() } }, fb: {}, toetsen: [] };
   const s = sync_({ id: n.id, code: n.code, staat: staat, events: [
     { t: 'fout', eid: 'test-' + Date.now(), niveau: 3, domein: 'G', leerdoel: 'G3.breuk-deel', opgave: 'N3-G-012',

@@ -3,7 +3,7 @@
 // wordt daaruit gemaakt met een seed; het antwoord wordt berekend (en in tools/controleer.js gecontroleerd).
 const LD = {}; const LDS = [];
 function L(def){
-  def.rm = def.niv<=2 ? false : !!def.rm;               // rekenmachine pas vanaf niveau 3, per leerdoel
+  def.rm = def.niv<=6 ? false : !!def.rm;               // rekenmachine uit op Niveau 1–6 (basisschool), daarna per leerdoel
   def.verwar = def.verwar||[];
   if(LD[def.id]) throw new Error('Dubbel leerdoel '+def.id);
   LD[def.id]=def; LDS.push(def); return def;

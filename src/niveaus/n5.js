@@ -1,6 +1,6 @@
 // ===== Niveau 5 · 2F → 3F · ongeveer 3e klas =====
 // ---------- Getallen ----------
-L({id:'G5.machten',niv:5,dom:'G',sub:'negatief',naam:'Machten uitrekenen',negatief:true,
+L({id:'G5.machten',niv:9,dom:'G',sub:'negatief',naam:'Machten uitrekenen',negatief:true,
   uitleg:'Een macht is herhaald vermenigvuldigen: 2⁵ = 2 × 2 × 2 × 2 × 2 = 32. Let op: (−3)² = 9, maar −3² = −(3 × 3) = −9.',
   gen(r){ const type=r.pick(['gewoon','gewoon','haakjes','zonder']); const a=type==='gewoon'?r.pick([2,3,4,5,10]):r.int(2,9); const n=type==='gewoon'?(a===10?r.int(3,6):a===2?r.int(4,8):r.int(2,4)):2; return {type,a,n} },
   vraag:v=>`Reken uit: <b>${v.type==='haakjes'?`(−${v.a})`:v.type==='zonder'?`−${v.a}`:v.a}<sup>${v.n}</sup></b>`,
@@ -9,7 +9,7 @@ L({id:'G5.machten',niv:5,dom:'G',sub:'negatief',naam:'Machten uitrekenen',negati
   fouten:v=>v.type==='gewoon'?[[v.a*v.n,`${v.a}<sup>${v.n}</sup> is niet ${v.a} × ${v.n}, maar ${v.n} keer ${v.a} met zichzelf vermenigvuldigen.`],[v.n**v.a,'Je hebt grondtal en exponent omgedraaid.'],[v.a**(v.n-1),'Tel hoe vaak je '+v.a+' opschrijft: '+v.n+' keer.']]:v.type==='haakjes'?[[-(v.a**2),'De haakjes horen erbij: (−'+v.a+') × (−'+v.a+') is positief.'],[-2*v.a,'Het is (−'+v.a+') keer zichzelf, niet keer 2.']]:[[v.a**2,'Zonder haakjes hoort het minteken niet bij de macht. Eerst '+v.a+'², dan min.'],[-2*v.a,'Het is '+v.a+' keer '+v.a+', niet keer 2.']],
   anders:v=>`Schrijf de macht helemaal uit als vermenigvuldiging. ${v.type!=='gewoon'?'Kijk goed of het minteken binnen of buiten de haakjes staat: alleen wat tussen de haakjes staat wordt gekwadrateerd.':''}`
 });
-L({id:'G5.breukdelen',niv:5,dom:'G',sub:'breuken',naam:'Delen door een breuk',dec:2,
+L({id:'G5.breukdelen',niv:9,dom:'G',sub:'breuken',naam:'Delen door een breuk',dec:2,
   uitleg:'Delen door een breuk = hoe vaak past die breuk erin? 3 : ¼ = 12, want in elke 1 passen 4 kwartjes. Rekenregel: delen door een breuk is vermenigvuldigen met het omgekeerde.',
   gen(r){ const [t,n]=r.pick([[1,4],[1,3],[1,2],[3,4],[2,3],[1,5],[1,8],[3,8]]); let a; do{ a=r.pick([2,3,4,5,6,9,12,1.5,2.5]) }while(Math.abs((a*n/t)-Math.round(a*n/t))>1e-9); return {t,n,a,c:r.pick([['liter limonade','glazen van','liter'],['kg chips','zakjes van','kg'],['uur','filmpjes van','uur'],['meter lint','stukjes van','meter']])} },
   vraag:v=>`Je hebt ${nl(v.a)} ${v.c[0]}. Hoeveel ${v.c[1]} ${breuk(v.t,v.n)} ${v.c[2]} kun je ervan maken?`,
@@ -18,7 +18,7 @@ L({id:'G5.breukdelen',niv:5,dom:'G',sub:'breuken',naam:'Delen door een breuk',de
   fouten:v=>[[rondaf(v.a*v.t/v.n,3),'Je vermenigvuldigde met de breuk. Dan krijg je minder, maar je moet tellen hoe vaak het erin past.'],[rondaf(v.a/v.n,3),'Kijk hoe vaak '+fr(v.t/v.n)+' in 1 past.'],[rondaf(v.a*v.n,2),v.t===1?'':'Let ook op de teller van de breuk.']].filter(x=>x[1]),
   anders:v=>({tekst:`Teken ${Math.ceil(v.a)} stroken en verdeel elke strook in stukjes van ${fr(v.t/v.n)}. Tel de stukjes.`,svg:FIG.strook(v.n,v.n,`1 geheel = ${nl(v.n/v.t)} stukjes van ${fr(v.t/v.n)}`)})
 });
-L({id:'G5.schatten',niv:5,dom:'G',sub:'getalbegrip',naam:'Schatten en ordegrootte',
+L({id:'G5.schatten',niv:9,dom:'G',sub:'getalbegrip',naam:'Schatten en ordegrootte',
   uitleg:'Rond de getallen af op één cijfer (plus nullen) en reken daarmee. 398 × 52 ≈ 400 × 50 = 20 000.',
   gen(r){ const a=r.int(2,9)*10**r.int(1,3)+r.int(-9,9),b=r.int(2,9)*10**r.int(1,2)+r.int(-4,4); return {a,b,op:r.pick(['×',':'])} },
   vraag:v=>v.op==='×'?`Welke schatting past het best bij <b>${nl(v.a)} × ${nl(v.b)}</b>?`:`Welke schatting past het best bij <b>${nl(v.a*v.b)} : ${nl(v.b)}</b>?`,
@@ -26,7 +26,7 @@ L({id:'G5.schatten',niv:5,dom:'G',sub:'getalbegrip',naam:'Schatten en ordegroott
   stappen:v=>{ const rd=n=>{const o=10**Math.floor(Math.log10(n));return Math.round(n/o)*o}; const x=v.op==='×'?v.a*v.b:v.a; const o=10**Math.floor(Math.log10(x)); const g=Math.round(x/o)*o; return v.op==='×'?[st(`${nl(v.a)} ≈ ${nl(rd(v.a))} en ${nl(v.b)} ≈ ${nl(rd(v.b))}`),st(`${nl(rd(v.a))} × ${nl(rd(v.b))} = ${nl(rd(v.a)*rd(v.b))}: vermenigvuldig de cijfers en tel de nullen.`),st(`De optie die daar het dichtst bij ligt: ${nl(g)}`,g)]:[st(`${nl(v.a*v.b)} : ${nl(v.b)}: hoe vaak past ${nl(v.b)} erin?`),st(`${nl(v.b)} × ${nl(g)} ≈ ${nl(v.b*g)}, dat komt in de buurt. Schatting: ${nl(g)}`,g)] },
   anders:v=>`Schrijf de afgeronde getallen als "cijfer met nullen". Vermenigvuldig de cijfers en zet alle nullen erachter. Zo zie je meteen of het om honderden, duizenden of miljoenen gaat.`
 });
-L({id:'G5.wortel',niv:5,dom:'G',sub:'negatief',naam:'Wortels: tussen welke getallen?',
+L({id:'G5.wortel',niv:9,dom:'G',sub:'negatief',naam:'Wortels: tussen welke getallen?',
   uitleg:'√49 = 7 want 7 × 7 = 49. Ligt een getal tussen twee kwadraten, dan ligt de wortel tussen de twee bijbehorende gehele getallen. √50 ligt tussen 7 en 8.',
   gen(r){ const type=r.pick(['exact','tussen']); const a=r.int(4,20); return {type,a,x:type==='exact'?a*a:a*a+r.int(1,2*a)} },
   vraag:v=>v.type==='exact'?`Reken uit: √${v.x}`:`√${v.x} ligt tussen twee hele getallen. Wat is het kleinste van die twee?`,
@@ -36,7 +36,7 @@ L({id:'G5.wortel',niv:5,dom:'G',sub:'negatief',naam:'Wortels: tussen welke getal
   anders:v=>`Maak een rijtje kwadraten: ${[v.a-1,v.a,v.a+1].map(x=>`${x}² = ${x*x}`).join(', ')}. Waar past ${v.x}?`
 });
 // ---------- Verhoudingen ----------
-L({id:'V5.tweekortingen',niv:5,dom:'V',sub:'pverandering',naam:'Twee procentuele veranderingen na elkaar',rm:true,verwar:['V5.groeifactor'],
+L({id:'V5.tweekortingen',niv:9,dom:'V',sub:'pverandering',naam:'Twee procentuele veranderingen na elkaar',rm:true,verwar:['V5.groeifactor'],
   uitleg:'Twee kortingen na elkaar mag je niet optellen: de tweede korting gaat over de al verlaagde prijs. Vermenigvuldig de factoren: 20% en daarna 10% korting = 0,8 × 0,9 = 0,72, dus 28% korting.',
   gen(r){ const k1=r.pick([10,20,25,30,40,50]),k2=r.pick([10,20,25]); let p; do{ p=r.pick([40,60,80,100,120,150,200,250]) }while((p*(100-k1)*(100-k2))%10000!==0&&(p*(100-k1)*(100-k2))%1000!==0); return {k1,k2,p,wat:r.pick(['prijs','procent']),d:r.pick(['jas','sneakers','koptelefoon','tablet'])} },
   vraag:v=>v.wat==='prijs'?`In de uitverkoop krijg je op een ${v.d} van ${eur(v.p)} eerst ${v.k1}% korting. Aan de kassa krijg je nog eens ${v.k2}% extra korting op de nieuwe prijs. Wat betaal je?`:`Een winkel geeft eerst ${v.k1}% korting en daarna nog ${v.k2}% extra korting op de nieuwe prijs. Hoeveel procent korting is dat in totaal?`,
@@ -46,7 +46,7 @@ L({id:'V5.tweekortingen',niv:5,dom:'V',sub:'pverandering',naam:'Twee procentuele
   anders:v=>({tekst:'Reken met een voorbeeldprijs van € 100. Na de eerste korting is het € '+(100-v.k1)+'. Daarvan gaat nog '+v.k2+'% af.',svg:FIG.balk([{w:(100-v.k1)*(100-v.k2)/100,label:'betaal',k:'a'},{w:(100-v.k1)*v.k2/100,label:v.k2+'%',k:'b'},{w:v.k1,label:v.k1+'%',k:'zacht'}],'€ 100')}),
   sab:v=>({intro:`Eerst ${v.k1}% korting, daarna nog ${v.k2}% extra op de nieuwe prijs. Een ${v.d} kost ${eur(v.p)}. Noor rekent het uit.`,stappen:[`Er gaat ${v.k1}% en ${v.k2}% af.`,`Samen is dat ${v.k1} + ${v.k2} = ${v.k1+v.k2}% korting.`,`Je betaalt ${100-v.k1-v.k2}% van ${v.p}.`,`Antwoord: ${eur(v.p*(100-v.k1-v.k2)/100)}`],fout:1,juist:rondaf(v.p*(100-v.k1)*(100-v.k2)/10000,2),check:rondaf(v.p*(100-v.k1-v.k2)/100,2),eenheid:'€',vraag:'Wat betaal je echt?',uitleg:'De tweede korting gaat over de al verlaagde prijs. Kortingen na elkaar mag je niet optellen: vermenigvuldig de factoren.',goed:[`${nl((100-v.k1)/100)} × ${nl((100-v.k2)/100)} = ${nl((100-v.k1)*(100-v.k2)/10000)}`,`${nl((100-v.k1)*(100-v.k2)/10000)} × ${v.p} = ${eur(v.p*(100-v.k1)*(100-v.k2)/10000)}`]})
 });
-L({id:'V5.groeifactor',niv:5,dom:'V',sub:'groei',naam:'Groeifactor bij een percentage',dec:3,verwar:['V5.tweekortingen'],
+L({id:'V5.groeifactor',niv:9,dom:'V',sub:'groei',naam:'Groeifactor bij een percentage',dec:3,verwar:['V5.tweekortingen'],
   uitleg:'Groeifactor = het nieuwe percentage gedeeld door 100. 5% erbij: 105% → 1,05. 12% eraf: 88% → 0,88.',
   gen(r){ const p=r.pick([2,3,4,5,8,10,12,15,20,25,30,40,1.5,2.5]); return {p,omhoog:r.ja(),naar:r.pick(['factor','factor','procent'])} },
   vraag:v=>v.naar==='factor'?`Iets ${v.omhoog?'neemt':'neemt'} met ${nl(v.p)}% ${v.omhoog?'toe':'af'}. Wat is de groeifactor?`:`De groeifactor is ${nl(v.omhoog?1+v.p/100:1-v.p/100)}. Met hoeveel procent neemt het ${v.omhoog?'toe':'af'}?`,
@@ -56,7 +56,7 @@ L({id:'V5.groeifactor',niv:5,dom:'V',sub:'groei',naam:'Groeifactor bij een perce
   anders:v=>({tekst:'Een groeifactor zegt hoeveel keer zo groot het wordt. Kijk naar de balk: 100% wordt '+(v.omhoog?100+v.p:100-v.p)+'%.',svg:FIG.balk([{w:100,label:'100%',k:'b'},...(v.omhoog?[{w:v.p,label:'+'+nl(v.p)+'%',k:'a'}]:[])],v.omhoog?nl(100+v.p)+'% = × '+nl(1+v.p/100):'')}),
   koppel:(v,r)=>({vraag:'Koppel elke verandering aan de juiste groeifactor.',paren:r.shuffle([['5% erbij','1,05'],['5% eraf','0,95'],['50% erbij','1,5'],['15% eraf','0,85'],['100% erbij','2'],['0,5% erbij','1,005']]).slice(0,4)})
 });
-L({id:'V5.mengverhouding',niv:5,dom:'V',sub:'vtabel',naam:'Mengverhoudingen',verwar:['V4.recept'],dec:3,
+L({id:'V5.mengverhouding',niv:9,dom:'V',sub:'vtabel',naam:'Mengverhoudingen',verwar:['V4.recept'],dec:3,
   uitleg:'Bij een mengverhouding 1 : 6 bestaat het geheel uit 1 + 6 = 7 delen. Reken uit hoe groot 1 deel is.',
   gen(r){ let a,b,tot; do{ a=r.int(1,3); b=r.int(3,9); tot=r.pick([0.7,1,1.2,1.4,1.5,2,2.4,2.8,3.5]) }while(ggd(a,b)>1||Math.abs(tot*1000/(a+b)-Math.round(tot*1000/(a+b)))>1e-9); return {a,b,tot,c:r.pick([['siroop','water','liter limonade'],['wasmiddel','water','liter sop'],['verf','verdunner','liter mengsel'],['vruchtensap','bruiswater','liter frisdrank']])} },
   vraag:v=>`Je maakt ${nl(v.tot)} ${v.c[2]} met ${v.c[0]} en ${v.c[1]} in de verhouding ${v.a} : ${v.b}. Hoeveel ml ${v.c[0]} heb je nodig?`,
@@ -66,7 +66,7 @@ L({id:'V5.mengverhouding',niv:5,dom:'V',sub:'vtabel',naam:'Mengverhoudingen',ver
   anders:v=>({tekst:'Teken een strook met alle delen.',svg:FIG.balk(Array.from({length:v.a+v.b},(_,i)=>({w:1,label:'',k:i<v.a?'a':'b'})),`${nl(v.tot*1000)} ml = ${v.a+v.b} delen`)}),
   tabel:v=>({kop:['Delen','ml'],rijen:[[v.a+v.b,v.tot*1000],[1,rondaf(v.tot*1000/(v.a+v.b),3)],[v.a,rondaf(v.tot*1000*v.a/(v.a+v.b),2)]],leeg:[[1,1],[2,1]]})
 });
-L({id:'V5.procentvan',niv:5,dom:'V',sub:'procent',naam:'Procent van procent: deel van een deel',rm:true,
+L({id:'V5.procentvan',niv:9,dom:'V',sub:'procent',naam:'Procent van procent: deel van een deel',rm:true,
   uitleg:'Een percentage van een percentage: vermenigvuldig de kommagetallen. 40% van de 60% = 0,4 × 0,6 = 0,24 = 24% van het geheel.',
   gen(r){ const p1=r.pick([40,50,60,75,80]),p2=r.pick([20,25,30,40,50,60]); const n=r.pick([400,500,800,1000,1200,2000]); return {p1,p2,n,wat:r.pick(['aantal','procent'])} },
   vraag:v=>v.wat==='aantal'?`Op een school zitten ${nl(v.n)} leerlingen. ${v.p1}% sport bij een club. Van die sporters doet ${v.p2}% aan voetbal. Hoeveel leerlingen voetballen bij een club?`:`Van alle leerlingen sport ${v.p1}% bij een club. Van die sporters doet ${v.p2}% aan voetbal. Hoeveel procent van alle leerlingen voetbalt bij een club?`,
@@ -76,7 +76,7 @@ L({id:'V5.procentvan',niv:5,dom:'V',sub:'procent',naam:'Procent van procent: dee
   anders:v=>({tekst:'Stel je 100 leerlingen voor. '+v.p1+' sporten. Van die '+v.p1+' voetbalt '+v.p2+'%: dat zijn '+nl(v.p1*v.p2/100)+' leerlingen van de 100.',svg:FIG.balk([{w:v.p1*v.p2/100,label:'voetbal',k:'a'},{w:v.p1-v.p1*v.p2/100,label:'andere sport',k:'b'},{w:100-v.p1,label:'geen club',k:'zacht'}],'alle leerlingen = 100%')})
 });
 // ---------- Meten en meetkunde ----------
-L({id:'M5.kmums',niv:5,dom:'M',sub:'eenheden',naam:'Snelheid omrekenen: km/u en m/s',rm:true,dec:2,
+L({id:'M5.kmums',niv:9,dom:'M',sub:'eenheden',naam:'Snelheid omrekenen: km/u en m/s',rm:true,dec:2,
   uitleg:'1 m/s = 3,6 km/u (in een uur zitten 3600 seconden: 3600 m = 3,6 km). Van m/s naar km/u: keer 3,6. Van km/u naar m/s: delen door 3,6.',
   gen(r){ const naarKmu=r.ja(); const [c,ms]=r.pick([['Een sprinter loopt',r.pick([7.5,10])],['Een wielrenner rijdt',r.pick([10,12.5])],['Een scooter rijdt',r.pick([7.5,12.5])],['Een windvlaag waait',r.pick([15,20,25])],['Een trein rijdt',r.pick([25,30,40])],['Een wandelaar loopt',r.pick([1.25,1.5])]]); return {naarKmu,ms,kmu:rondaf(ms*3.6,2),c} }, // snelheid past bij wie of wat er beweegt
   vraag:v=>v.naarKmu?`${v.c} ${nl(v.ms)} m/s. Hoeveel km/u is dat?`:`${v.c} ${nl(v.kmu)} km/u. Hoeveel m/s is dat?`,
@@ -85,7 +85,7 @@ L({id:'M5.kmums',niv:5,dom:'M',sub:'eenheden',naam:'Snelheid omrekenen: km/u en 
   fouten:v=>v.naarKmu?[[rondaf(v.ms/3.6,2),'Je deelde. Van m/s naar km/u is keer 3,6 (km/u is het grotere getal).'],[rondaf(v.ms*60,2),'Er zitten 3600 seconden in een uur, en 1000 m in een km.'],[rondaf(v.ms*3600,2),'Dat zijn meters per uur. Reken om naar km.']]:[[rondaf(v.kmu*3.6,2),'Je vermenigvuldigde. Van km/u naar m/s deel je door 3,6.'],[rondaf(v.kmu/60,2),'Er zitten 3600 seconden in een uur, en 1000 m in een km.'],[rondaf(v.kmu*1000,2),'Dat zijn meters per uur.']],
   anders:v=>({tekst:'Verhoudingstabel van meters per seconde naar per uur:',tabel:{kop:['Tijd','Afstand'],rijen:[['1 s',nl(v.ms)+' m'],['3600 s',nl(v.ms*3600)+' m'],['1 uur',nl(v.kmu)+' km']]}})
 });
-L({id:'M5.cilinder',niv:5,dom:'M',sub:'inhoud',naam:'Inhoud van een cilinder',rm:true,dec:1,tol:v=>Math.max(.06,Math.PI*v.r*v.r*v.h/1000*.0015),
+L({id:'M5.cilinder',niv:9,dom:'M',sub:'inhoud',naam:'Inhoud van een cilinder',rm:true,dec:1,tol:v=>Math.max(.06,Math.PI*v.r*v.r*v.h/1000*.0015),
   uitleg:'Inhoud cilinder = oppervlakte grondvlak × hoogte = π × r × r × h. In cm krijg je cm³; 1000 cm³ = 1 liter.',
   gen(r){ const [c,rs,hs]=r.pick([['Een blik',[3,4,5],[10,12,15]],['Een regenton',[25,30],[80,90,100]],['Een vaas',[5,6,8],[20,25,30]],['Een emmer',[12,15],[25,30]],['Een drinkfles',[3,4],[20,25]]]); return {r:r.pick(rs),h:r.pick(hs),c} }, // realistische maten
   vraag:v=>`${v.c} is een cilinder met een straal van ${v.r} cm en een hoogte van ${v.h} cm. Hoeveel liter past erin? Rond af op 1 decimaal.`,
@@ -94,7 +94,7 @@ L({id:'M5.cilinder',niv:5,dom:'M',sub:'inhoud',naam:'Inhoud van een cilinder',rm
   fouten:v=>[[rondaf(Math.PI*4*v.r*v.r*v.h/1000,1),'Je gebruikte de diameter in plaats van de straal.'],[rondaf(Math.PI*v.r*v.r*v.h,1),'Dat zijn cm³. 1 liter = 1000 cm³.'],[rondaf(2*Math.PI*v.r*v.h/1000,1),'Je gebruikte de omtrek in plaats van de oppervlakte van het grondvlak.']],
   anders:v=>`Een cilinder is een stapel dunne cirkels. Eén laagje van 1 cm hoog is π × ${v.r}² ≈ ${nl(rondaf(Math.PI*v.r*v.r,1))} cm³. Er liggen ${v.h} laagjes op elkaar.`
 });
-L({id:'M5.gemsnelheid',niv:5,dom:'M',sub:'tijd',naam:'Gemiddelde snelheid over een hele rit',rm:true,dec:1,
+L({id:'M5.gemsnelheid',niv:9,dom:'M',sub:'tijd',naam:'Gemiddelde snelheid over een hele rit',rm:true,dec:1,
   uitleg:'Gemiddelde snelheid = totale afstand : totale tijd. Je mag de twee snelheden niet zomaar middelen als de tijden verschillen.',
   gen(r){ let s1,t1,s2,t2,gem; do{ s1=r.pick([10,12,15,18,20,24,30]); t1=r.pick([0.5,1,1.5,2]); s2=r.pick([4,5,6,8,10]); t2=r.pick([0.5,1,1.5]); gem=(s1*t1+s2*t2)/(t1+t2) }while(Math.abs(gem*10-Math.round(gem*10))>1e-9||(s1+s2)/2===gem); return {s1,t1,s2,t2} },
   vraag:v=>`Bij een triatlontraining fiets je ${nl(v.t1)} uur met ${v.s1} km/u en daarna loop je ${nl(v.t2)} uur met ${v.s2} km/u. Wat is je gemiddelde snelheid over de hele training?`,
@@ -104,7 +104,7 @@ L({id:'M5.gemsnelheid',niv:5,dom:'M',sub:'tijd',naam:'Gemiddelde snelheid over e
   anders:v=>`Maak er één rit van: hoe ver ben je in totaal gekomen, en hoe lang was je onderweg? Dan is het gewoon afstand : tijd.`,
   sab:v=>({intro:`Je fietst ${nl(v.t1)} uur met ${v.s1} km/u en loopt daarna ${nl(v.t2)} uur met ${v.s2} km/u. Yara rekent de gemiddelde snelheid uit.`,stappen:[`Snelheid 1 is ${v.s1} km/u, snelheid 2 is ${v.s2} km/u.`,`Gemiddeld: (${v.s1} + ${v.s2}) : 2 = ${nl((v.s1+v.s2)/2)} km/u.`,`Antwoord: ${nl((v.s1+v.s2)/2)} km/u.`],fout:1,juist:rondaf((v.s1*v.t1+v.s2*v.t2)/(v.t1+v.t2),1),check:(v.s1+v.s2)/2,eenheid:'km/u',vraag:'Wat is de gemiddelde snelheid echt?',uitleg:'Je mag snelheden alleen zo middelen als je even lang met elke snelheid bezig was. Gebruik totale afstand : totale tijd.',goed:[`Afstand ${nl(v.s1*v.t1+v.s2*v.t2)} km`,`Tijd ${nl(v.t1+v.t2)} uur`,`${nl(rondaf((v.s1*v.t1+v.s2*v.t2)/(v.t1+v.t2),1))} km/u`]})
 });
-L({id:'M5.vergroten',niv:5,dom:'M',sub:'meetkunde',naam:'Vergroten: wat gebeurt er met de oppervlakte?',
+L({id:'M5.vergroten',niv:9,dom:'M',sub:'meetkunde',naam:'Vergroten: wat gebeurt er met de oppervlakte?',
   uitleg:'Worden alle lengtes k keer zo groot, dan wordt de oppervlakte k × k keer zo groot. Twee keer zo lang en twee keer zo breed = vier keer zo veel oppervlakte.',
   gen(r){ const k=r.pick([2,3,4,5,1.5,0.5]); const l=r.pick([10,12,20,30]),b=r.pick([8,10,15,20]); return {k,l,b,c:r.pick(['Een foto','Een poster','Een tekening','Een tegel'])} },
   vraag:v=>`${v.c} van ${v.l} cm bij ${v.b} cm wordt ${v.k<1?'verkleind':'vergroot'} tot ${nl(v.l*v.k)} cm bij ${nl(v.b*v.k)} cm. Hoeveel keer zo groot wordt de oppervlakte?`,
@@ -114,7 +114,7 @@ L({id:'M5.vergroten',niv:5,dom:'M',sub:'meetkunde',naam:'Vergroten: wat gebeurt 
   anders:v=>({tekst:`Teken het: bij een vergroting met factor ${nl(v.k)} passen er ${nl(v.k)} × ${nl(v.k)} kopieën van de oude figuur in de nieuwe.`,svg:v.k===2?FIG.strook(4,4,'2 × 2 = 4 kopieën'):''})
 });
 // ---------- Verbanden ----------
-L({id:'B5.tabelformule',niv:5,dom:'B',sub:'formules',naam:'Van tabel naar formule',
+L({id:'B5.tabelformule',niv:9,dom:'B',sub:'formules',naam:'Van tabel naar formule',
   uitleg:'Bij een vaste toename per stap: het startgetal (bij 0) is het vaste deel en de toename per stap staat voor de letter. y = toename × x + startgetal.',
   gen(r){ const a=r.pick([2,3,4,5,6,1.5,2.5]),b=r.int(2,25),n=r.pick([12,15,20,25,30]); return {a,b,n,c:r.pick([['Aantal weken','Bedrag op rekening (€)'],['Aantal uur','Kosten (€)'],['Aantal dagen','Hoogte plant (cm)']])} },
   vraag:v=>`In de tabel zie je een vaste toename.<div class="vtabel">${vtabelHtml([v.c[0],v.c[1]],[0,1,2,3,4].map(x=>[x,rondaf(v.a*x+v.b,2)]))}</div>Welke waarde hoort bij ${v.n}?`,
@@ -128,7 +128,7 @@ L({id:'B5.tabelformule',niv:5,dom:'B',sub:'formules',naam:'Van tabel naar formul
     fout:`Bij 1 is het ${nl(v.a+v.b)}, dus y = ${nl(v.a+v.b)}x.`,
     kijkwijzer:['Is het startgetal (bij 0) gebruikt?','Is de toename per stap uit de verschillen gehaald?','Klopt de formule als je een waarde uit de tabel invult?']})
 });
-L({id:'B5.helling',niv:5,dom:'B',sub:'grafieken',naam:'Helling uit een grafiek: hoeveel per stap?',rm:true,dec:2,
+L({id:'B5.helling',niv:9,dom:'B',sub:'grafieken',naam:'Helling uit een grafiek: hoeveel per stap?',rm:true,dec:2,
   uitleg:'De helling is hoeveel de grafiek stijgt per stap naar rechts: (verschil verticaal) : (verschil horizontaal). Kies twee punten die precies op het rooster liggen.',
   gen(r){ const a=r.pick([0.5,1.5,2,2.5,3,4,5]),b=r.pick([0,5,10,15,20]); return {a,b,c:r.pick([['aantal km','kosten (€)','euro per km'],['aantal minuten','liter water','liter per minuut'],['aantal weken','gespaard (€)','euro per week']])} },
   vraag:v=>`Hoeveel ${v.c[2]} komt erbij volgens de grafiek?`,
@@ -138,7 +138,7 @@ L({id:'B5.helling',niv:5,dom:'B',sub:'grafieken',naam:'Helling uit een grafiek: 
   fouten:v=>[[rondaf(v.b+10*v.a,2),'Dat is de hoogte van het eindpunt. Je zoekt de toename per stap.'],[rondaf((v.b+10*v.a)/10,2),'Je vergat het beginpunt eraf te halen.'],[v.b,'Dat is het beginpunt.']],
   anders:v=>`Ga vanaf een punt op de lijn één stap naar rechts en kijk hoeveel je omhoog moet om de lijn weer te raken. Dat is de helling.`
 });
-L({id:'B5.gewogen',niv:5,dom:'B',sub:'statistiek',naam:'Gewogen gemiddelde',rm:true,dec:1,verwar:['B4.frequentie'],
+L({id:'B5.gewogen',niv:9,dom:'B',sub:'statistiek',naam:'Gewogen gemiddelde',rm:true,dec:1,verwar:['B4.frequentie'],
   uitleg:'Bij een gewogen gemiddelde telt het ene cijfer zwaarder dan het andere. Vermenigvuldig elk cijfer met zijn weging, tel op, en deel door de som van de wegingen.',
   gen(r){ let c,w,s,t; do{ c=[r.int(40,90)/10,r.int(40,90)/10,r.int(40,90)/10]; w=[r.pick([1,2]),r.pick([1,2,3]),r.pick([2,3,4])]; s=c.reduce((a,x,i)=>a+x*w[i],0); t=w.reduce((a,b)=>a+b,0) }while(Math.abs(s/t*10-Math.round(s/t*10))>1e-9); return {c,w,s,t,vak:r.pick(CTX.vak)} },
   vraag:v=>`Voor ${v.vak} heb je deze cijfers:<div class="vtabel">${vtabelHtml(['Toets','Cijfer','Weging'],v.c.map((x,i)=>['Toets '+(i+1),nl(x),v.w[i]+'×']))}</div>Wat is je gemiddelde (op 1 decimaal)?`,
@@ -147,7 +147,7 @@ L({id:'B5.gewogen',niv:5,dom:'B',sub:'statistiek',naam:'Gewogen gemiddelde',rm:t
   fouten:v=>[[rondaf((v.c[0]+v.c[1]+v.c[2])/3,1),'Dat is het gewone gemiddelde. De toetsen tellen niet even zwaar.'],[rondaf(v.s/3,1),'Deel door de som van de wegingen, niet door het aantal toetsen.'],[rondaf(v.s,1),'Deel nog door de som van de wegingen.']],
   anders:v=>`Schrijf elk cijfer zo vaak op als zijn weging: ${v.c.map((x,i)=>Array(v.w[i]).fill(nl(x)).join(', ')).join(', ')}. Dat zijn ${v.t} cijfers. Neem daarvan het gewone gemiddelde.`
 });
-L({id:'B5.kruistabel',niv:5,dom:'B',sub:'tabellen',naam:'Percentages in een kruistabel',rm:true,dec:1,
+L({id:'B5.kruistabel',niv:9,dom:'B',sub:'tabellen',naam:'Percentages in een kruistabel',rm:true,dec:1,
   uitleg:'Lees de vraag goed: "van de meisjes" betekent dat je deelt door het totaal aantal meisjes, niet door alle leerlingen.',
   gen(r){ let a,b,c,d; do{ a=r.int(5,30);b=r.int(5,30);c=r.int(5,30);d=r.int(5,30) }while(![20,25,40,50,80].includes(a+b)||![20,25,40,50,80].includes(c+d)); return {a,b,c,d,act:r.pick(['fietsen naar school','bijbaantje hebben','lid zijn van een sportclub'])} },
   vraag:v=>`Een enquête onder leerlingen: ${v.act}?<div class="vtabel">${vtabelHtml(['','Ja','Nee','Totaal'],[['Meisjes',v.a,v.b,v.a+v.b],['Jongens',v.c,v.d,v.c+v.d],['Totaal',v.a+v.c,v.b+v.d,v.a+v.b+v.c+v.d]])}</div>Hoeveel procent van de meisjes zegt ja?`,

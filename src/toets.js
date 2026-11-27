@@ -2,6 +2,7 @@
 const VAST = it => { const l=LD[it.ld]; return l.opties?'mc':(l.antw?(Math.random()<.65?'open':(l.fouten?'mc':'open')):null) };
 
 const nivMax=()=>Math.max(...LDS.map(l=>l.niv));
+const nivMin=()=>Math.min(...LDS.map(l=>l.niv));
 // ---------- instaptoets: blokken van 4 (één per domein), trapsgewijs omhoog of omlaag ----------
 function instapBlok(k){
   return DOMEINEN.map(d=>{ const l=ldsVan(k,d.id); const ld=l[Math.floor(Math.random()*l.length)]; const it=maakItem(ld.id,{trede:3,bron:'instap'}); if(!['open','mc'].includes(it.vorm)) return maakItem(ld.id,{trede:3,vorm:VAST(it),bron:'instap'}); return it });
@@ -17,7 +18,7 @@ function instapVraag(){
   SES.blok=[it]; SES.bi=0;
 }
 function startInstap(){
-  const k=Math.min(STARTNIVEAU_KLAS[S.klas]||1,nivMax());
+  const k=Math.max(nivMin(),Math.min(STARTNIVEAU_KLAS[S.klas]||5,nivMax()));
   SES={soort:'instap',titel:'Instaptoets',k,startK:k,reeks:0,gebruikt:[],log:[],res:[],i:0,n:INSTAP_N,start:Date.now()};
   instapVraag(); volgendeItem();
 }
@@ -25,12 +26,12 @@ function instapNiveau(log){
   const st={}; log.forEach(x=>{ st[x.niv]=st[x.niv]||[0,0]; st[x.niv][1]++; if(x.goed) st[x.niv][0]++ });
   const ok=Object.keys(st).map(Number).filter(n=>st[n][1]>=2&&st[n][0]/st[n][1]>=.6);
   if(ok.length) return Math.max(...ok);
-  const laagste=Math.min(...log.map(x=>x.niv)); return Math.max(1,laagste-1);
+  const laagste=Math.min(...log.map(x=>x.niv)); return Math.max(nivMin(),laagste-1);
 }
 function instapAntwoord(res){
   const it=Q.it; SES.log.push({niv:it.niv,dom:it.dom,ld:it.ld,goed:res.goed,zeker:res.zeker}); SES.res.push(res.goed); SES.i++;
   if(res.goed){ SES.reeks++; if(SES.reeks>=2&&SES.k<nivMax()){ SES.k++; SES.reeks=0 } }
-  else { SES.reeks=0; if(SES.k>1) SES.k--; }
+  else { SES.reeks=0; if(SES.k>nivMin()) SES.k--; }
   if(SES.log.length>=INSTAP_N) return instapKlaar(instapNiveau(SES.log));
   instapVraag(); volgendeItem();
 }
@@ -91,7 +92,7 @@ function eindeToets(){
   if(geslaagd){
     S.diplomas[n]={tijd:Date.now(),score:totaal,poging};
     doms.forEach(d=>{ const k=domKey(n,d); S.dom[k]=Object.assign({},S.dom[k]||{},{herk:false,st:'beheerst',u:Date.now()}) });
-    if(S.niv===n&&n<8){ S.niv=n+1; S.max=Math.max(S.max||0,n+1); S.rec=[]; S.recNiv=n+1 }
+    if(S.niv===n&&n<nivMax()){ S.niv=n+1; S.max=Math.max(S.max||0,n+1); S.rec=[]; S.recNiv=n+1 }
   } else {
     t.terug.forEach(d=>{ ldsVan(n,d).forEach(l=>{ const x=ldS(l.id); if(x.b>75) S.ld[l.id]=Object.assign({},x,{b:75,u:Date.now()}) }); const k=domKey(n,d); S.dom[k]=Object.assign({},S.dom[k]||{},{herk:true,u:Date.now()}); werkDomBij(n,d) });
   }
@@ -108,7 +109,7 @@ function toonToetsUitslag(){
   const t=SES.uitslag, n=t.niveau; const fout=SES.antw.filter(a=>!a.res.goed).length;
   go('uitslag',{html:`<div class="wrap smal"><div class="kaart mid"><span class="eyebrow" style="color:var(--knop)">Rekentoets Niveau ${n}</span>
    <div class="cijfer ${t.geslaagd?'vold':''}">${t.totaal}%</div>
-   <h2>${t.geslaagd?(n<8?`Gehaald! Je gaat door naar Niveau ${n+1}.`:'Gehaald! Je hebt het 3F-eindniveau bereikt.'):'Nog niet gehaald'}</h2>
+   <h2>${t.geslaagd?(n<nivMax()?`Gehaald! Je gaat door naar Niveau ${n+1}.`:'Gehaald! Je hebt het 3F-eindniveau bereikt.'):'Nog niet gehaald'}</h2>
    <div style="text-align:left;margin:16px auto;max-width:420px">${Object.keys(t.perDomein).map(d=>`<div class="minirij"><span>${DOM[d].kort}</span>${balk(t.perDomein[d],DOM[d].k)}<b>${t.perDomein[d]}%</b></div>`).join('')}</div>
    ${t.geslaagd?'':`<p>Je gaat terug naar <b>${t.terug.map(d=>DOM[d].naam).join(', ')}</b>. Staat dat weer op 80%, dan maak je een herkansing met alleen die domeinen.</p>`}
    ${fout?`<p>Je had ${fout} vragen fout. Bekijk ze nu: per vraag zie je de uitwerking en kies je zelf wat er misging.</p>`:''}

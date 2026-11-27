@@ -1,21 +1,29 @@
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
-// ===== Rekentrainer Vellesan · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
+// ===== RekenKracht · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
 const BOUW = '/*BOUW*/';
-const KLASSEN = ['1e klas','2e klas','3e klas','4e klas','5e klas','6e klas','Thuis'];
+// Groepen en klassen. Vanaf klas 1 met schooltype: dat bepaalt start van de instaptoets en het doelniveau.
+const GROEPEN = ['groep 3','groep 4','groep 5','groep 6','groep 7','groep 8'];
+const SCHOOLTYPEN = [{id:'vmbo',jaren:4,start:4,doel:8},{id:'havo',jaren:5,start:5,doel:11},{id:'vwo',jaren:6,start:6,doel:12}];
+const KLASSEN = GROEPEN.concat(...SCHOOLTYPEN.map(t=>Array.from({length:t.jaren},(_,i)=>`klas ${i+1} ${t.id}`)));
+const VER = 2;                            // versie van de opgeslagen staat (2 = 12 niveaus)
 const KEY = 'rekenvel-v1';
 const OUTBOX = 'rekenvel-outbox';
 const IDLE_MS = 90*1000;
 
 const NIVEAUS = [
-  {n:1,ref:'1F',titel:'Basis op orde',       sub:'Hele getallen, eenvoudige breuken en procenten, maten en tabellen'},
-  {n:2,ref:'1S',titel:'Stevige basis',       sub:'Kommagetallen, verhoudingstabellen, oppervlakte en grafieken'},
-  {n:3,ref:'1S → 2F',titel:'Op weg naar 2F', sub:'Procenten, schaal, eenheden omrekenen en formules in woorden'},
-  {n:4,ref:'2F',titel:'Niveau 2F',           sub:'Alles wat je nodig hebt voor de rekentoets 2F'},
-  {n:5,ref:'2F → 3F',titel:'Op weg naar 3F', sub:'Procentuele verandering, snelheid, inhoud en negatieve getallen'},
-  {n:6,ref:'3F',titel:'3F in aanloop',       sub:'Groeifactoren, Pythagoras, machten en formules'},
-  {n:7,ref:'3F',titel:'3F basis',            sub:'Rente, indexcijfers, gelijkvormigheid en statistiek'},
-  {n:8,ref:'3F',titel:'3F eindniveau',       sub:'Gemengde, complexe contexten op het hoogste rekenniveau'}
+  {n:1,ref:'Start',titel:'Tellen en rekenen tot 20',  sub:'Getallen tot 20 en 100, plus en min, geld en klok, patronen'},
+  {n:2,ref:'Basis',titel:'Tafels en getallen tot 1000',sub:'Tafels, eerlijk verdelen, meten en tijd, eenvoudige tabellen'},
+  {n:3,ref:'Basis',titel:'Cijferen en eerste breuken', sub:'Onder elkaar rekenen, delen, breuken, omtrek en staafgrafieken'},
+  {n:4,ref:'Naar 1F',titel:'Op weg naar 1F',          sub:'Grote getallen, kommagetallen, verhoudingstabel, schaal en eenheden'},
+  {n:5,ref:'1F',titel:'Basis op orde',       sub:'Hele getallen, eenvoudige breuken en procenten, maten en tabellen'},
+  {n:6,ref:'1S',titel:'Stevige basis',       sub:'Kommagetallen, verhoudingstabellen, oppervlakte en grafieken'},
+  {n:7,ref:'1S → 2F',titel:'Op weg naar 2F', sub:'Procenten, schaal, eenheden omrekenen en formules in woorden'},
+  {n:8,ref:'2F',titel:'Niveau 2F',           sub:'Alles wat je nodig hebt voor de rekentoets 2F'},
+  {n:9,ref:'2F → 3F',titel:'Op weg naar 3F', sub:'Procentuele verandering, snelheid, inhoud en negatieve getallen'},
+  {n:10,ref:'3F',titel:'3F in aanloop',      sub:'Groeifactoren, Pythagoras, machten en formules'},
+  {n:11,ref:'3F',titel:'3F basis',           sub:'Rente, indexcijfers, gelijkvormigheid en statistiek'},
+  {n:12,ref:'3F',titel:'3F eindniveau',      sub:'Gemengde, complexe contexten op het hoogste rekenniveau'}
 ];
 // subdomeinen (onderdelen): het wiel op de domeinpagina heeft per onderdeel een ring per niveau
 const SUBDOMEINEN = {
@@ -24,8 +32,25 @@ const SUBDOMEINEN = {
   M:[{id:'eenheden',naam:'Eenheden omrekenen'},{id:'tijd',naam:'Tijd en geld'},{id:'oppervlak',naam:'Omtrek en oppervlakte'},{id:'inhoud',naam:'Inhoud'},{id:'meetkunde',naam:'Meetkunde'}],
   B:[{id:'tabellen',naam:'Tabellen'},{id:'grafieken',naam:'Grafieken'},{id:'formules',naam:'Formules'},{id:'statistiek',naam:'Statistiek'}]
 };
-// Startniveau van de instaptoets: Thuis = groep 7/8 (Niveau 1), daarna één niveau per leerjaar.
-const STARTNIVEAU_KLAS = {'Thuis':1,'1e klas':2,'2e klas':3,'3e klas':4,'4e klas':5,'5e klas':6,'6e klas':7};
+// Startniveau van de instaptoets: groep 3 = Niveau 1 … groep 8 = Niveau 6; vwo klas 1 = Niveau 7 … klas 6 = Niveau 12.
+// havo start één niveau lager, vmbo twee. Het doelniveau (eindniveau) hangt af van het schooltype.
+function startNiveau(klas){ const k=String(klas||''); const g=k.match(/^groep (\d)/); if(g) return +g[1]-2;
+  const m=k.match(/^klas (\d) (\w+)/); if(m){ const t=SCHOOLTYPEN.find(x=>x.id===m[2])||SCHOOLTYPEN[2]; return Math.min(t.doel,t.start+ +m[1]) } return 5 }
+function doelNiveau(klas){ const m=String(klas||'').match(/^klas \d (\w+)/); return m?(SCHOOLTYPEN.find(x=>x.id===m[1])||{doel:12}).doel:12 }
+const STARTNIVEAU_KLAS = Object.fromEntries(KLASSEN.map(k=>[k,startNiveau(k)]));
+// oude staat (8 niveaus, klassen '1e klas', 'Thuis') omzetten naar 12 niveaus: Niveau n wordt n+4
+const KLAS_OUD = {'1e klas':'klas 1 vwo','2e klas':'klas 2 vwo','3e klas':'klas 3 vwo','4e klas':'klas 4 vwo','5e klas':'klas 5 vwo','6e klas':'klas 6 vwo','Thuis':'groep 6'};
+function migreer(st){
+  if(!st||typeof st!=='object'||(st.ver||1)>=VER) return st;
+  const p=x=>typeof x==='number'&&x>0?x+4:x;
+  st.niv=p(st.niv); st.max=p(st.max); st.recNiv=p(st.recNiv); if(st.plaatsing&&st.plaatsing.niv) st.plaatsing=Object.assign({},st.plaatsing,{niv:p(st.plaatsing.niv)});
+  st.dom=Object.fromEntries(Object.entries(st.dom||{}).map(([k,v])=>{ const [n,d]=k.split('.'); return [(+n+4)+'.'+d,v] }));
+  st.diplomas=Object.fromEntries(Object.entries(st.diplomas||{}).map(([k,v])=>[String(+k+4),v]));
+  Object.values(st.fb||{}).forEach(f=>{ if(f&&f.niv) f.niv=p(f.niv) });
+  (st.toetsen||[]).forEach(t=>{ if(t){ if(t.niveau) t.niveau=p(t.niveau); if(t.niv) t.niv=p(t.niv) } });
+  if(KLAS_OUD[st.klas]) st.klas=KLAS_OUD[st.klas];
+  st.ver=VER; return st;
+}
 const DOMEINEN = [
   {id:'G',naam:'Getallen',kort:'Getallen',k:'#f08a09',ic:'🔢'},
   {id:'V',naam:'Verhoudingen',kort:'Verhoudingen',k:'#1b8fb0',ic:'⚖️'},
@@ -91,13 +116,15 @@ function nieuweStaat(){
   return { id:'', code:'', naam:'', klas:'', upd:0, aangemaakt:Date.now(),
     niv:0, max:0, plaatsing:null,            // niv 0 = nog geen instaptoets gemaakt
     ld:{}, dom:{}, fb:{}, toetsen:[], diplomas:{}, rec:[], recNiv:0,
-    tijd:0, week:{}, dag:{}, aantal:0, goed:0, badges:[], th:'' };
+    tijd:0, week:{}, dag:{}, aantal:0, goed:0, badges:[], th:'', ver:VER };
 }
 let S = null;
 
 function laad(){
-  try{ const r=localStorage.getItem(KEY); if(r) S=Object.assign(nieuweStaat(),JSON.parse(r)); }catch(e){ S=null }
-  if(!S){ try{ const r=localStorage.getItem(KEY+'-reserve'); if(r) S=Object.assign(nieuweStaat(),JSON.parse(r)); }catch(e){} }
+  const lees=k=>{ const r=localStorage.getItem(k); if(!r) return null; const o=JSON.parse(r); if(!o.ver) o.ver=1; return Object.assign(nieuweStaat(),o) };
+  try{ S=lees(KEY) }catch(e){ S=null }
+  if(!S){ try{ S=lees(KEY+'-reserve') }catch(e){} }
+  if(S&&(S.ver||1)<VER){ try{ localStorage.setItem(KEY+'-v1-kopie',JSON.stringify(S)) }catch(e){} S=migreer(S); bewaar(false) }
 }
 function bewaar(sync=true){
   if(!S) return; S.upd=Date.now();
@@ -142,8 +169,8 @@ async function sync(){
   bezig=true; syncStatus='bezig'; toonSync();
   const evs=outbox().slice(0,300);
   try{
-    const j=await api('sync',{id:S.id,code:S.code,staat:S,events:evs});
-    const code=S.code; S=mergeStaat(S,j.staat); S.code=code;
+    const j=await api('sync2',{id:S.id,code:S.code,staat:S,events:evs});
+    const code=S.code; S=mergeStaat(S,migreer(j.staat)); S.code=code;
     if(j.klasinst) S.klasinst=j.klasinst;
     const klaar=new Set(j.verwerkt||[]); zetOutbox(outbox().filter(e=>!klaar.has(e.eid)));
     try{ localStorage.setItem(KEY,JSON.stringify(S)) }catch(e){}

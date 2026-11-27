@@ -3,12 +3,13 @@
 const FOTO={start:'1509062522246-3755977927d7',G:'1635070041078-e363dbe005cb',V:'1554224155-6726b3ff858f',M:'1503387762-592deb58ef4e',B:'1551288049-bebda4e38f71',
   toets:'1606326608606-aa0b62935f2b',instap:'1522202176988-66273c2fd55f',fouten:'1456513080510-7bf3a84b82f8',niveaus:'1519389950473-47ba0277781c'};
 const foto=(k,w=1400)=>FOTO[k]?`background-image:url('https://images.unsplash.com/photo-${FOTO[k]}?w=${w}&q=70&auto=format&fit=crop')`:'';
-const VOET=()=>`<footer class="voettekst"><div class="in"><b>vellesan <span class="o">college</span></b><span>Rekentrainer · Niveau 1 t/m 8 (1F tot en met 3F)</span><span style="margin-left:auto">© 2026 S. Groefsema · Alle rechten voorbehouden · Foto's: Unsplash</span></div></footer>`;
+const VOET=()=>`<footer class="voettekst"><div class="in"><b>Reken<span class="o">Kracht</span></b><span>De RekenLijn · Niveau 1 t/m 12, van groep 3 tot vwo-eindniveau</span><span style="margin-left:auto">© 2026 S. Groefsema · Alle rechten voorbehouden · Foto's: Unsplash</span></div></footer>`;
 
 let scherm='welkom', param={};
 function go(naam,p={}){
   if(naam!=='quiz') oefenActief=false;
   scherm=naam; param=p; document.body.dataset.scherm=naam;
+  { const n=(naam==='quiz'&&typeof Q!=='undefined'&&Q&&Q.it)?Q.it.niv:(S&&S.niv)||0; document.body.dataset.fase=!n?'':n<=2?'jong':n<=4?'midden':n<=6?'po':'vo' }   // vormgeving past zich aan het niveau aan
   const f=SCHERMEN[naam]||SCHERMEN.home; $('#app').innerHTML=f(p); menu(); profiel(); window.scrollTo(0,0);
   if(naam==='quiz') naRender();
 }
@@ -28,13 +29,16 @@ function melding(t,ms=3500){ const d=document.createElement('div'); d.className=
 const balk=(b,k)=>`<div class="balk"><i style="width:${Math.max(0,Math.min(100,b))}%;${k?`background:${k}`:''}"></i></div>`;
 
 // ---------- account ----------
+function klasSelect(id,gekozen=''){ const opt=k=>`<option ${k===gekozen?'selected':''}>${esc(k)}</option>`;
+  return `<select id="${id}"><option value="" disabled ${gekozen?'':'selected'}>Kies…</option><optgroup label="Basisschool">${GROEPEN.map(opt).join('')}</optgroup>${SCHOOLTYPEN.map(t=>`<optgroup label="${t.id}">${KLASSEN.filter(k=>k.endsWith(' '+t.id)).map(opt).join('')}</optgroup>`).join('')}</select>` }
 async function nieuwAccount(){
   const naam=$('#wNaam').value.trim().replace(/\s+/g,' '), klas=$('#wKlas').value;
+  if(!KLASSEN.includes(klas)){ melding('Kies je groep of klas.'); return }
   if(naam.length<3||!naam.includes(' ')){ melding('Vul je voor- én achternaam in.'); return }
   const btn=$('#wMaak'); btn.disabled=true; btn.textContent='Bezig…';
   S=nieuweStaat(); S.naam=naam; S.klas=klas;
   if(serverModus()){
-    try{ const j=await api('nieuw',{naam,klas}); S.id=j.id; S.code=j.code; S.klasinst=j.klasinst; bewaar(false); go('code'); return }
+    try{ const j=await api('nieuw2',{naam,klas}); S.id=j.id; S.code=j.code; S.klasinst=j.klasinst; bewaar(false); go('code'); return }
     catch(e){ btn.disabled=false; btn.textContent='Account maken'; melding('Account maken lukte niet: '+esc(e.message)+'. Controleer je internet.'); S=null; return }
   }
   S.id='LOKAAL-'+Math.random().toString(36).slice(2,6).toUpperCase(); bewaar(false); go('instapIntro');
@@ -42,23 +46,24 @@ async function nieuwAccount(){
 async function herstelAccount(){
   const id=$('#hId').value.trim().toUpperCase(), code=$('#hCode').value.trim();
   if(!id||code.length!==6){ melding('Vul je leerling-ID en je herstelcode van 6 cijfers in.'); return }
-  try{ const j=await api('herstel',{id,code}); S=Object.assign(nieuweStaat(),j.staat); S.id=id; S.code=code; S.klasinst=j.klasinst; bewaar(false); melding('Welkom terug, '+esc(S.naam.split(' ')[0])+'!'); go(S.niv?'home':'instapIntro') }
+  try{ const j=await api('herstel2',{id,code}); S=Object.assign(nieuweStaat(),migreer(j.staat)); S.id=id; S.code=code; S.klasinst=j.klasinst; bewaar(false); melding('Welkom terug, '+esc(S.naam.split(' ')[0])+'!'); go(S.niv?'home':'instapIntro') }
   catch(e){ melding(esc(e.message)) }
 }
+function kiesKlas(){ const k=$('#kKlas').value; if(!KLASSEN.includes(k)){ melding('Kies je groep of klas.'); return } S.klas=k; S.klasU=Date.now(); bewaar(); go(S.niv?'home':'instapIntro') }
 function uitloggen(){ if(!confirm('Weet je zeker dat je wilt uitloggen? Schrijf eerst je leerling-ID en herstelcode op.')) return; sync().finally(()=>{ try{localStorage.removeItem(KEY);localStorage.removeItem(KEY+'-reserve');localStorage.removeItem(OUTBOX)}catch(e){} S=null; go('welkom') }) }
 
 const SCHERMEN = {
 welkom(){
   return `<section class="foto held" style="${foto('start',1800)}"><div class="in"><div>
-    <span class="eyebrow">Vellesan College · Rekentrainer</span>
+    <span class="eyebrow">RekenKracht · De RekenLijn</span>
     <h1>Word sterker in rekenen, stap voor stap</h1>
-    <p>Je start met een korte instaptoets. Daarna oefen je op jouw niveau, met uitleg bij elke fout, tot je de rekentoets haalt. Van Niveau 1 tot en met Niveau 8 (3F).</p>
+    <p>RekenKracht werkt volgens De RekenLijn: één adaptieve leerlijn zonder klasgrenzen, van de basisschool tot vwo-eindniveau. Je start met een korte instaptoets op het niveau van je groep of klas. Daarna oefen je precies op jouw niveau, met uitleg bij elke fout.</p>
     <button class="knop groot" onclick="document.getElementById('aanmelden').scrollIntoView({behavior:'smooth'});setTimeout(()=>$('#wNaam').focus(),400)">Start</button>
     <ul class="usp"><li>Op jouw niveau</li><li>Uitleg bij elke fout</li><li>Klaar voor de rekentoets</li></ul></div></div></section>
    <div class="wrap" id="aanmelden" style="max-width:1000px"><div class="welkom-grid">
    <div class="kaart"><span class="eyebrow" style="color:var(--knop)">Eerste keer</span><h3 style="margin:6px 0 0">Ik ben nieuw</h3>
     <label class="label">Je voor- en achternaam</label><input type="text" id="wNaam" autocomplete="name">
-    <label class="label">Je klas</label><select id="wKlas">${KLASSEN.map(k=>`<option>${esc(k)}</option>`).join('')}</select>
+    <label class="label">Je groep of klas</label>${klasSelect('wKlas')}
     <div class="voet"><button class="knop vol" id="wMaak" onclick="nieuwAccount()">Account maken</button></div></div>
    ${serverModus()?`<div class="kaart"><span class="eyebrow" style="color:var(--knop)">Terugkomen</span><h3 style="margin:6px 0 0">Ik heb al een account</h3>
     <p class="zacht" style="margin:6px 0 0;font-size:15px">Nieuwe iPad, of de app opnieuw geopend? Vul je leerling-ID en herstelcode in. Je voortgang komt terug.</p>
@@ -133,18 +138,18 @@ domein(p){
    <div class="wrap"><div class="domlayout">
     <div class="kaart wielkaart"><div class="wielkop"><h3 class="kaartkop">Jouw voortgang per onderdeel</h3>${nivKeuze}</div>${wielSvg(p.dom,n)}
       <div class="wiellegenda"><span><i style="background:${d.k}"></i>beheerst (80%+)</span><span><i style="background:${d.k};opacity:.62"></i>op weg (50%+)</span><span><i style="background:${d.k};opacity:.32"></i>gestart</span><span><i style="background:var(--ring-leeg)"></i>nog niet gestart</span></div>
-      <p class="zacht klein mid">Binnen is Niveau 1, buiten Niveau 8. Tik op een vakje om dat onderdeel en niveau te bekijken.</p>
+      <p class="zacht klein mid">Binnen is Niveau 1, buiten Niveau 12. Tik op een vakje om dat onderdeel en niveau te bekijken.</p>
       <div class="voet" style="justify-content:center"><button class="knop" style="background:${d.k}" onclick="startOefen({modus:'domein',dom:'${p.dom}',niv:${n}})">Oefen ${esc(d.naam.toLowerCase())}${n!==S.niv?' (Niveau '+n+')':''}</button></div></div>
     <aside class="kaart todokaart"><h3 class="kaartkop">To do · Niveau ${n}</h3>${todo||'<p class="zacht">Geen onderdelen op dit niveau.</p>'}</aside>
    </div></div>${VOET()}`;
 },
 niveaus(){
-  return `<section class="foto paginakop" style="${foto('niveaus')};border-radius:0;min-height:210px"><div class="wrap" style="width:100%;padding-bottom:0"><span class="eyebrow" style="color:var(--acc)">Jouw route</span><h1>Niveau 1 tot en met 8</h1></div></section>
+  return `<section class="foto paginakop" style="${foto('niveaus')};border-radius:0;min-height:210px"><div class="wrap" style="width:100%;padding-bottom:0"><span class="eyebrow" style="color:var(--acc)">Jouw route</span><h1>Niveau 1 tot en met 12</h1></div></section>
    <div class="wrap"><div class="levels">${NIVEAUS.map(x=>{ const dicht=x.n>S.niv; const b=dicht?0:nivB(x.n); const dip=S.diplomas[x.n];
     return `<div class="levelkaart ${dicht?'dicht':''}"><div class="boven"><span>Niveau ${x.n} · ${esc(x.ref)}</span><span>${dip?'🎓':x.n===S.niv?'📍':dicht?'🔒':''}</span></div><h3>${esc(x.titel)}</h3><p>${esc(x.sub)}</p>
      ${dicht?'':`${DOMEINEN.map(d=>`<div class="minirij"><span>${d.kort}</span>${balk(domB(x.n,d.id),d.k)}<b>${domB(x.n,d.id)}%</b></div>`).join('')}`}
      <div class="onder">${dicht?'<span class="zacht">Haal eerst de toets van het niveau ervoor</span>':`<button class="knop zacht klein" onclick="startOefen({modus:'slim',niv:${x.n}})">Oefen dit niveau</button>`}${dip?`<span class="zacht">${dip.score}%</span>`:''}</div></div>` }).join('')}</div>
-   <p class="zacht" style="margin-top:20px">Niveau 4 is het niveau van de rekentoets 2F. Niveau 8 is het 3F-eindniveau van het vwo.</p></div>${VOET()}`;
+   <p class="zacht" style="margin-top:20px">Niveau 5 is 1F (eind basisschool), Niveau 8 is 2F en Niveau 12 is het 3F-eindniveau. Jouw doel: Niveau ${doelNiveau(S.klas)}.</p></div>${VOET()}`;
 },
 fouten(){
   const open=fbOpen().sort((a,b)=>(b[1].zf-a[1].zf)||(b[1].t-a[1].t));
@@ -156,9 +161,14 @@ fouten(){
    ${open.map(([k,f])=>{ const l=LD[k]; return `<div class="rij"><span class="fbicoon ${f.zf?'zf':''}">${f.zf?'!':'?'}</span><div style="flex:1"><b>${esc(l.naam)}</b><br><small class="zacht">Niveau ${l.niv} · ${DOM[l.dom].naam} · jouw antwoord: ${esc(f.gegeven||'–')} · goed: ${esc(f.juist||'–')} · ${f.rij||0}/${f.nodig} keer goed · terug ${wanneerTekst(f.dueT||Date.now())}</small></div><button class="knop zacht klein" onclick="startOefen({modus:'ld',ld:'${k}',niv:${l.niv}})">Oefen</button></div>` }).join('')||'<p class="zacht">Er staan geen open fouten in je foutenbank.</p>'}
    </div></div>${VOET()}`;
 },
+klasKiezen(){
+  return `<div class="wrap" style="max-width:560px"><div class="kaart"><span class="eyebrow" style="color:var(--knop)">Nieuw in RekenKracht</span><h2 style="margin-top:6px">In welke groep of klas zit je?</h2>
+   <p>RekenKracht loopt nu van groep 3 tot het eindniveau van het vwo. Kies je groep of klas. Je voortgang blijft gewoon bewaard.</p>${klasSelect('kKlas',S.klas)}
+   <div class="voet"><button class="knop vol" onclick="kiesKlas()">Opslaan</button></div></div></div>`;
+},
 account(){
   return `<div class="wrap smal"><h1>Account</h1><div class="kaart">
-   <p><b>${esc(S.naam)}</b> · ${esc(S.klas)}</p>
+   <p><b>${esc(S.naam)}</b> · ${esc(S.klas)} · <a href="#" onclick="go('klasKiezen');return false">groep of klas wijzigen</a></p>
    <p class="zacht" style="margin-bottom:2px">Leerling-ID</p><div class="code">${esc(S.id||'–')}</div>
    <p class="zacht" style="margin-bottom:2px">Herstelcode</p><div class="code">${esc(S.code||'–')}</div>
    <p>${syncLabel()}</p>
@@ -310,6 +320,7 @@ function start(){
   if(S&&S.th==='nacht') document.body.classList.add('th-nacht');
   if(location.hash==='#docent') return go('docentLogin');
   if(!S||!S.naam) return go('welkom');
+  if(!KLASSEN.includes(S.klas)) return go('klasKiezen');
   if(!S.niv) return go('instapIntro');
   go('home'); planSync(1500); setTimeout(()=>{ try{ haalSjablonen() }catch(e){} },2500);
 }

@@ -2,24 +2,24 @@
 // Vlot hoofdrekenen (tafels, ×10, breuk–komma–procent) maakt werkgeheugen vrij voor de denkstappen.
 const FIT_TIJD = 120;
 const FIT_TYPES = [
-  {niv:1,naam:'Tafels',gen:r=>{ const a=r.int(2,10),b=r.int(2,10); return r.ja()?[`${a} × ${b}`,a*b]:[`${a*b} : ${a}`,b] }},
-  {niv:1,naam:'Plus en min tot 100',gen:r=>{ const a=r.int(11,89),b=r.int(5,99-a); return r.ja()?[`${a} + ${b}`,a+b]:[`${a+b} − ${b}`,a] }},
-  {niv:2,naam:'Aanvullen',gen:r=>{ const t=r.pick([100,1000]),a=t===100?r.int(11,89):r.int(110,890); return [`${a} + … = ${t}`,t-a] }},
-  {niv:2,naam:'× en : met 10, 100, 1000',gen:r=>{ const a=r.pick([3.5,0.7,12,4.25,0.06,45,2.8]),f=r.pick([10,100,1000]); return r.ja()?[`${nl(a)} × ${nl(f)}`,rondaf(a*f,4)]:[`${nl(a)} : ${nl(f)}`,rondaf(a/f,6)] }},
-  {niv:2,naam:'Verdubbelen en halveren',gen:r=>{ const a=r.int(12,99)*r.pick([1,2]); return r.ja()?[`2 × ${a}`,2*a]:[`de helft van ${2*a}`,a] }},
-  {niv:3,naam:'Breuk → kommagetal',gen:r=>{ const [t,n]=r.pick([[1,2],[1,4],[3,4],[1,5],[2,5],[1,8],[3,8],[1,10],[7,10],[1,20]]); return [`${t}/${n} als kommagetal`,rondaf(t/n,4)] }},
-  {niv:3,naam:'Kommagetal → procent',gen:r=>{ const x=r.pick([0.5,0.25,0.75,0.1,0.05,0.2,0.125,0.6,0.08,1.2]); return [`${nl(x)} = … %`,rondaf(x*100,2)] }},
-  {niv:3,naam:'Procent van',gen:r=>{ const p=r.pick([10,20,25,50,5,1]),a=r.pick([40,60,80,120,200,240,360,500]); return [`${p}% van ${a}`,rondaf(a*p/100,2)] }},
-  {niv:4,naam:'Keer met kommagetallen',gen:r=>{ const a=r.pick([0.2,0.3,0.4,0.5,0.6,0.8,1.5]),b=r.int(2,12)*r.pick([1,10]); return [`${nl(a)} × ${b}`,rondaf(a*b,4)] }},
-  {niv:5,naam:'Kwadraten en wortels',gen:r=>{ const a=r.int(2,15); return r.ja()?[`${a}²`,a*a]:[`√${a*a}`,a] }},
-  {niv:5,naam:'Negatieve getallen',gen:r=>{ const a=r.int(-12,12),b=r.int(2,15); return r.ja()?[`${String(a).replace('-','−')} − ${b}`,a-b]:[`${String(a).replace('-','−')} + ${b}`,a+b] }},
-  {niv:6,naam:'Groeifactor ↔ procent',gen:r=>{ const p=r.pick([2,3,5,8,10,15,20,25,40]); const op=r.ja(); return r.ja()?[`${p}% ${op?'erbij':'eraf'}: groeifactor`,rondaf(op?1+p/100:1-p/100,4)]:[`groeifactor ${nl(rondaf(op?1+p/100:1-p/100,4))}: … % ${op?'erbij':'eraf'}`,p] }},
-  {niv:6,naam:'Machten van 10',gen:r=>{ const n=r.int(2,6); return r.ja()?[`10${SUP(n)} = …`,10**n]:[`${nl(10**n)} = 10 tot de macht …`,n] }}
+  {niv:5,naam:'Tafels',gen:r=>{ const a=r.int(2,10),b=r.int(2,10); return r.ja()?[`${a} × ${b}`,a*b]:[`${a*b} : ${a}`,b] }},
+  {niv:5,naam:'Plus en min tot 100',gen:r=>{ const a=r.int(11,89),b=r.int(5,99-a); return r.ja()?[`${a} + ${b}`,a+b]:[`${a+b} − ${b}`,a] }},
+  {niv:6,naam:'Aanvullen',gen:r=>{ const t=r.pick([100,1000]),a=t===100?r.int(11,89):r.int(110,890); return [`${a} + … = ${t}`,t-a] }},
+  {niv:6,naam:'× en : met 10, 100, 1000',gen:r=>{ const a=r.pick([3.5,0.7,12,4.25,0.06,45,2.8]),f=r.pick([10,100,1000]); return r.ja()?[`${nl(a)} × ${nl(f)}`,rondaf(a*f,4)]:[`${nl(a)} : ${nl(f)}`,rondaf(a/f,6)] }},
+  {niv:6,naam:'Verdubbelen en halveren',gen:r=>{ const a=r.int(12,99)*r.pick([1,2]); return r.ja()?[`2 × ${a}`,2*a]:[`de helft van ${2*a}`,a] }},
+  {niv:7,naam:'Breuk → kommagetal',gen:r=>{ const [t,n]=r.pick([[1,2],[1,4],[3,4],[1,5],[2,5],[1,8],[3,8],[1,10],[7,10],[1,20]]); return [`${t}/${n} als kommagetal`,rondaf(t/n,4)] }},
+  {niv:7,naam:'Kommagetal → procent',gen:r=>{ const x=r.pick([0.5,0.25,0.75,0.1,0.05,0.2,0.125,0.6,0.08,1.2]); return [`${nl(x)} = … %`,rondaf(x*100,2)] }},
+  {niv:7,naam:'Procent van',gen:r=>{ const p=r.pick([10,20,25,50,5,1]),a=r.pick([40,60,80,120,200,240,360,500]); return [`${p}% van ${a}`,rondaf(a*p/100,2)] }},
+  {niv:8,naam:'Keer met kommagetallen',gen:r=>{ const a=r.pick([0.2,0.3,0.4,0.5,0.6,0.8,1.5]),b=r.int(2,12)*r.pick([1,10]); return [`${nl(a)} × ${b}`,rondaf(a*b,4)] }},
+  {niv:9,naam:'Kwadraten en wortels',gen:r=>{ const a=r.int(2,15); return r.ja()?[`${a}²`,a*a]:[`√${a*a}`,a] }},
+  {niv:9,naam:'Negatieve getallen',gen:r=>{ const a=r.int(-12,12),b=r.int(2,15); return r.ja()?[`${String(a).replace('-','−')} − ${b}`,a-b]:[`${String(a).replace('-','−')} + ${b}`,a+b] }},
+  {niv:10,naam:'Groeifactor ↔ procent',gen:r=>{ const p=r.pick([2,3,5,8,10,15,20,25,40]); const op=r.ja(); return r.ja()?[`${p}% ${op?'erbij':'eraf'}: groeifactor`,rondaf(op?1+p/100:1-p/100,4)]:[`groeifactor ${nl(rondaf(op?1+p/100:1-p/100,4))}: … % ${op?'erbij':'eraf'}`,p] }},
+  {niv:10,naam:'Machten van 10',gen:r=>{ const n=r.int(2,6); return r.ja()?[`10${SUP(n)} = …`,10**n]:[`${nl(10**n)} = 10 tot de macht …`,n] }}
 ];
 let FIT=null;
 function startFit(){
   const r=RNG(nieuweSeed()); const niv=Math.max(1,S.niv||1);
-  const types=FIT_TYPES.filter(t=>t.niv<=niv&&t.niv>=niv-3);
+  const types=FIT_TYPES.filter(t=>t.niv<=niv&&t.niv>=niv-3||(niv<5&&t.niv<=5));
   FIT={r,types,start:Date.now(),goed:0,fout:[],n:0,som:null}; oefenActief=true;
   go('fit'); fitVolgende(); FIT.tik=setInterval(fitTik,250);
 }

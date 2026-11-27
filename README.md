@@ -1,4 +1,4 @@
-# Rekentrainer Vellesan
+# RekenKracht · De RekenLijn
 
 Adaptieve rekentrainer voor Niveau 1–8 (1F tot en met 3F), voor de iPad.
 
