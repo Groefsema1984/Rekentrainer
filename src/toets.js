@@ -71,6 +71,9 @@ SCHERMEN.toetsIntro=function(p){
 function startToets(n){
   const herk=toetsHerkDoms(n); const doms=herk||DOMEINEN.map(d=>d.id); const per=herk?8:6; const items=[];
   doms.forEach(d=>{ const lds=shuffle(ldsVan(n,d)); for(let i=0;i<per;i++){ const ld=lds[i%lds.length]; let it=maakItem(ld.id,{trede:3,bron:'toets'}); if(it.vorm==='volgorde'||it.vorm==='v3') it=maakItem(ld.id,{trede:3,vorm:VAST(it),bron:'toets'}); items.push(it) } });
+  // minstens 3 contextopgaven in rekentoetsstijl (als het niveau ze heeft)
+  const ctxLds=shuffle(LDS.filter(l=>l.niv===n&&l.ctx&&doms.includes(l.dom)));
+  for(const ld of ctxLds){ if(items.filter(x=>LD[x.ld].ctx).length>=3) break; if(items.some(x=>x.ld===ld.id)) continue; const j=items.findIndex(x=>x.dom===ld.dom&&!LD[x.ld].ctx); if(j>=0){ let it=maakItem(ld.id,{trede:3,bron:'toets'}); if(!['open','mc'].includes(it.vorm)) it=maakItem(ld.id,{trede:3,vorm:VAST(it),bron:'toets'}); items[j]=it } }
   if(!items.some(x=>x.vorm==='sab')){ const kan=items.map((x,i)=>i).filter(i=>LD[items[i].ld].sab); if(kan.length){ const i=kan[Math.floor(Math.random()*kan.length)]; items[i]=maakItem(items[i].ld,{trede:3,vorm:'sab',bron:'toets'}) } }
   SES={soort:'toets',titel:'Rekentoets Niveau '+n,niv:n,herk,items:shuffle(items),antw:[],res:[],i:0,n:items.length,start:Date.now()};
   volgendeItem();
