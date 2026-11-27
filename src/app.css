@@ -187,3 +187,6 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .schattip{background:#fff7ec;border-radius:8px;padding:8px 10px;margin-top:10px}
 .model{margin-top:12px;background:#fff;border:1px dashed #e0d8cc;border-radius:10px;padding:10px 12px}
 .model .figuur{margin:6px 0}
+.term{all:unset;cursor:help;border-bottom:2px dotted #F08A09;color:inherit}
+.term:focus-visible{outline:2px solid #F08A09;outline-offset:2px}
+.qkop .rmknop+.rmknop{margin-left:6px}

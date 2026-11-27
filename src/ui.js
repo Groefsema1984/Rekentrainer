@@ -195,12 +195,13 @@ function quizHtml(){
   const knoppen = (it.vorm==='faded1'||it.vorm==='v3') ? `<button class="knop" id="kCheck" onclick="indienen(null)">Controleer</button>`
      : `<button class="knop zekerknop" onclick="indienen(true)" title="Ik weet het zeker"><b>!</b> Zeker</button><button class="knop gokknop" onclick="indienen(false)" title="Ik gok"><b>?</b> Gok</button>`;
   return `<div class="wrap" id="qz"><div class="top"><button class="terug" onclick="stopSessie()">← Stoppen</button><h1>${esc(SES.titel)}</h1>${SES.soort==='instap'?`<span class="chip">Niveau ${it.niv}</span>`:''}${SES.soort==='toets'?`<span class="chip">Vraag ${SES.i+1} van ${SES.n}</span>`:''}</div>${dots}
-   <div class="kaart" style="--k:${d.k}"><div class="qkop"><span class="eyebrow" style="color:${d.k}">${esc(d.naam)} · ${esc(subVan(it.dom,it.sub).naam)}</span><span class="zacht klein">${esc(label)}${fase?' · '+fase:''}</span>${rm}</div>
+   <div class="kaart" style="--k:${d.k}"><div class="qkop"><span class="eyebrow" style="color:${d.k}">${esc(d.naam)} · ${esc(subVan(it.dom,it.sub).naam)}</span><span class="zacht klein">${esc(label)}${fase?' · '+fase:''}</span><button class="rmknop" onclick="voorlezen()" title="Lees de opgave voor">🔊 Lees voor</button>${rm}</div>
    <div id="qbody">${schatHtml(it)}${itemHtml(it)}</div>
    <div id="qfb"></div>
    <div class="voet" id="qknoppen">${knoppen}</div></div></div><div id="rekenmachine" hidden></div>`;
 }
 function naRender(){
+  try{ woordenMarkeren($('#qbody')) }catch(e){}
   schatNaRender();
   const a=$('#antw'); if(a&&!('ontouchstart' in window)) a.focus();
   $$('#qbody input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); indienen(true) } }));
@@ -241,6 +242,7 @@ function toonFeedback(it,res){
     kn.innerHTML = spiegel?`<button class="knop" onclick="naarSpiegel()">Probeer een spiegelvraag →</button>`:`<button class="knop" onclick="naVraag()">Volgende →</button>`;
     if(it.bron==='spiegel') fb.insertAdjacentHTML('beforeend','<p class="zacht klein">Geen zorgen: je oefent dit onderdeel straks nog eens met tussenstappen.</p>');
   }
+  try{ woordenMarkeren(fb) }catch(e){}
   fb.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function naarSpiegel(){ const vorig=Q.it; const sp=spiegelVan(vorig); Q={it:sp,keuze:null,klaar:false,vorigeFout:vorig.key}; go('quiz') }

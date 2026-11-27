@@ -16,7 +16,7 @@ function kiesSchat(el,ok){
   $('#schatfb').innerHTML=ok?'Goede schatting. Reken het nu precies uit en kijk of je uitkomst daar dichtbij ligt.':`Het antwoord ligt rond de <b>${nl(Q.schat.g,6)}</b>. Gebruik die schatting straks om je uitkomst te controleren.`;
   const a=$('#antw'); if(a){ a.disabled=false; a.focus() }
 }
-function schatNaRender(){ if(Q&&Q.schat&&!Q.schat.klaar&&$('#schat')){ const a=$('#antw'); if(a) a.disabled=true } }
+function schatNaRender(){ if(Q&&Q.schat&&!Q.schat.klaar&&$('#schat')){ const a=$('#antw'); if(a){ a.disabled=true; let c=a; while(c.parentElement&&c.parentElement.id!=='qbody') c=c.parentElement; if(c.parentElement) c.parentElement.insertBefore($('#schat'),c) } } }
 // controle achteraf: zit het antwoord er een factor 5 of meer naast?
 function ordegrootteTip(it,res){
   if(it.vorm!=='open'&&it.vorm!=='faded2') return '';
