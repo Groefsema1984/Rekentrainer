@@ -35,6 +35,7 @@ SCHERMEN.docent=function(){
    ${ll.map(l=>`<tr class="klik" onclick="docentLeerling('${esc(l['Leerling-ID'])}')"><td><b>${esc(l.Naam)}</b></td><td>${esc(l.Klas)}</td><td><b>${l['Huidig niveau']||'–'}</b></td>${KOLOM.map(k=>pc(l[k])).join('')}<td>${l['Open fouten']||0}</td><td>${l['Zeker én fout (open)']?`<b style="color:var(--fout)">${l['Zeker én fout (open)']}</b>`:0}</td><td>${l['Toetsen geslaagd']||0}</td><td>${l['Oefentijd deze week (min)']||0}</td><td>${datumKort(l['Laatst gezien'])}</td><td class="zacht klein">${esc(l['Leerling-ID'])}<br>${esc(l.Herstelcode||'')}</td></tr>`).join('')||'<tr><td colspan="13" class="zacht">Nog geen leerlingen.</td></tr>'}
    </tbody></table></div>
    ${d.topmisc&&d.topmisc.length?`<h2 class="sectie">Denkfouten${DOC.klas?' in '+esc(DOC.klas):''}</h2><p class="zacht klein">Fouten gegroepeerd per misconceptie, over alle leerdoelen heen. Begin bij de bovenste: die komt bij de meeste leerlingen voor.</p><div class="kaart tabelwrap"><table><thead><tr><th>Denkfout</th><th>Leerlingen</th><th>Keer</th><th>Waarvan zeker</th><th>Komt voor bij</th><th>Tip voor een mini-instructie</th></tr></thead><tbody>${d.topmisc.map(t=>`<tr><td><b>${esc(t.naam)}</b></td><td>${t.leerlingen}</td><td>${t.keer}</td><td>${t.zeker}</td><td class="klein">${t.leerdoelen.map(x=>esc(LD[x]?LD[x].naam:x)).join('<br>')}</td><td class="klein">${esc(misTip(t.naam))}</td></tr>`).join('')}</tbody></table></div>`:''}
+   ${instructieGroepjesHtml(d)}
    ${d.topfouten&&d.topfouten.length?`<h2 class="sectie">Hardnekkigste fouten${DOC.klas?' in '+esc(DOC.klas):''}</h2><div class="kaart tabelwrap"><table><thead><tr><th>Leerdoel</th><th>Niveau</th><th>Domein</th><th>Keer fout</th><th>Waarvan zeker</th><th>Leerlingen</th></tr></thead><tbody>${d.topfouten.map(t=>`<tr><td>${esc(LD[t.leerdoel]?LD[t.leerdoel].naam:t.leerdoel)}</td><td>${t.niveau}</td><td>${esc(t.domein)}</td><td>${t.keer}</td><td>${t.zeker}</td><td>${t.leerlingen}</td></tr>`).join('')}</tbody></table></div>`:''}
    </div>`;
 };
@@ -105,4 +106,16 @@ function sjabloonHtml(){
 }
 async function zetSjabloon(sj,status){
   try{ await api('sjabloonstatus',{docentcode:DOC.code,sj,status}); const j=await api('itemanalyse',{docentcode:DOC.code}); DOC.sj=j.sjablonen||[]; SJ.t=0; melding(status==='vrijgegeven'?'Sjabloon hersteld: hij wordt weer aangeboden.':status==='geblokkeerd'?'Sjabloon geblokkeerd.':'Sjabloon staat weer op automatisch.'); go('docentAnalyse') }catch(e){ melding(esc(e.message)) }
+}
+
+// Instructiegroepjes: leerlingen met dezelfde denkfout samen, plus per leerling de eigen denkfouten.
+function instructieGroepjesHtml(d){
+  const m=(d.topmisc||[]).filter(t=>t.wie&&t.wie.length);
+  if(!m.length) return d.topmisc&&d.topmisc.length?'<p class="zacht klein">Instructiegroepjes verschijnen zodra Code.gs is bijgewerkt (nieuwe versie implementeren).</p>':'';
+  const groepen=m.filter(t=>t.wie.length>=2).slice(0,6);
+  const perLl={}; m.forEach(t=>t.wie.forEach(w=>{ (perLl[w.id]=perLl[w.id]||{naam:w.naam,mis:[]}).mis.push({naam:t.naam,keer:w.keer}) }));
+  const ll=Object.values(perLl).sort((a,b)=>String(a.naam).localeCompare(String(b.naam)));
+  return `<h2 class="sectie">Voorstel instructiegroepjes${DOC.klas?' in '+esc(DOC.klas):''}</h2><p class="zacht klein">Leerlingen met dezelfde denkfout bij elkaar. Een groepje van 3 tot 6 leerlingen, tien minuten aan de instructietafel, werkt het best. Leerlingen kunnen in meer groepjes staan: begin bij de bovenste.</p>
+   <div class="groepjes">${groepen.length?groepen.map((t,i)=>`<div class="kaart"><span class="eyebrow" style="color:var(--knop)">Groepje ${i+1} · ${t.wie.length} leerlingen</span><h3 style="margin:6px 0">${esc(t.naam)}</h3><p class="klein">${t.wie.slice(0,8).map(w=>esc(w.naam)+` <span class="zacht">(${w.keer}×)</span>`).join(', ')}${t.wie.length>8?` en nog ${t.wie.length-8}`:''}</p><p class="zacht klein">${esc(misTip(t.naam))}</p></div>`).join(''):'<p class="zacht">Nog geen denkfout die bij twee of meer leerlingen voorkomt.</p>'}</div>
+   <details style="margin-top:10px"><summary><b>Denkfouten per leerling</b></summary><div class="kaart tabelwrap"><table><thead><tr><th>Leerling</th><th>Denkfouten (meest voorkomend eerst)</th></tr></thead><tbody>${ll.map(l=>`<tr><td>${esc(l.naam)}</td><td class="klein">${l.mis.sort((a,b)=>b.keer-a.keer).slice(0,4).map(x=>esc(x.naam)+` (${x.keer}×)`).join(' · ')}</td></tr>`).join('')}</tbody></table></div></details>`;
 }

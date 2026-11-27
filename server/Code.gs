@@ -454,9 +454,10 @@ function topMisc_(klas) {
   v.forEach(function (x) {
     if (klas && x[4] !== klas) return; const m = x[nk - 1]; if (!m) return;
     const t = tel[m] || (tel[m] = { naam: m, keer: 0, zeker: 0, leerlingen: {}, leerdoelen: {} });
-    t.keer++; if (String(x[13]).indexOf('Zeker') === 0) t.zeker++; t.leerlingen[x[2]] = 1; t.leerdoelen[x[7]] = (t.leerdoelen[x[7]] || 0) + 1;
+    t.keer++; if (String(x[13]).indexOf('Zeker') === 0) t.zeker++; const w = t.leerlingen[x[2]] || (t.leerlingen[x[2]] = { id: x[2], naam: x[3], keer: 0 }); w.keer++; t.leerdoelen[x[7]] = (t.leerdoelen[x[7]] || 0) + 1;
   });
-  return Object.keys(tel).map(function (k) { const t = tel[k]; return { naam: t.naam, keer: t.keer, zeker: t.zeker, leerlingen: Object.keys(t.leerlingen).length,
+  return Object.keys(tel).map(function (k) { const t = tel[k]; const wie = Object.keys(t.leerlingen).map(function (k) { return t.leerlingen[k]; }).sort(function (a, b) { return b.keer - a.keer; });
+    return { naam: t.naam, keer: t.keer, zeker: t.zeker, leerlingen: wie.length, wie: wie,
     leerdoelen: Object.keys(t.leerdoelen).sort(function (a, b) { return t.leerdoelen[b] - t.leerdoelen[a]; }).slice(0, 4) }; })
     .sort(function (a, b) { return b.leerlingen * 3 + b.keer - (a.leerlingen * 3 + a.keer); }).slice(0, 12);
 }
