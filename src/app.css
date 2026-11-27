@@ -190,3 +190,16 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .term{all:unset;cursor:help;border-bottom:2px dotted #F08A09;color:inherit}
 .term:focus-visible{outline:2px solid #F08A09;outline-offset:2px}
 .qkop .rmknop+.rmknop{margin-left:6px}
+/* herhaalplanning */
+.hteller{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center;margin-bottom:6px}
+.hteller div{background:var(--bg);border-radius:8px;padding:8px 4px}.hteller b{display:block;font:800 24px var(--kop)}.hteller small{font-size:12px;opacity:.75}
+.hladder{display:inline-flex;gap:3px;vertical-align:middle}.hladder i{font-style:normal;font-size:11px;font-weight:700;padding:2px 6px;border-radius:10px;background:var(--bg);border:1px solid var(--lijn);opacity:.7}
+.hladder i.af{background:var(--goed);border-color:var(--goed);color:#fff;opacity:1}.hladder i.nu{border-color:var(--knop);color:var(--knop);opacity:1;box-shadow:0 0 0 2px color-mix(in srgb,var(--knop) 25%,transparent)}
+.hladder.groot i{font-size:14px;padding:5px 12px;opacity:1}
+.hstrip{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin:16px 0 6px;align-items:end}
+.hdag{display:flex;flex-direction:column;align-items:center;font-size:11px;min-height:96px;justify-content:flex-end;border-radius:6px;padding:4px 0}
+.hdag.nu{background:var(--bg)}.hdag small{opacity:.7}.hdag b{font-size:13px}
+.hdag span{order:-1;width:70%;background:var(--knop);color:#fff;border-radius:4px 4px 0 0;font-size:11px;font-weight:700;text-align:center;line-height:1.4}
+.hsoort{display:inline-block;font-size:11px;font-weight:800;text-transform:uppercase;padding:1px 6px;border-radius:4px;background:var(--knop);color:#fff;margin-right:6px}.hsoort.fout{background:var(--fout)}
+.hbol{width:12px;height:12px;border-radius:50%;flex:none;margin-top:6px}
+.hinfo{margin:10px 0 0;font-size:14px}

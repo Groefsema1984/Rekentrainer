@@ -36,13 +36,14 @@ function verwerk(it,res){
   x.b = rondaf(x.b + w*((res.goed?100:0)-x.b),1);
   if(zelfstandig||it.bron==='spiegel') x.n++;
   // itemanalyse: eerste zelfstandige pogingen (geen herhaling/spiegel) → p-waarde per leerdoel voor de docent
-  if(it.trede===3&&!['spiegel','herhaal','instap'].includes(it.bron)){ x.p3=(x.p3||0)+1; if(res.goed) x.g3=(x.g3||0)+1; else if(res.zeker===true) x.zf3=(x.zf3||0)+1 }
+  if(it.trede===3&&!['spiegel','herhaal','instap','onderhoud'].includes(it.bron)){ x.p3=(x.p3||0)+1; if(res.goed) x.g3=(x.g3||0)+1; else if(res.zeker===true) x.zf3=(x.zf3||0)+1 }
   // 2. treden (faded examples)
   if(it.bron==='spiegel'){ if(!res.goed) x.tr=Math.min(x.tr||3,2) }
   else if(x.tr===0){ x.tr = res.goed ? (res.zeker!==false?3:2) : 1 }      // instapvraag van een nieuw leerdoel
   else if(it.trede===1){ x.tr=2 }
   else if(it.trede===2){ if(res.goed){ x.tr=3; x.frij=0 } else { x.frij=(x.frij||0)+1; if(x.frij>=2){ x.tr=1; x.frij=0 } } }
   else { if(res.goed){ x.rij=(x.rij||0)+1; x.frij=0 } else { x.rij=0; x.frij=(x.frij||0)+1; if(x.frij>=2){ x.tr=2; x.frij=0 } } }
+  onderhoudBij(it,res,x);
   x.l=nu; x.u=nu; S.ld[it.ld]=x;
   // 3. foutenbank
   if(it.trede===3||it.bron==='spiegel') foutenbank(it,res);
@@ -89,15 +90,19 @@ const fbDue = () => fbOpen().filter(([k,f])=>(f.dueN<=S.aantal)||(f.dueT&&f.dueT
 function volgende(ctx){
   const niv=ctx.niv||S.niv; const recent=ctx.recent||[];
   const inScope = id => { const l=LD[id]; if(!l) return false;
-    if(ctx.modus==='fouten') return true;
+    if(ctx.modus==='fouten'||ctx.modus==='herhaal') return true;
     if(ctx.modus==='ld') return id===ctx.ld;
     if(l.niv!==niv && !(ctx.modus==='slim'&&l.niv<niv)) return false;
     if(ctx.dom&&l.dom!==ctx.dom) return false; if(ctx.sub&&l.sub!==ctx.sub) return false; return true };
   // 1. foutenbank (Zeker én fout eerst)
   const due=fbDue().filter(([k])=>inScope(k)).sort((a,b)=>(b[1].zf-a[1].zf)||(a[1].t-b[1].t));
-  const kans = ctx.modus==='fouten'?1 : due.length&&due[0][1].zf?.6:.35;
+  const kans = ctx.modus==='fouten'||ctx.modus==='herhaal'?1 : due.length&&due[0][1].zf?.6:.35;
   if(due.length&&Math.random()<kans) return maakItem(due[0][0],{trede:3,vorm:LD[due[0][0]].opties?'mc':(LD[due[0][0]].antw?'open':null),bron:'herhaal'});
   if(ctx.modus==='fouten'){ const open=fbOpen().sort((a,b)=>(b[1].zf-a[1].zf)||(a[1].t-b[1].t)); if(open.length) return maakItem(open[0][0],{trede:3,vorm:LD[open[0][0]].opties?'mc':(LD[open[0][0]].antw?'open':null),bron:'herhaal'}); return null }
+  // 1b. herhaalmomenten (gespreide herhaling van beheerste leerdoelen)
+  if(['slim','domein','herhaal'].includes(ctx.modus)){ const od=onderhoudDue().filter(([k])=>ctx.modus==='herhaal'||(LD[k].niv<=niv&&(!ctx.dom||LD[k].dom===ctx.dom)&&!recent.includes(k)));
+    if(od.length&&(ctx.modus==='herhaal'||Math.random()<.3)) return maakItem(od[0][0],{trede:3,bron:'onderhoud'}); }
+  if(ctx.modus==='herhaal') return null;
   if(ctx.modus==='ld') return itemVoor(ctx.ld);
   // 2. interleaving: na 3 keer hetzelfde leerdoel een verwarbaar leerdoel
   const laatste=recent.slice(-3);

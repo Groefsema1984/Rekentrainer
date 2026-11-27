@@ -462,6 +462,19 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .term{all:unset;cursor:help;border-bottom:2px dotted #F08A09;color:inherit}
 .term:focus-visible{outline:2px solid #F08A09;outline-offset:2px}
 .qkop .rmknop+.rmknop{margin-left:6px}
+/* herhaalplanning */
+.hteller{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center;margin-bottom:6px}
+.hteller div{background:var(--bg);border-radius:8px;padding:8px 4px}.hteller b{display:block;font:800 24px var(--kop)}.hteller small{font-size:12px;opacity:.75}
+.hladder{display:inline-flex;gap:3px;vertical-align:middle}.hladder i{font-style:normal;font-size:11px;font-weight:700;padding:2px 6px;border-radius:10px;background:var(--bg);border:1px solid var(--lijn);opacity:.7}
+.hladder i.af{background:var(--goed);border-color:var(--goed);color:#fff;opacity:1}.hladder i.nu{border-color:var(--knop);color:var(--knop);opacity:1;box-shadow:0 0 0 2px color-mix(in srgb,var(--knop) 25%,transparent)}
+.hladder.groot i{font-size:14px;padding:5px 12px;opacity:1}
+.hstrip{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin:16px 0 6px;align-items:end}
+.hdag{display:flex;flex-direction:column;align-items:center;font-size:11px;min-height:96px;justify-content:flex-end;border-radius:6px;padding:4px 0}
+.hdag.nu{background:var(--bg)}.hdag small{opacity:.7}.hdag b{font-size:13px}
+.hdag span{order:-1;width:70%;background:var(--knop);color:#fff;border-radius:4px 4px 0 0;font-size:11px;font-weight:700;text-align:center;line-height:1.4}
+.hsoort{display:inline-block;font-size:11px;font-weight:800;text-transform:uppercase;padding:1px 6px;border-radius:4px;background:var(--knop);color:#fff;margin-right:6px}.hsoort.fout{background:var(--fout)}
+.hbol{width:12px;height:12px;border-radius:50%;flex:none;margin-top:6px}
+.hinfo{margin:10px 0 0;font-size:14px}
 
 </style>
 </head>
@@ -475,7 +488,7 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekentrainer Vellesan · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = '9eac483b3e';
+const BOUW = '8c6c9eb548';
 const KLASSEN = ['1e klas','2e klas','3e klas','4e klas','5e klas','6e klas','Thuis'];
 const KEY = 'rekenvel-v1';
 const OUTBOX = 'rekenvel-outbox';
@@ -1013,13 +1026,14 @@ function verwerk(it,res){
   x.b = rondaf(x.b + w*((res.goed?100:0)-x.b),1);
   if(zelfstandig||it.bron==='spiegel') x.n++;
   // itemanalyse: eerste zelfstandige pogingen (geen herhaling/spiegel) → p-waarde per leerdoel voor de docent
-  if(it.trede===3&&!['spiegel','herhaal','instap'].includes(it.bron)){ x.p3=(x.p3||0)+1; if(res.goed) x.g3=(x.g3||0)+1; else if(res.zeker===true) x.zf3=(x.zf3||0)+1 }
+  if(it.trede===3&&!['spiegel','herhaal','instap','onderhoud'].includes(it.bron)){ x.p3=(x.p3||0)+1; if(res.goed) x.g3=(x.g3||0)+1; else if(res.zeker===true) x.zf3=(x.zf3||0)+1 }
   // 2. treden (faded examples)
   if(it.bron==='spiegel'){ if(!res.goed) x.tr=Math.min(x.tr||3,2) }
   else if(x.tr===0){ x.tr = res.goed ? (res.zeker!==false?3:2) : 1 }      // instapvraag van een nieuw leerdoel
   else if(it.trede===1){ x.tr=2 }
   else if(it.trede===2){ if(res.goed){ x.tr=3; x.frij=0 } else { x.frij=(x.frij||0)+1; if(x.frij>=2){ x.tr=1; x.frij=0 } } }
   else { if(res.goed){ x.rij=(x.rij||0)+1; x.frij=0 } else { x.rij=0; x.frij=(x.frij||0)+1; if(x.frij>=2){ x.tr=2; x.frij=0 } } }
+  onderhoudBij(it,res,x);
   x.l=nu; x.u=nu; S.ld[it.ld]=x;
   // 3. foutenbank
   if(it.trede===3||it.bron==='spiegel') foutenbank(it,res);
@@ -1066,15 +1080,19 @@ const fbDue = () => fbOpen().filter(([k,f])=>(f.dueN<=S.aantal)||(f.dueT&&f.dueT
 function volgende(ctx){
   const niv=ctx.niv||S.niv; const recent=ctx.recent||[];
   const inScope = id => { const l=LD[id]; if(!l) return false;
-    if(ctx.modus==='fouten') return true;
+    if(ctx.modus==='fouten'||ctx.modus==='herhaal') return true;
     if(ctx.modus==='ld') return id===ctx.ld;
     if(l.niv!==niv && !(ctx.modus==='slim'&&l.niv<niv)) return false;
     if(ctx.dom&&l.dom!==ctx.dom) return false; if(ctx.sub&&l.sub!==ctx.sub) return false; return true };
   // 1. foutenbank (Zeker én fout eerst)
   const due=fbDue().filter(([k])=>inScope(k)).sort((a,b)=>(b[1].zf-a[1].zf)||(a[1].t-b[1].t));
-  const kans = ctx.modus==='fouten'?1 : due.length&&due[0][1].zf?.6:.35;
+  const kans = ctx.modus==='fouten'||ctx.modus==='herhaal'?1 : due.length&&due[0][1].zf?.6:.35;
   if(due.length&&Math.random()<kans) return maakItem(due[0][0],{trede:3,vorm:LD[due[0][0]].opties?'mc':(LD[due[0][0]].antw?'open':null),bron:'herhaal'});
   if(ctx.modus==='fouten'){ const open=fbOpen().sort((a,b)=>(b[1].zf-a[1].zf)||(a[1].t-b[1].t)); if(open.length) return maakItem(open[0][0],{trede:3,vorm:LD[open[0][0]].opties?'mc':(LD[open[0][0]].antw?'open':null),bron:'herhaal'}); return null }
+  // 1b. herhaalmomenten (gespreide herhaling van beheerste leerdoelen)
+  if(['slim','domein','herhaal'].includes(ctx.modus)){ const od=onderhoudDue().filter(([k])=>ctx.modus==='herhaal'||(LD[k].niv<=niv&&(!ctx.dom||LD[k].dom===ctx.dom)&&!recent.includes(k)));
+    if(od.length&&(ctx.modus==='herhaal'||Math.random()<.3)) return maakItem(od[0][0],{trede:3,bron:'onderhoud'}); }
+  if(ctx.modus==='herhaal') return null;
   if(ctx.modus==='ld') return itemVoor(ctx.ld);
   // 2. interleaving: na 3 keer hetzelfde leerdoel een verwarbaar leerdoel
   const laatste=recent.slice(-3);
@@ -2742,7 +2760,7 @@ function go(naam,p={}){
 function menu(){
   const m=$('#menu'); if(!m) return;
   if(!S||!S.naam||!S.niv){ m.innerHTML=''; return }
-  const items=[['home','Dashboard'],['niveaus','Niveaus'],['fouten','Foutenbank'],['account','Account']];
+  const items=[['home','Dashboard'],['niveaus','Niveaus'],['planning','Planning'],['fouten','Foutenbank'],['account','Account']];
   m.innerHTML=items.map(([k,t])=>`<button class="${scherm===k||(k==='home'&&scherm==='domein')?'aan':''}" onclick="go('${k}')">${t}</button>`).join('')+
     `<button onclick="go('docentLogin')" style="margin-left:auto">Docent</button>`;
 }
@@ -2844,6 +2862,7 @@ home(){
         <button class="verder" onclick="startFit()"><b>Rekenfit · 2 minuten</b><small>Kale sommen, vlot en foutloos${S.fit?` · record ${S.fit.best}`:''}</small><span>›</span></button>
         ${due?`<button class="verder rood" onclick="startOefen({modus:'fouten'})"><b>Herhaal je fouten (${due})</b><small>${zf?zf+' keer "Zeker én fout": die eerst':'Ze komen terug tot je ze 2× goed hebt'}</small><span>›</span></button>`:''}
       </div>
+      ${planningKaart()}
       <div class="kaart"><h3 class="kaartkop">Jouw rekentoets</h3>${toets}</div>
       <div class="kaart"><h3 class="kaartkop">Foutenbank</h3><p class="klein" style="margin:0 0 10px">${open?`${open} onderdelen staan nog open${zf?`, waarvan ${zf} "Zeker én fout"`:''}.`:'Je foutenbank is leeg. Netjes!'}</p><button class="knop zacht klein vol" onclick="go('fouten')">Bekijk foutenbank</button></div>
       <div class="kaart"><h3 class="kaartkop">Badges</h3><div class="badges">${BADGES.map(b=>`<span class="${S.badges.includes(b.id)?'':'nee'}" title="${esc(b.naam+': '+b.uit)}">${b.e}</span>`).join('')}</div></div>
@@ -2853,7 +2872,7 @@ domein(p){
   const d=DOM[p.dom]; const n=p.niv||S.niv; const subs=SUBDOMEINEN[p.dom]; const b=domB(n,p.dom);
   const todo=subs.map(s=>{ const lds=ldsVan(n,p.dom,s.id); if(!lds.length) return '';
     return `<div class="todo ${p.sub===s.id?'uit':''}"><h4>${esc(s.naam)} <span>${subB(n,p.dom,s.id)}%</span></h4>${lds.map(l=>{ const x=ldS(l.id); const fase=x.tr===0?'Nog niet gestart':x.b>=DREMPEL?'Beheerst':['','Fase 1 · voorbeeld','Fase 2 · invulsom','Fase 3 · zelf doen'][x.tr];
-      return `<button class="todoitem" onclick="startOefen({modus:'ld',ld:'${l.id}',niv:${n}})"><span class="vink ${x.b>=DREMPEL?'ja':x.n?'half':''}">${x.b>=DREMPEL?'✓':''}</span><span><b>${esc(l.naam)}</b><small>${fase}${x.n?` · ${Math.round(x.b)}%`:''}</small></span>${S.fb[l.id]&&!S.fb[l.id].opgelost?'<em title="In je foutenbank">!</em>':''}</button>` }).join('')}</div>` }).join('');
+      return `<button class="todoitem" onclick="startOefen({modus:'ld',ld:'${l.id}',niv:${n}})"><span class="vink ${x.b>=DREMPEL?'ja':x.n?'half':''}">${x.b>=DREMPEL?'✓':''}</span><span><b>${esc(l.naam)}</b><small>${fase}${x.n?` · ${Math.round(x.b)}%`:''}${x.hd?` · 📅 herhalen ${wanneerTekst(x.hd)}`:''}</small></span>${S.fb[l.id]&&!S.fb[l.id].opgelost?'<em title="In je foutenbank">!</em>':''}</button>` }).join('')}</div>` }).join('');
   const nivKeuze=`<div class="nivkeuze">${NIVEAUS.map(x=>`<button class="${x.n===n?'aan':''}" ${x.n>S.niv?'disabled':''} onclick="go('domein',{dom:'${p.dom}',niv:${x.n}})">${x.n}</button>`).join('')}</div>`;
   return `<section class="foto paginakop" style="${foto(p.dom)};border-radius:0;min-height:230px"><div class="wrap" style="width:100%;padding-bottom:0"><button class="terug" onclick="go('home')">← Dashboard</button><span class="eyebrow" style="color:${d.k};display:block;margin-top:10px">Niveau ${n} · ${b}%</span><h1>${esc(d.naam)}</h1></div></section>
    <div class="wrap"><div class="domlayout">
@@ -2879,7 +2898,7 @@ fouten(){
    <div class="wrap smal"><div class="kaart">
    <p>Elke fout komt hier terug, met andere getallen. Na <b>2 keer achter elkaar goed</b> is hij opgelost. Bij <b>Zeker én fout</b> (je dacht dat je het wist) moet het 3 keer goed. ${opgelost?`Je hebt al ${opgelost} fouten opgelost.`:''}</p>
    ${open.length?`<div class="voet" style="justify-content:flex-start"><button class="knop" onclick="startOefen({modus:'fouten'})">Herhaal nu (${Math.min(10,open.length)})</button></div>`:''}
-   ${open.map(([k,f])=>{ const l=LD[k]; return `<div class="rij"><span class="fbicoon ${f.zf?'zf':''}">${f.zf?'!':'?'}</span><div style="flex:1"><b>${esc(l.naam)}</b><br><small class="zacht">Niveau ${l.niv} · ${DOM[l.dom].naam} · jouw antwoord: ${esc(f.gegeven||'–')} · goed: ${esc(f.juist||'–')} · ${f.rij||0}/${f.nodig} keer goed</small></div><button class="knop zacht klein" onclick="startOefen({modus:'ld',ld:'${k}',niv:${l.niv}})">Oefen</button></div>` }).join('')||'<p class="zacht">Er staan geen open fouten in je foutenbank.</p>'}
+   ${open.map(([k,f])=>{ const l=LD[k]; return `<div class="rij"><span class="fbicoon ${f.zf?'zf':''}">${f.zf?'!':'?'}</span><div style="flex:1"><b>${esc(l.naam)}</b><br><small class="zacht">Niveau ${l.niv} · ${DOM[l.dom].naam} · jouw antwoord: ${esc(f.gegeven||'–')} · goed: ${esc(f.juist||'–')} · ${f.rij||0}/${f.nodig} keer goed · terug ${wanneerTekst(f.dueT||Date.now())}</small></div><button class="knop zacht klein" onclick="startOefen({modus:'ld',ld:'${k}',niv:${l.niv}})">Oefen</button></div>` }).join('')||'<p class="zacht">Er staan geen open fouten in je foutenbank.</p>'}
    </div></div>${VOET()}`;
 },
 account(){
@@ -2900,8 +2919,8 @@ uitslag(p){ return p.html },
 let SES=null;
 function startOefen(ctx){
   ctx=Object.assign({niv:ctx.niv||S.niv},ctx);
-  const titel = ctx.modus==='fouten'?'Herhaal je fouten': ctx.modus==='ld'?LD[ctx.ld].naam : ctx.modus==='sub'?subVan(ctx.dom,ctx.sub).naam : ctx.modus==='domein'?DOM[ctx.dom].naam : 'Slim oefenen';
-  SES={soort:'oefen',ctx,titel,n:ctx.modus==='fouten'?Math.min(10,Math.max(1,fbOpen().length)):10,i:0,res:[],recent:[],start:{b:DOMEINEN.map(d=>domB(ctx.niv,d.id))}};
+  const titel = ctx.modus==='fouten'?'Herhaal je fouten': ctx.modus==='herhaal'?'Herhaalmomenten': ctx.modus==='ld'?LD[ctx.ld].naam : ctx.modus==='sub'?subVan(ctx.dom,ctx.sub).naam : ctx.modus==='domein'?DOM[ctx.dom].naam : 'Slim oefenen';
+  SES={soort:'oefen',ctx,titel,n:ctx.modus==='fouten'?Math.min(10,Math.max(1,fbOpen().length)):ctx.modus==='herhaal'?Math.min(10,Math.max(1,herhaalNu())):10,i:0,res:[],recent:[],start:{b:DOMEINEN.map(d=>domB(ctx.niv,d.id))}};
   volgendeItem();
 }
 function volgendeItem(){
@@ -2916,8 +2935,8 @@ function toonItem(it){ Q={it,keuze:null,klaar:false,start:Date.now()}; oefenActi
 function quizHtml(){
   const it=Q.it, ld=LD[it.ld], d=DOM[it.dom];
   const dots = `<div class="voortgang">${Array.from({length:SES.n},(_,i)=>`<i class="${i<SES.res.length?(SES.res[i]?'g':'f'):i===SES.i?'nu':''}"></i>`).join('')}</div>`;
-  const label = it.bron==='spiegel'?'Spiegelvraag · zelfde denkstap, andere getallen':it.bron==='herhaal'?'Uit je foutenbank':TREDE_LABEL[it.vorm];
-  const fase = SES.soort==='oefen'&&it.bron!=='spiegel'&&it.bron!=='herhaal'?(it.trede===1?'Fase 1':it.trede===2?'Fase 2':'Fase 3'):'';
+  const label = it.bron==='spiegel'?'Spiegelvraag · zelfde denkstap, andere getallen':it.bron==='herhaal'?'Uit je foutenbank':it.bron==='onderhoud'?'Herhaalmoment · haal op wat je al kon':TREDE_LABEL[it.vorm];
+  const fase = SES.soort==='oefen'&&it.bron!=='spiegel'&&it.bron!=='herhaal'&&it.bron!=='onderhoud'?(it.trede===1?'Fase 1':it.trede===2?'Fase 2':'Fase 3'):'';
   const rm = it.rm?`<button class="rmknop" onclick="toonRekenmachine()" title="Rekenmachine">🧮 Rekenmachine</button>`:`<span class="rmknop dicht" title="Rekenmachine niet toegestaan">🧮 Uit het hoofd of op kladpapier</span>`;
   const knoppen = (it.vorm==='faded1'||it.vorm==='v3') ? `<button class="knop" id="kCheck" onclick="indienen(null)">Controleer</button>`
      : `<button class="knop zekerknop" onclick="indienen(true)" title="Ik weet het zeker"><b>!</b> Zeker</button><button class="knop gokknop" onclick="indienen(false)" title="Ik gok"><b>?</b> Gok</button>`;
@@ -2959,11 +2978,11 @@ function toonFeedback(it,res){
   const fb=$('#qfb'), kn=$('#qknoppen');
   if(res.goed){
     const extra = it.bron==='spiegel'?'Het kwartje is gevallen. 👍': it.vorm==='faded1'?'Precies. Nu ga je het zelf proberen.': res.zeker===false?'Goed! Je gokte, maar het klopte. Volgende keer durf je vast "Zeker".':'Goed!';
-    fb.innerHTML=`<div class="fb goed"><b>${extra}</b>${res.fb&&it.vorm==='sab'?`<p>${res.fb}</p>`:''}${uitwerkingHtml(it)?`<details><summary>Bekijk de uitwerking</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
+    fb.innerHTML=`<div class="fb goed"><b>${extra}</b>${res.fb&&it.vorm==='sab'?`<p>${res.fb}</p>`:''}${herhaalInfo(it,res)}${uitwerkingHtml(it)?`<details><summary>Bekijk de uitwerking</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
     kn.innerHTML=`<button class="knop" onclick="naVraag()">Volgende →</button>`;
   } else {
     const zf=res.zeker===true?`<p class="zf">Je was zeker, maar het was fout. Juist deze vraag komt extra vaak terug.</p>`:'';
-    fb.innerHTML=`<div class="fb fout"><b>Nog niet goed.</b>${res.fb?`<p>${res.fb}</p>`:''}${it.vorm!=='sab'&&it.vorm!=='faded1'?`<p>Het goede antwoord is <b>${esc(res.juist)}</b>.</p>`:''}${zf}${ordegrootteTip(it,res)}</div>
+    fb.innerHTML=`<div class="fb fout"><b>Nog niet goed.</b>${res.fb?`<p>${res.fb}</p>`:''}${it.vorm!=='sab'&&it.vorm!=='faded1'?`<p>Het goede antwoord is <b>${esc(res.juist)}</b>.</p>`:''}${zf}${ordegrootteTip(it,res)}${herhaalInfo(it,res)}</div>
       <div class="anders"><span class="eyebrow" style="color:var(--knop)">Andere uitleg</span>${andersHtml(it)}${uitwerkingHtml(it)?`<details ${it.vorm==='faded1'?'':'open'}><summary>Uitwerking stap voor stap</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
     const spiegel = it.bron!=='spiegel' && it.vorm!=='faded1';
     kn.innerHTML = spiegel?`<button class="knop" onclick="naarSpiegel()">Probeer een spiegelvraag →</button>`:`<button class="knop" onclick="naVraag()">Volgende →</button>`;
@@ -3025,6 +3044,74 @@ function start(){
   if(!S.niv) return go('instapIntro');
   go('home'); planSync(1500);
 }
+
+// ===== Gespreide herhaling, zichtbaar voor de leerling =====
+// Een beheerst leerdoel komt terug na 2 dagen, 1 week, 2 weken, 1 maand en 2 maanden (uitbreidende intervallen).
+// Goed bij een herhaalmoment: de volgende herhaling schuift verder op. Fout: terug naar 2 dagen (en de foutenbank in).
+// De leerling ziet in een planning wat er vandaag, morgen en later terugkomt, en waarom.
+const HERHAAL_DAGEN = [2,7,14,30,60];
+const DAG = 864e5;
+function onderhoudBij(it,res,x){
+  if(it.trede!==3||it.bron==='spiegel'||it.bron==='instap') return;
+  const nu=Date.now();
+  if(it.bron==='onderhoud'){ x.h=res.goed?Math.min((x.h||0)+1,HERHAAL_DAGEN.length-1):0; x.hd=nu+HERHAAL_DAGEN[x.h]*DAG; x.hk=(x.hk||0)+1; return }
+  if(x.b>=DREMPEL&&!x.hd){ x.h=0; x.hd=nu+HERHAAL_DAGEN[0]*DAG }
+}
+const onderhoudDue = () => Object.entries(S.ld).filter(([k,x])=>LD[k]&&x.hd&&x.hd<=Date.now()&&!(S.fb[k]&&!S.fb[k].opgelost)).sort((a,b)=>a[1].hd-b[1].hd);
+const herhaalNu = () => fbDue().length+onderhoudDue().length;
+// alle geplande herhalingen: foutenbank + onderhoud
+function herhaalPlanning(){
+  const nu=Date.now(), p=[];
+  fbOpen().forEach(([k,f])=>p.push({k,soort:'fout',t:f.dueT||nu,f}));
+  Object.entries(S.ld).forEach(([k,x])=>{ if(LD[k]&&x.hd&&!(S.fb[k]&&!S.fb[k].opgelost)) p.push({k,soort:'onderhoud',t:x.hd,x}) });
+  return p.sort((a,b)=>a.t-b.t);
+}
+const dagStart = t => { const d=new Date(t); d.setHours(0,0,0,0); return d.getTime() };
+const dagenTot = t => Math.round((dagStart(t)-dagStart(Date.now()))/DAG);
+function wanneerTekst(t){
+  const d=dagenTot(t);
+  if(d<=0) return 'vandaag'; if(d===1) return 'morgen';
+  if(d<7) return 'op '+new Date(t).toLocaleDateString('nl-NL',{weekday:'long'});
+  return 'over '+d+' dagen ('+new Date(t).toLocaleDateString('nl-NL',{day:'numeric',month:'short'})+')';
+}
+function intervalLadder(h){ return `<span class="hladder" title="Herhaalstap ${h+1} van ${HERHAAL_DAGEN.length}">${HERHAAL_DAGEN.map((d,i)=>`<i class="${i<h?'af':i===h?'nu':''}">${d<7?d+'d':d<30?(d/7)+'w':(d/30)+'m'}</i>`).join('')}</span>` }
+// regel onder de feedback: wanneer komt dit terug?
+function herhaalInfo(it,res){
+  if(SES&&SES.soort!=='oefen') return '';
+  if(it.bron==='onderhoud'){ const x=ldS(it.ld);
+    return `<p class="hinfo">📅 ${res.goed?`Goed onthouden! Volgende herhaling ${wanneerTekst(x.hd)}.`:`Weggezakt. Dat is normaal. Hij staat in je foutenbank en komt ${wanneerTekst(x.hd)} weer als herhaalmoment.`} ${intervalLadder(x.h||0)}</p>` }
+  const f=S.fb[it.ld]; if(!f) return '';
+  if(it.bron==='herhaal'&&f.opgelost) return `<p class="hinfo">🎉 Opgelost uit je foutenbank. ${ldS(it.ld).hd?`Hij komt ${wanneerTekst(ldS(it.ld).hd)} nog terug als herhaalmoment.`:''}</p>`;
+  if(!f.opgelost&&!res.goed) return `<p class="hinfo">📅 Deze komt terug in je foutenbank: nog in deze of de volgende ronde, daarna na 1 en 3 dagen.</p>`;
+  if(it.bron==='herhaal'&&res.goed) return `<p class="hinfo">📅 ${f.rij}/${f.nodig} keer goed. Volgende keer: ${wanneerTekst(f.dueT)}.</p>`;
+  return '';
+}
+function planningKaart(){
+  const p=herhaalPlanning(); const v=p.filter(x=>dagenTot(x.t)<=0).length, m=p.filter(x=>dagenTot(x.t)===1).length, w=p.filter(x=>dagenTot(x.t)>1&&dagenTot(x.t)<7).length;
+  return `<div class="kaart"><h3 class="kaartkop">Herhaalplanning</h3>
+    <div class="hteller"><div><b>${v}</b><small>vandaag</small></div><div><b>${m}</b><small>morgen</small></div><div><b>${w}</b><small>deze week</small></div></div>
+    ${p.length?'':'<p class="klein zacht">Nog niets gepland. Beheers je een onderdeel (80%), dan komt het na 2 dagen terug.</p>'}
+    <div class="voet" style="margin-top:8px">${v?`<button class="knop klein" onclick="startOefen({modus:'herhaal'})">Herhaal nu (${Math.min(10,v)})</button>`:''}<button class="knop zacht klein" onclick="go('planning')">Bekijk planning</button></div></div>`;
+}
+SCHERMEN.planning=()=>{
+  const p=herhaalPlanning(); const v=p.filter(x=>dagenTot(x.t)<=0).length;
+  const dagen=Array.from({length:14},(_,i)=>{ const t=dagStart(Date.now())+i*DAG; const n=p.filter(x=>Math.max(0,dagenTot(x.t))===i).length;
+    return `<div class="hdag ${i===0?'nu':''}"><small>${i===0?'vandaag':new Date(t).toLocaleDateString('nl-NL',{weekday:'short'})}</small><b>${new Date(t).getDate()}</b><span style="height:${n?Math.min(48,10+n*7):0}px" title="${n} herhalingen">${n||''}</span></div>` }).join('');
+  const groep=(titel,f)=>{ const l=p.filter(x=>f(dagenTot(x.t))); if(!l.length) return '';
+    return `<h3 class="kaartkop" style="margin-top:18px">${titel} <span class="zacht">(${l.length})</span></h3>${l.map(x=>{ const ld=LD[x.k];
+      const info=x.soort==='fout'?`<span class="hsoort fout">Foutenbank</span> nog ${x.f.nodig-(x.f.rij||0)}× goed nodig`:`<span class="hsoort">Onderhoud</span> ${intervalLadder(x.x.h||0)}`;
+      return `<div class="rij"><span class="hbol" style="background:${DOM[ld.dom].k}"></span><div style="flex:1"><b>${esc(ld.naam)}</b><br><small class="zacht">Niveau ${ld.niv} · ${esc(DOM[ld.dom].naam)} · ${wanneerTekst(x.t)}</small><div class="klein">${info}</div></div></div>` }).join('')}` };
+  return `<section class="foto paginakop" style="${foto('fouten')};border-radius:0;min-height:210px"><div class="wrap" style="width:100%;padding-bottom:0"><span class="eyebrow" style="color:var(--acc)">Herhaalplanning</span><h1>Op tijd herhalen = langer onthouden</h1></div></section>
+   <div class="wrap smal"><div class="kaart">
+   <p>Wat je net geleerd hebt, zak je na een paar dagen weer weg. Daarom komt elk onderdeel dat je beheerst <b>op vaste momenten terug</b>. Heb je het goed, dan duurt het steeds langer tot de volgende keer:</p>
+   <p class="mid">${intervalLadder(-1).replace('hladder','hladder groot')}</p>
+   <p class="klein zacht">2 dagen → 1 week → 2 weken → 1 maand → 2 maanden. Is het weggezakt, dan begin je weer bij 2 dagen. Fouten uit je foutenbank komen sneller terug: dezelfde of volgende ronde, dan na 1 en 3 dagen.</p>
+   <div class="hstrip">${dagen}</div>
+   ${v?`<div class="voet" style="justify-content:flex-start"><button class="knop" onclick="startOefen({modus:'herhaal'})">Herhaal nu (${Math.min(10,v)})</button></div>`:''}
+   ${groep('Vandaag',d=>d<=0)}${groep('Morgen',d=>d===1)}${groep('Deze week',d=>d>1&&d<7)}${groep('Later',d=>d>=7)}
+   ${p.length?'':'<p class="zacht">Er staat nog niets gepland. Oefen een onderdeel tot je het beheerst: dan verschijnt het hier.</p>'}
+   </div></div>${VOET()}`;
+};
 
 // ===== Instaptoets (plaatsing) en formatieve rekentoets per niveau =====
 const VAST = it => { const l=LD[it.ld]; return l.opties?'mc':(l.antw?(Math.random()<.65?'open':(l.fouten?'mc':'open')):null) };

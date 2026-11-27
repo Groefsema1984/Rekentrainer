@@ -15,7 +15,7 @@ function go(naam,p={}){
 function menu(){
   const m=$('#menu'); if(!m) return;
   if(!S||!S.naam||!S.niv){ m.innerHTML=''; return }
-  const items=[['home','Dashboard'],['niveaus','Niveaus'],['fouten','Foutenbank'],['account','Account']];
+  const items=[['home','Dashboard'],['niveaus','Niveaus'],['planning','Planning'],['fouten','Foutenbank'],['account','Account']];
   m.innerHTML=items.map(([k,t])=>`<button class="${scherm===k||(k==='home'&&scherm==='domein')?'aan':''}" onclick="go('${k}')">${t}</button>`).join('')+
     `<button onclick="go('docentLogin')" style="margin-left:auto">Docent</button>`;
 }
@@ -117,6 +117,7 @@ home(){
         <button class="verder" onclick="startFit()"><b>Rekenfit · 2 minuten</b><small>Kale sommen, vlot en foutloos${S.fit?` · record ${S.fit.best}`:''}</small><span>›</span></button>
         ${due?`<button class="verder rood" onclick="startOefen({modus:'fouten'})"><b>Herhaal je fouten (${due})</b><small>${zf?zf+' keer "Zeker én fout": die eerst':'Ze komen terug tot je ze 2× goed hebt'}</small><span>›</span></button>`:''}
       </div>
+      ${planningKaart()}
       <div class="kaart"><h3 class="kaartkop">Jouw rekentoets</h3>${toets}</div>
       <div class="kaart"><h3 class="kaartkop">Foutenbank</h3><p class="klein" style="margin:0 0 10px">${open?`${open} onderdelen staan nog open${zf?`, waarvan ${zf} "Zeker én fout"`:''}.`:'Je foutenbank is leeg. Netjes!'}</p><button class="knop zacht klein vol" onclick="go('fouten')">Bekijk foutenbank</button></div>
       <div class="kaart"><h3 class="kaartkop">Badges</h3><div class="badges">${BADGES.map(b=>`<span class="${S.badges.includes(b.id)?'':'nee'}" title="${esc(b.naam+': '+b.uit)}">${b.e}</span>`).join('')}</div></div>
@@ -126,7 +127,7 @@ domein(p){
   const d=DOM[p.dom]; const n=p.niv||S.niv; const subs=SUBDOMEINEN[p.dom]; const b=domB(n,p.dom);
   const todo=subs.map(s=>{ const lds=ldsVan(n,p.dom,s.id); if(!lds.length) return '';
     return `<div class="todo ${p.sub===s.id?'uit':''}"><h4>${esc(s.naam)} <span>${subB(n,p.dom,s.id)}%</span></h4>${lds.map(l=>{ const x=ldS(l.id); const fase=x.tr===0?'Nog niet gestart':x.b>=DREMPEL?'Beheerst':['','Fase 1 · voorbeeld','Fase 2 · invulsom','Fase 3 · zelf doen'][x.tr];
-      return `<button class="todoitem" onclick="startOefen({modus:'ld',ld:'${l.id}',niv:${n}})"><span class="vink ${x.b>=DREMPEL?'ja':x.n?'half':''}">${x.b>=DREMPEL?'✓':''}</span><span><b>${esc(l.naam)}</b><small>${fase}${x.n?` · ${Math.round(x.b)}%`:''}</small></span>${S.fb[l.id]&&!S.fb[l.id].opgelost?'<em title="In je foutenbank">!</em>':''}</button>` }).join('')}</div>` }).join('');
+      return `<button class="todoitem" onclick="startOefen({modus:'ld',ld:'${l.id}',niv:${n}})"><span class="vink ${x.b>=DREMPEL?'ja':x.n?'half':''}">${x.b>=DREMPEL?'✓':''}</span><span><b>${esc(l.naam)}</b><small>${fase}${x.n?` · ${Math.round(x.b)}%`:''}${x.hd?` · 📅 herhalen ${wanneerTekst(x.hd)}`:''}</small></span>${S.fb[l.id]&&!S.fb[l.id].opgelost?'<em title="In je foutenbank">!</em>':''}</button>` }).join('')}</div>` }).join('');
   const nivKeuze=`<div class="nivkeuze">${NIVEAUS.map(x=>`<button class="${x.n===n?'aan':''}" ${x.n>S.niv?'disabled':''} onclick="go('domein',{dom:'${p.dom}',niv:${x.n}})">${x.n}</button>`).join('')}</div>`;
   return `<section class="foto paginakop" style="${foto(p.dom)};border-radius:0;min-height:230px"><div class="wrap" style="width:100%;padding-bottom:0"><button class="terug" onclick="go('home')">← Dashboard</button><span class="eyebrow" style="color:${d.k};display:block;margin-top:10px">Niveau ${n} · ${b}%</span><h1>${esc(d.naam)}</h1></div></section>
    <div class="wrap"><div class="domlayout">
@@ -152,7 +153,7 @@ fouten(){
    <div class="wrap smal"><div class="kaart">
    <p>Elke fout komt hier terug, met andere getallen. Na <b>2 keer achter elkaar goed</b> is hij opgelost. Bij <b>Zeker én fout</b> (je dacht dat je het wist) moet het 3 keer goed. ${opgelost?`Je hebt al ${opgelost} fouten opgelost.`:''}</p>
    ${open.length?`<div class="voet" style="justify-content:flex-start"><button class="knop" onclick="startOefen({modus:'fouten'})">Herhaal nu (${Math.min(10,open.length)})</button></div>`:''}
-   ${open.map(([k,f])=>{ const l=LD[k]; return `<div class="rij"><span class="fbicoon ${f.zf?'zf':''}">${f.zf?'!':'?'}</span><div style="flex:1"><b>${esc(l.naam)}</b><br><small class="zacht">Niveau ${l.niv} · ${DOM[l.dom].naam} · jouw antwoord: ${esc(f.gegeven||'–')} · goed: ${esc(f.juist||'–')} · ${f.rij||0}/${f.nodig} keer goed</small></div><button class="knop zacht klein" onclick="startOefen({modus:'ld',ld:'${k}',niv:${l.niv}})">Oefen</button></div>` }).join('')||'<p class="zacht">Er staan geen open fouten in je foutenbank.</p>'}
+   ${open.map(([k,f])=>{ const l=LD[k]; return `<div class="rij"><span class="fbicoon ${f.zf?'zf':''}">${f.zf?'!':'?'}</span><div style="flex:1"><b>${esc(l.naam)}</b><br><small class="zacht">Niveau ${l.niv} · ${DOM[l.dom].naam} · jouw antwoord: ${esc(f.gegeven||'–')} · goed: ${esc(f.juist||'–')} · ${f.rij||0}/${f.nodig} keer goed · terug ${wanneerTekst(f.dueT||Date.now())}</small></div><button class="knop zacht klein" onclick="startOefen({modus:'ld',ld:'${k}',niv:${l.niv}})">Oefen</button></div>` }).join('')||'<p class="zacht">Er staan geen open fouten in je foutenbank.</p>'}
    </div></div>${VOET()}`;
 },
 account(){
@@ -173,8 +174,8 @@ uitslag(p){ return p.html },
 let SES=null;
 function startOefen(ctx){
   ctx=Object.assign({niv:ctx.niv||S.niv},ctx);
-  const titel = ctx.modus==='fouten'?'Herhaal je fouten': ctx.modus==='ld'?LD[ctx.ld].naam : ctx.modus==='sub'?subVan(ctx.dom,ctx.sub).naam : ctx.modus==='domein'?DOM[ctx.dom].naam : 'Slim oefenen';
-  SES={soort:'oefen',ctx,titel,n:ctx.modus==='fouten'?Math.min(10,Math.max(1,fbOpen().length)):10,i:0,res:[],recent:[],start:{b:DOMEINEN.map(d=>domB(ctx.niv,d.id))}};
+  const titel = ctx.modus==='fouten'?'Herhaal je fouten': ctx.modus==='herhaal'?'Herhaalmomenten': ctx.modus==='ld'?LD[ctx.ld].naam : ctx.modus==='sub'?subVan(ctx.dom,ctx.sub).naam : ctx.modus==='domein'?DOM[ctx.dom].naam : 'Slim oefenen';
+  SES={soort:'oefen',ctx,titel,n:ctx.modus==='fouten'?Math.min(10,Math.max(1,fbOpen().length)):ctx.modus==='herhaal'?Math.min(10,Math.max(1,herhaalNu())):10,i:0,res:[],recent:[],start:{b:DOMEINEN.map(d=>domB(ctx.niv,d.id))}};
   volgendeItem();
 }
 function volgendeItem(){
@@ -189,8 +190,8 @@ function toonItem(it){ Q={it,keuze:null,klaar:false,start:Date.now()}; oefenActi
 function quizHtml(){
   const it=Q.it, ld=LD[it.ld], d=DOM[it.dom];
   const dots = `<div class="voortgang">${Array.from({length:SES.n},(_,i)=>`<i class="${i<SES.res.length?(SES.res[i]?'g':'f'):i===SES.i?'nu':''}"></i>`).join('')}</div>`;
-  const label = it.bron==='spiegel'?'Spiegelvraag · zelfde denkstap, andere getallen':it.bron==='herhaal'?'Uit je foutenbank':TREDE_LABEL[it.vorm];
-  const fase = SES.soort==='oefen'&&it.bron!=='spiegel'&&it.bron!=='herhaal'?(it.trede===1?'Fase 1':it.trede===2?'Fase 2':'Fase 3'):'';
+  const label = it.bron==='spiegel'?'Spiegelvraag · zelfde denkstap, andere getallen':it.bron==='herhaal'?'Uit je foutenbank':it.bron==='onderhoud'?'Herhaalmoment · haal op wat je al kon':TREDE_LABEL[it.vorm];
+  const fase = SES.soort==='oefen'&&it.bron!=='spiegel'&&it.bron!=='herhaal'&&it.bron!=='onderhoud'?(it.trede===1?'Fase 1':it.trede===2?'Fase 2':'Fase 3'):'';
   const rm = it.rm?`<button class="rmknop" onclick="toonRekenmachine()" title="Rekenmachine">🧮 Rekenmachine</button>`:`<span class="rmknop dicht" title="Rekenmachine niet toegestaan">🧮 Uit het hoofd of op kladpapier</span>`;
   const knoppen = (it.vorm==='faded1'||it.vorm==='v3') ? `<button class="knop" id="kCheck" onclick="indienen(null)">Controleer</button>`
      : `<button class="knop zekerknop" onclick="indienen(true)" title="Ik weet het zeker"><b>!</b> Zeker</button><button class="knop gokknop" onclick="indienen(false)" title="Ik gok"><b>?</b> Gok</button>`;
@@ -232,11 +233,11 @@ function toonFeedback(it,res){
   const fb=$('#qfb'), kn=$('#qknoppen');
   if(res.goed){
     const extra = it.bron==='spiegel'?'Het kwartje is gevallen. 👍': it.vorm==='faded1'?'Precies. Nu ga je het zelf proberen.': res.zeker===false?'Goed! Je gokte, maar het klopte. Volgende keer durf je vast "Zeker".':'Goed!';
-    fb.innerHTML=`<div class="fb goed"><b>${extra}</b>${res.fb&&it.vorm==='sab'?`<p>${res.fb}</p>`:''}${uitwerkingHtml(it)?`<details><summary>Bekijk de uitwerking</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
+    fb.innerHTML=`<div class="fb goed"><b>${extra}</b>${res.fb&&it.vorm==='sab'?`<p>${res.fb}</p>`:''}${herhaalInfo(it,res)}${uitwerkingHtml(it)?`<details><summary>Bekijk de uitwerking</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
     kn.innerHTML=`<button class="knop" onclick="naVraag()">Volgende →</button>`;
   } else {
     const zf=res.zeker===true?`<p class="zf">Je was zeker, maar het was fout. Juist deze vraag komt extra vaak terug.</p>`:'';
-    fb.innerHTML=`<div class="fb fout"><b>Nog niet goed.</b>${res.fb?`<p>${res.fb}</p>`:''}${it.vorm!=='sab'&&it.vorm!=='faded1'?`<p>Het goede antwoord is <b>${esc(res.juist)}</b>.</p>`:''}${zf}${ordegrootteTip(it,res)}</div>
+    fb.innerHTML=`<div class="fb fout"><b>Nog niet goed.</b>${res.fb?`<p>${res.fb}</p>`:''}${it.vorm!=='sab'&&it.vorm!=='faded1'?`<p>Het goede antwoord is <b>${esc(res.juist)}</b>.</p>`:''}${zf}${ordegrootteTip(it,res)}${herhaalInfo(it,res)}</div>
       <div class="anders"><span class="eyebrow" style="color:var(--knop)">Andere uitleg</span>${andersHtml(it)}${uitwerkingHtml(it)?`<details ${it.vorm==='faded1'?'':'open'}><summary>Uitwerking stap voor stap</summary>${uitwerkingHtml(it)}</details>`:''}</div>`;
     const spiegel = it.bron!=='spiegel' && it.vorm!=='faded1';
     kn.innerHTML = spiegel?`<button class="knop" onclick="naarSpiegel()">Probeer een spiegelvraag →</button>`:`<button class="knop" onclick="naVraag()">Volgende →</button>`;
