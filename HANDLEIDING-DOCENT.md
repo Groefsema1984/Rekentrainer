@@ -3,10 +3,17 @@
 ## Voor leerlingen
 1. Open de app op de iPad. Tip: Deel › Zet op beginscherm.
 2. Kies "Nieuw account": vul je naam en klas in. Je krijgt een **leerling-ID** en een **6-cijferige herstelcode**. Schrijf die op.
-3. Daarna maak je de **instaptoets**. Die bepaalt je startniveau (Niveau 1 = 1F t/m Niveau 8 = 3F eindniveau vwo).
+3. Daarna maak je de **instaptoets** (16 opgaven). Die begint op het niveau van je klas (Thuis = groep 7/8) en past zich per vraag aan: na een fout een niveau lager, na twee goed achter elkaar een niveau hoger.
 4. Oefen met "Verder oefenen". Bij elk antwoord kies je **Zeker!** of **Gok?**. Een fout antwoord geeft uitleg, een uitwerking en daarna een spiegelvraag.
 5. Staan alle vier domeinen op 80%, dan gaat de **rekentoets** open. Haal je die (elk domein en het totaal ≥ 80%), dan ga je naar het volgende niveau.
 6. Op een ander apparaat: kies "Ik heb al een account" en vul je ID en herstelcode in.
+
+## Extra's voor leerlingen
+- **Rekenfit (2 minuten):** kale sommen op niveau (tafels, ×10, breuk–komma–procent, …). Goed als warming-up aan het begin van de les.
+- **Eerst schatten:** bij opgaven met rekenmachine kiest de leerling eerst de ordegrootte. Zit een antwoord er een factor 5 of meer naast, dan krijgt hij een controletip.
+- **Toetsopgaven in rekentoetsstijl:** contextopgaven met een bron (webshop, dienstregeling, tarieven) en overbodige informatie. Elke rekentoets bevat er minstens 3.
+- **Lees voor** en **woordenlijst:** tik op een onderstreept rekenwoord voor uitleg.
+- **Modellen:** bij uitgewerkte voorbeelden een dubbele getallenlijn of strook.
 
 ## Hoe het adaptief werkt
 - Elk leerdoel begint met een gewone opgave. Gaat die fout, dan krijgt de leerling een uitgewerkt voorbeeld (trede 1) en daarna een voorbeeld met één open stap (trede 2).
@@ -20,6 +27,8 @@ Klik rechtsboven op **Docent** en vul de docentcode uit `Code.gs` in. Je ziet da
 - de hardnekkigste fouten van de klas (zeker én fout weegt zwaarder);
 - per leerling alle fouten en toetsen;
 - een schakelaar om de rekentoets per klas vrij te geven of dicht te zetten;
+- **Denkfouten**: fouten gegroepeerd per misconceptie (bijvoorbeeld "delen door het verkeerde geheel"), met een tip voor een mini-instructie;
+- **Analyse van de vragen**: per leerdoel het percentage goed bij de eerste poging en het percentage zeker-fout, met een signaal (te makkelijk / te moeilijk);
 - export naar CSV.
 
 ## Google Sheet
