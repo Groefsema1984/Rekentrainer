@@ -55,8 +55,7 @@ const pct = x => nl(x,2)+'%';
 function parseGetal(s){
   if(s==null) return NaN;
   s=String(s).trim().replace(/[−–]/g,'-').replace(/[€%\s]/g,'').replace(/[a-zA-Z²³\/]+$/,'');
-  if(/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) s=s.replace(/\./g,'');
-  if(/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s=s.replace(/,/g,'');
+  if(/^-?[1-9]\d{0,2}(\.\d{3})+(,\d+)?$/.test(s)) s=s.replace(/\./g,'');
   s=s.replace(',','.');
   if(/^-?\d+\/\d+$/.test(s)){ const [a,b]=s.split('/'); return Number(a)/Number(b) }
   return s===''||!/^-?(\d+\.?\d*|\.\d+)$/.test(s)?NaN:Number(s);

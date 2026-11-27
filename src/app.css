@@ -170,3 +170,12 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .bronvoet{font-size:.88em;color:#555}
 .bronvoet .actie{background:#F08A09;color:#fff;border-radius:6px;padding:2px 8px;font-weight:700}
 @media (prefers-color-scheme:dark){.bron{background:transparent}}
+/* Rekenfit */
+.fitbalk{height:8px;background:#e9e6e0;border-radius:6px;overflow:hidden;margin:6px 0 18px}
+.fitbalk i{display:block;height:100%;background:#F08A09;width:100%;transition:width .25s linear}
+.fitkaart{padding:34px 20px}
+.fitsom{font-size:clamp(34px,6vw,56px);font-weight:800;letter-spacing:.5px;margin-bottom:18px;font-variant-numeric:tabular-nums}
+.fitin{font-size:34px;width:min(280px,80%);text-align:center;padding:12px;border:2px solid #d8d4cc;border-radius:12px}
+.fitin:focus{outline:none;border-color:#F08A09}
+.fitfb{min-height:30px;margin-top:14px;font-weight:700;font-size:18px}
+.fitfb.g{color:#1f9d6b}.fitfb.f{color:#c0392b}

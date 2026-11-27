@@ -114,6 +114,7 @@ home(){
     <aside class="rechterkol">
       <div class="kaart"><h3 class="kaartkop">Verder werken</h3>
         <button class="verder" onclick="startOefen({modus:'slim'})"><b>Slim oefenen</b><small>10 opgaven, precies op wat je nodig hebt</small><span>›</span></button>
+        <button class="verder" onclick="startFit()"><b>Rekenfit · 2 minuten</b><small>Kale sommen, vlot en foutloos${S.fit?` · record ${S.fit.best}`:''}</small><span>›</span></button>
         ${due?`<button class="verder rood" onclick="startOefen({modus:'fouten'})"><b>Herhaal je fouten (${due})</b><small>${zf?zf+' keer "Zeker én fout": die eerst':'Ze komen terug tot je ze 2× goed hebt'}</small><span>›</span></button>`:''}
       </div>
       <div class="kaart"><h3 class="kaartkop">Jouw rekentoets</h3>${toets}</div>
