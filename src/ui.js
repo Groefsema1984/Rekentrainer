@@ -196,8 +196,9 @@ function quizHtml(){
   const knoppen = (it.vorm==='faded1'||it.vorm==='v3') ? `<button class="knop" id="kCheck" onclick="indienen(null)">Controleer</button>`
      : `<button class="knop zekerknop" onclick="indienen(true)" title="Ik weet het zeker"><b>!</b> Zeker</button><button class="knop gokknop" onclick="indienen(false)" title="Ik gok"><b>?</b> Gok</button>`;
   return `<div class="wrap" id="qz"><div class="top"><button class="terug" onclick="stopSessie()">← Stoppen</button><h1>${esc(SES.titel)}</h1>${SES.soort==='instap'?`<span class="chip">Niveau ${it.niv}</span>`:''}${SES.soort==='toets'?`<span class="chip">Vraag ${SES.i+1} van ${SES.n}</span>`:''}</div>${dots}
-   <div class="kaart" style="--k:${d.k}"><div class="qkop"><span class="eyebrow" style="color:${d.k}">${esc(d.naam)} · ${esc(subVan(it.dom,it.sub).naam)}</span><span class="zacht klein">${esc(label)}${fase?' · '+fase:''}</span><button class="rmknop" onclick="voorlezen()" title="Lees de opgave voor">🔊 Lees voor</button>${rm}</div>
+   <div class="kaart" style="--k:${d.k}"><div class="qkop"><span class="eyebrow" style="color:${d.k}">${esc(d.naam)} · ${esc(subVan(it.dom,it.sub).naam)}</span><span class="zacht klein">${esc(label)}${fase?' · '+fase:''}</span><button class="rmknop" onclick="voorlezen()" title="Lees de opgave voor">🔊 Lees voor</button>${SES.soort==='oefen'?'<button class="rmknop" onclick="toonModel()" title="Strook of getallenlijn om het uit te denken">✏️ Model</button>':''}${rm}</div>
    <div id="qbody">${schatHtml(it)}${itemHtml(it)}</div>
+   <div id="modelpaneel" class="modelpaneel" hidden></div>
    <div id="qfb"></div>
    <div class="voet" id="qknoppen">${knoppen}</div></div></div><div id="rekenmachine" hidden></div>`;
 }

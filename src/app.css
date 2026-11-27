@@ -203,3 +203,21 @@ table tr.klik{cursor:pointer}table tr.klik:hover td{background:color-mix(in srgb
 .hsoort{display:inline-block;font-size:11px;font-weight:800;text-transform:uppercase;padding:1px 6px;border-radius:4px;background:var(--knop);color:#fff;margin-right:6px}.hsoort.fout{background:var(--fout)}
 .hbol{width:12px;height:12px;border-radius:50%;flex:none;margin-top:6px}
 .hinfo{margin:10px 0 0;font-size:14px}
+/* interactieve modellen */
+.modelpaneel{margin:14px 0;border:2px dashed var(--lijn);border-radius:12px;padding:12px 14px;background:var(--bg)}
+.mkop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.mkop .segment{margin:0}.mdicht{margin-left:auto;border:0;background:none;font-size:18px;cursor:pointer;color:inherit}
+.mrij{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:12px;font-size:14px}
+.minvul{width:110px;padding:6px 8px;border:1px solid var(--lijn);border-radius:6px;font:inherit;background:var(--kaart);color:inherit;margin-left:4px}.minvul.kort{width:72px}
+.stepper{display:inline-flex;align-items:center;gap:6px}.stepper button{width:34px;height:34px;border-radius:50%;border:1px solid var(--lijn);background:var(--kaart);font-size:18px;font-weight:800;color:inherit}.stepper b{min-width:22px;text-align:center}
+.strook{display:flex;height:54px;border:2px solid currentColor;border-radius:6px;overflow:hidden}
+.svak{flex:1;border:0;border-right:2px solid currentColor;background:var(--kaart);font:700 13px var(--kop);color:inherit;cursor:pointer;min-width:0;padding:0}.svak:last-child{border-right:0}
+.svak.aan{background:var(--knop);color:#fff}
+.strookschaal{display:flex;justify-content:space-between;font-size:12px;opacity:.7;margin-top:3px}
+.muit{font-size:16px;margin:10px 0 4px}
+.glijn{position:relative;height:110px;margin:8px 22px;touch-action:none;cursor:pointer;outline:none}
+.glas{position:absolute;left:0;right:0;height:0;border-top:3px solid currentColor}.glas.boven{top:36px}.glas.onder{top:74px}
+.glas i{font-style:normal;position:absolute;top:-8px;height:13px;border-left:2px solid currentColor}
+.glas span{position:absolute;left:0;transform:translateX(-50%);font-size:12px;white-space:nowrap;opacity:.75}.glas.boven span{bottom:14px}.glas.onder span{top:14px}
+.gwijzer{position:absolute;top:22px;height:68px;border-left:3px solid var(--knop);transform:translateX(-1.5px)}
+.gwijzer b{position:absolute;left:0;transform:translateX(-50%);background:var(--knop);color:#fff;font-size:13px;padding:1px 7px;border-radius:10px;white-space:nowrap}.gwijzer b:first-child{top:-22px}.gwijzer b:last-child{bottom:-24px}
+.glijn:focus-visible .gwijzer{box-shadow:0 0 0 3px var(--acc)}
