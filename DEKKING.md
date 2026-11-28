@@ -1,6 +1,6 @@
 # Dekking van het Referentiekader rekenen
 
-Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextopgave in rekentoetsstijl.
+Automatisch gemaakt met `node tools/dekking.js`. 246 leerdoelen. ★ = contextopgave in rekentoetsstijl.
 
 | Niveau | Referentie | Getallen | Verhoudingen | Meten en meetkunde | Verbanden |
 |---|---|---|---|---|---|
@@ -9,13 +9,13 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 | 3 | Basis | 7 | 4 | 5 | 3 |
 | 4 | Naar 1F | 5 | 3 | 5 | 5 |
 | 5 | 1F | 7 | 4 | 5 | 4 |
-| 6 | 1S | 6 | 3 | 5 | 4 |
-| 7 | 1S → 2F | 4 | 7 | 5 | 4 |
-| 8 | 2F | 4 | 5 | 6 | 6 |
-| 9 | 2F → 3F | 4 | 5 | 6 | 4 |
-| 10 | 3F | 4 | 5 | 6 | 5 |
-| 11 | 3F | 4 | 5 | 4 | 5 |
-| 12 | 3F | 4 | 4 | 4 | 5 |
+| 6 | 1S | 9 | 4 | 6 | 4 |
+| 7 | 1S → 2F | 5 | 9 | 6 | 4 |
+| 8 | 2F | 5 | 6 | 8 | 6 |
+| 9 | 2F → 3F | 5 | 5 | 7 | 4 |
+| 10 | 3F | 4 | 5 | 7 | 5 |
+| 11 | 3F | 4 | 5 | 4 | 6 |
+| 12 | 3F | 4 | 5 | 5 | 6 |
 
 ## Domeinen (Referentiekader)
 
@@ -192,6 +192,9 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 **Getallen**
 
 - Eerlijk verdelen: wat doe je met de rest? _(Bewerkingen)_
+- Welk getal ligt precies in het midden? _(Getalbegrip)_
+- Rood staan: negatieve bedragen _(Negatief en machten)_
+- ★ Toetsopgave: wanneer is een abonnement voordeliger? _(Bewerkingen)_
 - Rekenen met geld: optellen en wisselgeld _(Kommagetallen)_
 - Kommagetal keer een heel getal _(Kommagetallen)_
 - Breuk, kommagetal en procent _(Breuken)_
@@ -200,12 +203,14 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 
 **Verhoudingen**
 
+- Hoeveel procent duurder? _(Procentuele verandering)_
 - Verhoudingstabel met gewicht en prijs _(Verhoudingstabel)_
 - Procent van een aantal _(Procenten)_
 - Schaal op een kaart _(Schaal en snelheid)_
 
 **Meten en meetkunde**
 
+- Hoeken uitrekenen: recht en gestrekt _(Meetkunde)_
 - Omrekenen met kommagetallen _(Eenheden omrekenen)_
 - Oppervlakte van een samengestelde figuur _(Omtrek en oppervlakte)_
 - Inhoud van een balk in liters _(Inhoud)_
@@ -223,6 +228,7 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 
 **Getallen**
 
+- Breuk, kommagetal en procent: welke is het grootst? _(Getalbegrip)_
 - Volgorde van bewerkingen _(Bewerkingen)_
 - Breuken optellen en aftrekken _(Breuken)_
 - Delen met geld: prijs per stuk _(Kommagetallen)_
@@ -230,6 +236,8 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 
 **Verhoudingen**
 
+- Hoeveel procent minder? _(Procentuele verandering, rekenmachine)_
+- Rente op rente: twee jaar sparen _(Groei en rente, rekenmachine)_
 - Nieuwe prijs na korting _(Procenten)_
 - Hoeveel procent is het? _(Procenten)_
 - De schaal van een kaart bepalen _(Schaal en snelheid)_
@@ -241,6 +249,7 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 **Meten en meetkunde**
 
 - Temperatuur: rekenen onder en boven nul _(Eenheden omrekenen)_
+- Reistijd in minuten _(Tijd en geld, rekenmachine)_
 - Oppervlakte-eenheden omrekenen _(Eenheden omrekenen)_
 - Oppervlakte van een driehoek _(Omtrek en oppervlakte)_
 - Inhoud in m³ en liters _(Inhoud)_
@@ -257,6 +266,7 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 
 **Getallen**
 
+- Een deel van een deel _(Breuken)_
 - Afronden op decimalen in een context _(Getalbegrip, rekenmachine)_
 - Grote getallen: duizend, miljoen, miljard _(Getalbegrip)_
 - Rekenen met negatieve getallen _(Negatief en machten)_
@@ -264,6 +274,7 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 
 **Verhoudingen**
 
+- Bouwtekening op schaal _(Schaal en snelheid, rekenmachine)_
 - Terugrekenen naar de oude prijs _(Procentuele verandering, rekenmachine)_
 - Btw erbij rekenen _(Procenten, rekenmachine)_
 - Een recept omrekenen _(Verhoudingstabel)_
@@ -273,6 +284,8 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 **Meten en meetkunde**
 
 - ★ Prijs per m²: vloer en snijverlies _(Omtrek en oppervlakte, rekenmachine)_
+- Heel klein en heel veel: millimeters _(Eenheden omrekenen, rekenmachine)_
+- Hoeken in een regelmatige veelhoek _(Meetkunde, rekenmachine)_
 - Afstand, snelheid en tijd _(Tijd en geld, rekenmachine)_
 - Omtrek en oppervlakte van een cirkel _(Omtrek en oppervlakte, rekenmachine)_
 - Inhoudsmaten omrekenen _(Inhoud)_
@@ -292,6 +305,7 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 
 **Getallen**
 
+- Delen door een kommagetal _(Kommagetallen)_
 - Machten uitrekenen _(Negatief en machten)_
 - Delen door een breuk _(Breuken)_
 - Schatten en ordegrootte _(Getalbegrip)_
@@ -308,6 +322,7 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 **Meten en meetkunde**
 
 - Tijdzones en vliegtijd _(Tijd en geld)_
+- Oppervlakte van een trapezium _(Omtrek en oppervlakte, rekenmachine)_
 - Snelheid omrekenen: km/u en m/s _(Eenheden omrekenen, rekenmachine)_
 - Inhoud van een cilinder _(Inhoud, rekenmachine)_
 - Gemiddelde snelheid over een hele rit _(Tijd en geld, rekenmachine)_
@@ -341,6 +356,7 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 **Meten en meetkunde**
 
 - Downloadsnelheid: Mbit/s en MB _(Eenheden omrekenen, rekenmachine)_
+- Hardlooptempo: minuten en seconden per km _(Tijd en geld, rekenmachine)_
 - Stelling van Pythagoras _(Meetkunde, rekenmachine)_
 - Inhoud van een prisma _(Inhoud, rekenmachine)_
 - Inhoudsmaten in grote stappen _(Eenheden omrekenen, rekenmachine)_
@@ -381,6 +397,7 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 
 **Verbanden**
 
+- Belasting in schijven uit een tabel _(Tabellen, rekenmachine)_
 - Exponentiële formules gebruiken _(Formules, rekenmachine)_
 - Kwartielen en spreiding _(Statistiek)_
 - Formule omvormen _(Formules)_
@@ -398,6 +415,7 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 
 **Verhoudingen**
 
+- Eerst omhoog, dan omlaag: netto verandering _(Procentuele verandering, rekenmachine)_
 - Reële groei: loon en inflatie _(Groei en rente, rekenmachine)_
 - Halveringstijd _(Groei en rente, rekenmachine)_
 - Indexcijfers met een ander basisjaar _(Procenten, rekenmachine)_
@@ -405,6 +423,7 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 
 **Meten en meetkunde**
 
+- Oppervlakte van een cilinder: hoeveel materiaal? _(Omtrek en oppervlakte, rekenmachine)_
 - Brandstofverbruik en kosten _(Eenheden omrekenen, rekenmachine)_
 - Dichtheid: massa uit volume _(Inhoud, rekenmachine)_
 - Inhoud van samengestelde ruimtes _(Inhoud, rekenmachine)_
@@ -412,6 +431,7 @@ Automatisch gemaakt met `node tools/dekking.js`. 226 leerdoelen. ★ = contextop
 
 **Verbanden**
 
+- Gemiddelde verandering uit een grafiek _(Grafieken, rekenmachine)_
 - Break-even: vanaf wanneer winst? _(Formules, rekenmachine)_
 - Lineair tegen exponentieel _(Tabellen, rekenmachine)_
 - Gemiddelde uit een tabel met klassen _(Statistiek, rekenmachine)_
