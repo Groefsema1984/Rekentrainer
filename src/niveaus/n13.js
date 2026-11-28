@@ -202,6 +202,17 @@ L({id:'M12.mantel',niv:12,dom:'M',sub:'oppervlak',naam:'Oppervlakte van een cili
   anders:v=>`Pak een blik en haal het etiket eraf: het is een rechthoek. Hoe breed is die rechthoek? Precies één keer rond het blik.`
 });
 
+// ================= extra toetsopgave niveau 5 =================
+L({id:'X5.folder',niv:5,dom:'V',sub:'vtabel',naam:'Toetsopgave: aanbieding uit een folder',ctx:true,
+  uitleg:'Lees in een folder eerst wat de actie precies is. Bij "3 halen, 2 betalen" betaal je voor elke 3 stuks er maar 2. Niet alle informatie in de folder heb je nodig.',
+  gen(r){ const [d,p]=r.pick([['pak sap',1.29],['zak chips',1.49],['pot pindakaas',2.19],['fles limonade',1.79],['reep chocola',0.99]]); const n=r.pick([4,5,6,7,8,9]); return {d,p,n,g:r.pick(['Zuivelweek: yoghurt 2e halve prijs','Brood van de dag: € 1,95','Elke zaterdag gratis koffie'])} },
+  vraag:v=>`${bron('🛒 Weekfolder',`<p><b>${v.d[0].toUpperCase()+v.d.slice(1)}: ${eur(v.p)} per stuk</b></p><p>Actie: 3 halen, 2 betalen</p><p class="bronvoet">${v.g} · Geldig t/m zondag · Op = op</p>`)}Je koopt ${v.n} keer een ${v.d}. Hoeveel betaal je?`,
+  antw:v=>rondaf((v.n-Math.floor(v.n/3))*v.p,2), eenheid:'€',
+  stappen:v=>[st(`${v.n} stuks: ${Math.floor(v.n/3)} keer 3 stuks, dus ${Math.floor(v.n/3)} gratis`,Math.floor(v.n/3)),st(`Je betaalt ${v.n-Math.floor(v.n/3)} stuks`,v.n-Math.floor(v.n/3)),st(`${v.n-Math.floor(v.n/3)} × ${eur(v.p)} = ${eur((v.n-Math.floor(v.n/3))*v.p)}`,rondaf((v.n-Math.floor(v.n/3))*v.p,2))],
+  fouten:v=>[[rondaf(v.n*v.p,2),'Je vergat de actie: van elke 3 stuks is er één gratis.'],[rondaf(v.n*2/3*v.p,2),'Je nam twee derde van alles. Maar alleen volle groepjes van 3 geven een gratis stuk.'],[rondaf((v.n-1)*v.p,2),'Er is niet maar één gratis: tel hoeveel keer 3 er in '+v.n+' past.']],
+  anders:v=>`Zet de ${v.n} stuks in groepjes van 3. In elk vol groepje is er één gratis. Wat je over hebt, betaal je gewoon.`
+});
+
 // Nieuwe leerdoelen tellen voor bestaande leerlingen pas mee in de beheersing zodra ze geoefend zijn,
 // zodat hun voortgangsbalken niet ineens zakken door de uitbreiding. Nieuwe accounts tellen alles mee.
 LDS.slice(NIEUW_VANAF_LDS).forEach(l=>{ l.sinds=Date.UTC(2026,10,29) });

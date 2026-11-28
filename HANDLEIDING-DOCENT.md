@@ -101,3 +101,8 @@ De app kan voorlezen met de stem Roos van ElevenLabs in plaats van de stem van h
 - Is de stem uit, het maximum bereikt of ElevenLabs onbereikbaar, dan leest de app voor met de stem van het apparaat.
 - Een zin die al eens is voorgelezen, wordt op het apparaat bewaard en kost geen tekens meer.
 - Gratis versie van ElevenLabs: niet voor commercieel gebruik en met bronvermelding. Die staat onderaan de app zolang de stem actief is.
+
+## Vragenbank en kwaliteit (uitbreiding 29-11-2026)
+De vragenbank telt nu 247 leerdoelen (was 196). Niveau 1–5 hebben elk minstens 18 leerdoelen en dekken nu ook vormen en hoeken, symmetrie, inhoud, kalender, kommagetallen, negatieve getallen (thermometer), schaal en het gemiddelde. Niveau 6–12 zijn aangevuld waar onderdelen ontbraken. Bij meerkeuzevragen is elk fout antwoord nu een herkenbare denkfout met uitleg. Op niveau 2–5 staan "vind de fout"-opgaven (saboteurs), en op niveau 5–7 toetsopgaven met een bron, zoals in de doorstroomtoets.
+
+Voor leerlingen die al bezig waren, tellen de nieuwe leerdoelen pas mee in hun percentage zodra ze die geoefend hebben. Hun voortgang zakt dus niet door de uitbreiding.

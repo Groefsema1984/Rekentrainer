@@ -569,7 +569,7 @@ body.rustig .woord{text-decoration-style:solid}
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekenen op Niveau · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = '3581b0a9c8';
+const BOUW = 'ff2fd41a97';
 // Groepen en klassen. Vanaf klas 1 met schooltype: dat bepaalt start van de instaptoets en het doelniveau.
 const GROEPEN = ['groep 3','groep 4','groep 5','groep 6','groep 7','groep 8'];
 const SCHOOLTYPEN = [{id:'vmbo',jaren:4,start:4,doel:8},{id:'havo',jaren:5,start:5,doel:11},{id:'vwo',jaren:6,start:6,doel:12}];
@@ -2605,6 +2605,17 @@ L({id:'M12.mantel',niv:12,dom:'M',sub:'oppervlak',naam:'Oppervlakte van een cili
   stappen:v=>{ const m=rondaf(Math.PI*v.d*v.h,4), c=rondaf(Math.PI*(v.d/2)**2,4); return v.t==='mantel'?[st(`Omtrek: π × ${v.d} ≈ ${nl(rondaf(Math.PI*v.d,2))}`,rondaf(Math.PI*v.d,2)),st(`Mantel: ${nl(rondaf(Math.PI*v.d,2))} × ${v.h} ≈ ${nl(rondaf(m,1))}`,rondaf(m,1))]:[st(`Mantel: π × ${v.d} × ${v.h} ≈ ${nl(rondaf(m,1))}`,rondaf(m,1)),st(`Twee cirkels: 2 × π × ${nl(v.d/2)}² ≈ ${nl(rondaf(2*c,1))}`,rondaf(2*c,1)),st(`Samen ≈ ${nl(rondaf(m+2*c,1))}`,rondaf(m+2*c,1))] },
   fouten:v=>{ const m=Math.PI*v.d*v.h, c=Math.PI*(v.d/2)**2; return v.t==='mantel'?[[rondaf(Math.PI*(v.d/2)*v.h,1),'Je gebruikte de straal. De omtrek is π × diameter (of 2 × π × straal).'],[rondaf(c*v.h,1),'Dat is de inhoud. De vraag is de oppervlakte van de zijkant.'],[rondaf(v.d*v.h,1),'Je vergat π. De breedte van het etiket is de omtrek van de cirkel.']]:[[rondaf(m,1),'Dat is alleen de mantel. Tel boven- en onderkant erbij.'],[rondaf(m+c,1),'Een gesloten cilinder heeft twee cirkels: boven en onder.'],[rondaf(m+2*Math.PI*v.d**2,1),'Je gebruikte de diameter in π × r². Neem de straal: '+nl(v.d/2)+'.']] },
   anders:v=>`Pak een blik en haal het etiket eraf: het is een rechthoek. Hoe breed is die rechthoek? Precies één keer rond het blik.`
+});
+
+// ================= extra toetsopgave niveau 5 =================
+L({id:'X5.folder',niv:5,dom:'V',sub:'vtabel',naam:'Toetsopgave: aanbieding uit een folder',ctx:true,
+  uitleg:'Lees in een folder eerst wat de actie precies is. Bij "3 halen, 2 betalen" betaal je voor elke 3 stuks er maar 2. Niet alle informatie in de folder heb je nodig.',
+  gen(r){ const [d,p]=r.pick([['pak sap',1.29],['zak chips',1.49],['pot pindakaas',2.19],['fles limonade',1.79],['reep chocola',0.99]]); const n=r.pick([4,5,6,7,8,9]); return {d,p,n,g:r.pick(['Zuivelweek: yoghurt 2e halve prijs','Brood van de dag: € 1,95','Elke zaterdag gratis koffie'])} },
+  vraag:v=>`${bron('🛒 Weekfolder',`<p><b>${v.d[0].toUpperCase()+v.d.slice(1)}: ${eur(v.p)} per stuk</b></p><p>Actie: 3 halen, 2 betalen</p><p class="bronvoet">${v.g} · Geldig t/m zondag · Op = op</p>`)}Je koopt ${v.n} keer een ${v.d}. Hoeveel betaal je?`,
+  antw:v=>rondaf((v.n-Math.floor(v.n/3))*v.p,2), eenheid:'€',
+  stappen:v=>[st(`${v.n} stuks: ${Math.floor(v.n/3)} keer 3 stuks, dus ${Math.floor(v.n/3)} gratis`,Math.floor(v.n/3)),st(`Je betaalt ${v.n-Math.floor(v.n/3)} stuks`,v.n-Math.floor(v.n/3)),st(`${v.n-Math.floor(v.n/3)} × ${eur(v.p)} = ${eur((v.n-Math.floor(v.n/3))*v.p)}`,rondaf((v.n-Math.floor(v.n/3))*v.p,2))],
+  fouten:v=>[[rondaf(v.n*v.p,2),'Je vergat de actie: van elke 3 stuks is er één gratis.'],[rondaf(v.n*2/3*v.p,2),'Je nam twee derde van alles. Maar alleen volle groepjes van 3 geven een gratis stuk.'],[rondaf((v.n-1)*v.p,2),'Er is niet maar één gratis: tel hoeveel keer 3 er in '+v.n+' past.']],
+  anders:v=>`Zet de ${v.n} stuks in groepjes van 3. In elk vol groepje is er één gratis. Wat je over hebt, betaal je gewoon.`
 });
 
 // Nieuwe leerdoelen tellen voor bestaande leerlingen pas mee in de beheersing zodra ze geoefend zijn,
