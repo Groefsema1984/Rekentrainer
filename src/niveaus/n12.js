@@ -2,6 +2,7 @@
 // Doel: elk niveau dekt alle vier de domeinen breed (getallen, verhoudingen, meten en meetkunde, verbanden),
 // met afleiders die een echte denkfout laten zien in plaats van een willekeurig getal.
 
+const NIEUW_VANAF_LDS=LDS.length;   // leerdoelen vanaf hier zijn toegevoegd op 29-11-2026 (zie het eind van n13.js)
 const DAGEN=['maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag','zondag'];
 const uniekOpties=(goed,f)=>{ const u=[]; f.forEach(x=>{ if(x[0]!==goed&&!u.some(y=>y[0]===x[0])) u.push(x) }); return [[goed,true]].concat(u.slice(0,3).map(x=>[x[0],false,x[1]])) };
 const zonderGelijk=(goed,f)=>f.filter(x=>Number.isFinite(x[0])&&Math.abs(x[0]-goed)>1e-9);

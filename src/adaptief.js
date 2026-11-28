@@ -4,8 +4,9 @@ const ldS = id => S.ld[id] || {b:0,n:0,tr:0,rij:0,frij:0,l:0,u:0};
 const domKey = (n,d) => n+'.'+d;
 
 // beheersing van een domein op een niveau = gemiddelde van de leerdoelen (niet geoefend = 0)
-function domB(n,d){ const l=ldsVan(n,d); if(!l.length) return 0; return Math.round(l.reduce((s,x)=>s+ldS(x.id).b,0)/l.length) }
-function subB(n,d,sub){ const l=ldsVan(n,d,sub); if(!l.length) return null; return Math.round(l.reduce((s,x)=>s+ldS(x.id).b,0)/l.length) }
+const telMee = x => !x.sinds || (S&&S.aangemaakt&&S.aangemaakt>=x.sinds) || ldS(x.id).n>0;   // uitbreiding: ongeoefende nieuwe leerdoelen tellen bij oudere accounts nog niet mee
+function domB(n,d){ const l=ldsVan(n,d).filter(telMee); if(!l.length) return 0; return Math.round(l.reduce((s,x)=>s+ldS(x.id).b,0)/l.length) }
+function subB(n,d,sub){ const l=ldsVan(n,d,sub).filter(telMee); if(!l.length) return null; return Math.round(l.reduce((s,x)=>s+ldS(x.id).b,0)/l.length) }
 function nivB(n){ return Math.round(DOMEINEN.reduce((s,d)=>s+domB(n,d.id),0)/4) }
 const medaille = b => [...MEDAILLES].reverse().find(m=>b>=m.min)||null;
 function domStatus(n,d){

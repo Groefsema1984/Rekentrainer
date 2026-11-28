@@ -201,3 +201,7 @@ L({id:'M12.mantel',niv:12,dom:'M',sub:'oppervlak',naam:'Oppervlakte van een cili
   fouten:v=>{ const m=Math.PI*v.d*v.h, c=Math.PI*(v.d/2)**2; return v.t==='mantel'?[[rondaf(Math.PI*(v.d/2)*v.h,1),'Je gebruikte de straal. De omtrek is π × diameter (of 2 × π × straal).'],[rondaf(c*v.h,1),'Dat is de inhoud. De vraag is de oppervlakte van de zijkant.'],[rondaf(v.d*v.h,1),'Je vergat π. De breedte van het etiket is de omtrek van de cirkel.']]:[[rondaf(m,1),'Dat is alleen de mantel. Tel boven- en onderkant erbij.'],[rondaf(m+c,1),'Een gesloten cilinder heeft twee cirkels: boven en onder.'],[rondaf(m+2*Math.PI*v.d**2,1),'Je gebruikte de diameter in π × r². Neem de straal: '+nl(v.d/2)+'.']] },
   anders:v=>`Pak een blik en haal het etiket eraf: het is een rechthoek. Hoe breed is die rechthoek? Precies één keer rond het blik.`
 });
+
+// Nieuwe leerdoelen tellen voor bestaande leerlingen pas mee in de beheersing zodra ze geoefend zijn,
+// zodat hun voortgangsbalken niet ineens zakken door de uitbreiding. Nieuwe accounts tellen alles mee.
+LDS.slice(NIEUW_VANAF_LDS).forEach(l=>{ l.sinds=Date.UTC(2026,10,29) });

@@ -569,7 +569,7 @@ body.rustig .woord{text-decoration-style:solid}
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekenen op Niveau · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = '33ce5c1f68';
+const BOUW = '3581b0a9c8';
 // Groepen en klassen. Vanaf klas 1 met schooltype: dat bepaalt start van de instaptoets en het doelniveau.
 const GROEPEN = ['groep 3','groep 4','groep 5','groep 6','groep 7','groep 8'];
 const SCHOOLTYPEN = [{id:'vmbo',jaren:4,start:4,doel:8},{id:'havo',jaren:5,start:5,doel:11},{id:'vwo',jaren:6,start:6,doel:12}];
@@ -1128,8 +1128,9 @@ const ldS = id => S.ld[id] || {b:0,n:0,tr:0,rij:0,frij:0,l:0,u:0};
 const domKey = (n,d) => n+'.'+d;
 
 // beheersing van een domein op een niveau = gemiddelde van de leerdoelen (niet geoefend = 0)
-function domB(n,d){ const l=ldsVan(n,d); if(!l.length) return 0; return Math.round(l.reduce((s,x)=>s+ldS(x.id).b,0)/l.length) }
-function subB(n,d,sub){ const l=ldsVan(n,d,sub); if(!l.length) return null; return Math.round(l.reduce((s,x)=>s+ldS(x.id).b,0)/l.length) }
+const telMee = x => !x.sinds || (S&&S.aangemaakt&&S.aangemaakt>=x.sinds) || ldS(x.id).n>0;   // uitbreiding: ongeoefende nieuwe leerdoelen tellen bij oudere accounts nog niet mee
+function domB(n,d){ const l=ldsVan(n,d).filter(telMee); if(!l.length) return 0; return Math.round(l.reduce((s,x)=>s+ldS(x.id).b,0)/l.length) }
+function subB(n,d,sub){ const l=ldsVan(n,d,sub).filter(telMee); if(!l.length) return null; return Math.round(l.reduce((s,x)=>s+ldS(x.id).b,0)/l.length) }
 function nivB(n){ return Math.round(DOMEINEN.reduce((s,d)=>s+domB(n,d.id),0)/4) }
 const medaille = b => [...MEDAILLES].reverse().find(m=>b>=m.min)||null;
 function domStatus(n,d){
@@ -2097,6 +2098,7 @@ L({id:'B04.staaf',niv:4,dom:'B',sub:'grafieken',naam:'Staafgrafiek met grote get
 // Doel: elk niveau dekt alle vier de domeinen breed (getallen, verhoudingen, meten en meetkunde, verbanden),
 // met afleiders die een echte denkfout laten zien in plaats van een willekeurig getal.
 
+const NIEUW_VANAF_LDS=LDS.length;   // leerdoelen vanaf hier zijn toegevoegd op 29-11-2026 (zie het eind van n13.js)
 const DAGEN=['maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag','zondag'];
 const uniekOpties=(goed,f)=>{ const u=[]; f.forEach(x=>{ if(x[0]!==goed&&!u.some(y=>y[0]===x[0])) u.push(x) }); return [[goed,true]].concat(u.slice(0,3).map(x=>[x[0],false,x[1]])) };
 const zonderGelijk=(goed,f)=>f.filter(x=>Number.isFinite(x[0])&&Math.abs(x[0]-goed)>1e-9);
@@ -2604,6 +2606,10 @@ L({id:'M12.mantel',niv:12,dom:'M',sub:'oppervlak',naam:'Oppervlakte van een cili
   fouten:v=>{ const m=Math.PI*v.d*v.h, c=Math.PI*(v.d/2)**2; return v.t==='mantel'?[[rondaf(Math.PI*(v.d/2)*v.h,1),'Je gebruikte de straal. De omtrek is π × diameter (of 2 × π × straal).'],[rondaf(c*v.h,1),'Dat is de inhoud. De vraag is de oppervlakte van de zijkant.'],[rondaf(v.d*v.h,1),'Je vergat π. De breedte van het etiket is de omtrek van de cirkel.']]:[[rondaf(m,1),'Dat is alleen de mantel. Tel boven- en onderkant erbij.'],[rondaf(m+c,1),'Een gesloten cilinder heeft twee cirkels: boven en onder.'],[rondaf(m+2*Math.PI*v.d**2,1),'Je gebruikte de diameter in π × r². Neem de straal: '+nl(v.d/2)+'.']] },
   anders:v=>`Pak een blik en haal het etiket eraf: het is een rechthoek. Hoe breed is die rechthoek? Precies één keer rond het blik.`
 });
+
+// Nieuwe leerdoelen tellen voor bestaande leerlingen pas mee in de beheersing zodra ze geoefend zijn,
+// zodat hun voortgangsbalken niet ineens zakken door de uitbreiding. Nieuwe accounts tellen alles mee.
+LDS.slice(NIEUW_VANAF_LDS).forEach(l=>{ l.sinds=Date.UTC(2026,10,29) });
 
 // ===== Niveau 2 · 1S · ongeveer groep 8 =====
 const c2e = c => rondaf(c/100,2);   // centen → euro
