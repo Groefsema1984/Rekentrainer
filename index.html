@@ -569,7 +569,7 @@ body.rustig .woord{text-decoration-style:solid}
 // Rekentrainer © 2026 S. Groefsema. Alle rechten voorbehouden. Zie LICENSE.
 // ===== Rekenen op Niveau · kern: instellingen, hulpfuncties, staat, opslag en synchronisatie =====
 const DATA_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx06Umt0TrpcQwBXHowIVxfGkeiEKwwZllbfVOJIyvAt5Qq10VjExg_-dSz9HYf89rd/exec";            // URL van de Google Apps Script web-app (leeg = testmodus, alleen op dit apparaat)
-const BOUW = 'c784f78984';
+const BOUW = 'fbf79e8342';
 // Groepen en klassen. Vanaf klas 1 met schooltype: dat bepaalt start van de instaptoets en het doelniveau.
 const GROEPEN = ['groep 3','groep 4','groep 5','groep 6','groep 7','groep 8'];
 const SCHOOLTYPEN = [{id:'vmbo',jaren:4,start:4,doel:8},{id:'havo',jaren:5,start:5,doel:11},{id:'vwo',jaren:6,start:6,doel:12}];
@@ -1753,7 +1753,7 @@ L({id:'M02.klok',niv:2,dom:'M',sub:'tijd',naam:'Klokkijken: kwartieren',
 L({id:'M02.meten',niv:2,dom:'M',sub:'eenheden',naam:'Meten met de liniaal: centimeters',
   uitleg:'Leg het begin van het ding precies bij de 0 van de liniaal. Lees af waar het eindigt.',
   gen(r){ return {a:r.int(0,4),l:r.int(3,12),d:r.pick(['potlood','gum','sleutel','schelp','veer'])} },
-  vraag:v=>v.a?`Het ${v.d==='gum'?'gum':v.d} ligt van ${v.a} cm tot ${v.a+v.l} cm op de liniaal. Hoe lang is het?`:`Hoe lang is de ${v.d}? Hij ligt van 0 tot ${v.l} cm.`,
+  vraag:v=>v.a?`${v.d==='potlood'?'Het':'De'} ${v.d} ligt van ${v.a} cm tot ${v.a+v.l} cm op de liniaal. Hoe lang is ${v.d==='potlood'?'het':'hij'}?`:`Hoe lang is ${v.d==='potlood'?'het':'de'} ${v.d}? ${v.d==='potlood'?'Het':'Hij'} ligt van 0 tot ${v.l} cm.`,
   fig:v=>FIG.lijn(0,16,1,[{x:v.a,label:'begin'},{x:v.a+v.l,label:'eind',k:'b'}],2),
   antw:v=>v.l, eenheid:'cm',
   stappen:v=>[st(`Eind ${v.a+v.l}, begin ${v.a}`),st(`${v.a+v.l} − ${v.a} = ${v.l}`,v.l)],
@@ -3725,6 +3725,79 @@ L({id:'X7.tweelijnen',niv:11,dom:'B',sub:'grafieken',naam:'Toetsopgave: twee gra
   fouten:v=>[[v.x0,'Bij '+v.x0+' bezoeken zijn ze even duur. Pas daarna is B goedkoper.'],[v.a2-v.a1,'Deel het verschil in vaste kosten nog door het verschil per bezoek.'],[v.x0-1,'Bij minder bezoeken is A juist goedkoper.']],
   anders:v=>`Maak een tabel voor 0, 5, 10, … bezoeken met de kosten van A en B. Waar wisselen ze van plek?`
 });
+
+// ===== Extra afleiders: echte denkfouten bij leerdoelen die te weinig misconcepties hadden =====
+// Dit bestand wordt als laatste niveaubestand geladen. Per leerdoel komen er foute antwoorden bij die een
+// herkenbare denkfout laten zien (met feedback), zodat meerkeuzevragen geen willekeurige opvulgetallen meer nodig hebben.
+// De bestaande fouten blijven vooraan staan; deze komen erachter en worden alleen gebruikt als er plek is.
+const EXTRA_FOUTEN={
+  // ---------- niveau 1 ----------
+  'G01.buren':v=>v.t==='na'?[[v.x+2,'Je sloeg een getal over. Direct na is één verder.']]:v.t==='voor'?[[v.x-2,'Je sloeg een getal over. Direct vóór is één terug.']]:v.t==='plus10'?[[v.x+9,'Je telde het begingetal mee. Spring 10: het tiental wordt één hoger.'],[v.x+11,'Je sprong 11. Bij 10 verder blijven de eenheden gelijk.']]:[[v.x-9,'Je telde het begingetal mee. Spring 10 terug: het tiental wordt één lager.'],[v.x-11,'Je sprong 11. Bij 10 terug blijven de eenheden gelijk.']],
+  'V01.dubbel':v=>v.dub?[[2*v.x-1,'Tel nog eens: bij dubbel krijgt '+v.k+' precies evenveel erbij.'],[v.x%2?v.x+1:v.x/2,'Dat is de helft. Er komt juist evenveel bij.']]:[[v.x+2,'Dan heeft de ene meer dan de andere. Eerlijk is: allebei evenveel.'],[v.x*4,'Je deed dubbel. Verdelen over twee is de helft.']],
+  'M01.geld':v=>{ const s=v.l.reduce((a,b)=>a+b,0); return [[v.l[0]*v.l.length,'Niet alles is evenveel waard. Kijk wat er op elke munt of elk briefje staat.'],[v.l.filter(x=>x>=5).reduce((a,b)=>a+b,0)+v.l.filter(x=>x<5).length,'Een munt van 2 euro is 2 euro, niet 1.'],[s-v.l[0],'Je vergat het grootste bedrag.']] },
+  'B01.turven':v=>{ const n=v.d[v.i][1]; return v.t==='hoeveel'?[[Math.floor(n/5)*6+n%5,'De schuine streep is de vijfde streep, geen zesde.'],[Math.floor(n/5)*4+n%5,'De schuine streep telt ook mee: een bosje is 5.']]:[[v.d.length,'Dat is het aantal soorten dieren. Tel hoeveel dieren het zijn.'],[v.d[0][1]+v.d[1][1],'Je vergat een soort dier.'],[Math.max(...v.d.map(x=>x[1])),'Dat is alleen de grootste groep.']] },
+  'V01.groepjes':v=>[[v.n,'Dat is één '+v.zak.slice(0,-1)+'. Er zijn er '+v.g+'.'],[(v.g+1)*v.n,'Je telde één groepje te veel.']],
+  'M01.lengte':v=>[[v.b,'Dat is de lengte van de '+v.d[1]+'. Je zoekt het verschil.'],[v.a-v.b+1,'Tel alleen de blokjes die over zijn, niet het blokje ervoor.']],
+  'B01.picto':v=>v.t==='een'?[[v.w.reduce((a,b)=>a+b,0),'Dat zijn alle kinderen samen. Kijk alleen naar de rij met '+v.f[v.i]+'.'],[Math.max(1,v.w[v.i]-1),'Je bent er één vergeten.']]:[[v.w[v.j],'Dat zijn de kinderen bij '+v.f[v.j]+'. Je zoekt het verschil.'],[v.w[v.i]-v.w[v.j]+1,'Tel alleen de plaatjes die erbij komen.']],
+  // ---------- niveau 2 ----------
+  'G02.tot100':v=>v.op==='+'?[[v.a+Math.floor(v.b/10)*10,'Je telde alleen de tientallen erbij. Vergeet de eenheden niet.'],[(Math.floor(v.a/10)+Math.floor(v.b/10))*10+(v.a+v.b)%10+100,'Je hebt het tiental dat je onthoudt twee keer geteld.']]:[[(Math.floor(v.a/10)-Math.floor(v.b/10))*10+Math.abs(v.a%10-v.b%10),'Je deed bij de eenheden klein min groot andersom. Dan moet je een tiental lenen.'],[v.a-Math.floor(v.b/10)*10,'Je haalde alleen de tientallen eraf.']],
+  'G02.tot1000':v=>[[100*v.h+v.t+v.e,'Een staaf is 10, niet 1.'],[100*v.h+10*v.t,'Je vergat de losse blokjes.'],[10*v.h+v.t+v.e,'Een plak is 100.']],
+  'V02.prijs':v=>[[v.p*(v.n+1),'Je rekende er één te veel.'],[2*v.p,'Je deed maar 2 keer. Je koopt er '+v.n+'.']],
+  'M02.meten':v=>v.a?[[v.a,'Dat is waar het begint. Tel de centimeters vanaf daar.'],[v.l-1,'Tel de stukjes tussen de streepjes, vanaf het begin.']]:[[v.l-1,'Tel de stukjes tussen de streepjes, vanaf 0.'],[v.l*10,'Dat zijn millimeters. De vraag is in centimeters.']],
+  'M02.wisselgeld':v=>[[v.g-v.p-1,'Tel op vanaf de prijs: van € '+v.p+' naar € '+v.g+'.'],[v.g-v.p+1,'Je telde de prijs zelf mee. Begin te tellen na € '+v.p+'.']],
+  'B02.tabel':v=>v.t==='dag'?[[v.w[(v.i+4)%5],'Je keek een dag te vroeg.'],[Math.max(...v.w),'Dat is het grootste getal in de tabel, niet die dag.']]:[[v.w[v.i],'Dat is alleen het aantal op één dag.'],[v.w[v.j],'Dat is alleen het aantal op één dag.']],
+  'B02.patroon':v=>v.t==='keer'?[[v.a*8,'Dat getal staat al in de rij. Wat komt erna?'],[v.a*24,'Het is steeds keer 2, niet keer 3.']]:[[v.a+3*v.s,'Dat getal staat al in de rij. Wat komt erna?'],[v.a+4*v.s+v.s,'Je deed er twee sprongen bij.']],
+  'V02.keerzoveel':v=>[[v.f*v.n+v.n,v.a+' heeft '+v.f+' keer zoveel. Je telde de '+v.n+' van '+v.b+' er nog bij.'],[v.f*(v.n-1),'Je bent één keer '+v.f+' vergeten.']],
+  'B02.staaf':v=>[[Math.max(...v.w),'Dat is de hoogste staaf, niet de staaf van '+v.d[v.i]+'.'],[v.w.reduce((a,b)=>a+b,0),'Dat zijn alle kinderen samen.']],
+  // ---------- niveau 3 ----------
+  'G03.cijferen':v=>v.op==='+'?[[v.a+v.b+10,'Je hebt een 1 onthouden waar dat niet nodig was.'],[v.a-v.b,'Het is een plussom.']]:[[v.a+v.b,'Het is een minsom.'],[v.a-v.b-100,'Je leende bij de honderdtallen terwijl dat niet nodig was.']],
+  'G03.keer':v=>[[v.a*Math.floor(v.b/10)+v.a*(v.b%10),'Je deed '+v.a+' × '+Math.floor(v.b/10)+' in plaats van '+v.a+' × '+Math.floor(v.b/10)*10+'. Het is '+v.a+' × '+Math.floor(v.b/10)*10+' + '+v.a+' × '+v.b%10+'.'],[v.a*v.b+v.b,'Je deed er één keer '+v.b+' te veel bij.']],
+  'G03.rest':v=>[[v.d-v.rest,'Dat is hoeveel er nog bij moet voor een extra rondje. Je zoekt wat er overblijft.'],[v.n-v.d,'Je haalde '+v.d+' eraf. Verdelen is: hoe vaak past '+v.d+' erin?']],
+  'V03.tabel':v=>[[v.p*v.f,'Je deed keer '+v.f+', maar met de prijs van één. De prijs van '+v.a+' is € '+v.a*v.p+'.'],[v.a*v.p*v.f+v.a*v.p,'Je deed er één keer te veel bij.']],
+  'V03.recept':v=>[[v.h*(v.f+1),'Je deed het één keer te veel.'],[v.h+v.f,'Je telde '+v.f+' erbij. Alles wordt '+v.f+' keer zoveel.']],
+  'M03.omtrek':v=>v.t==='omtrek'?[[2*v.b+v.h,'Je vergat één kant.'],[4*v.b,'Niet alle kanten zijn even lang.']]:[[v.b*v.h+v.b,'Je telde een rij te veel.'],[2*v.b+2*v.h-4,'Je telde alleen de hokjes aan de rand.']],
+  'M03.tijdsduur':v=>[[v.d+60,'Je telde een uur te veel.'],[Math.floor(v.d/60)+v.d%60,'Je telde de uren als 1 minuut. Een uur is 60 minuten.']],
+  'B03.staaf':v=>v.t==='een'?[[v.w[v.i]*2,'Lees af aan de schaal links. Elke streep is al het aantal kinderen.'],[v.w[(v.i+1)%4],'Dat is een andere staaf.']]:[[v.w[v.i],'Dat is alleen de '+v.d[v.i]+'.'],[v.w[v.j],'Dat is alleen de '+v.d[v.j]+'.']],
+  'B03.rooster':v=>[[v.st[v.i]+v.st[v.i-1],'Je telde twee tijden uit de tabel op. Kijk alleen hoe laat de bus vertrekt en hoe laat hij aankomt.'],[v.st[v.i]+10,'Lees de minuten precies af.'],[Math.max(1,v.st[v.i]-5),'Lees de minuten precies af.']],
+  'V03.perstuk':v=>[[v.b*v.a*v.p,'Je deed de prijs van '+v.a+' keer '+v.b+'. Reken eerst de prijs van één uit.'],[v.b+v.p,'Je telde op. '+v.b+' stuks is '+v.b+' keer de prijs van één.']],
+  'M03.gewicht':v=>[[v.kg*1000,'Je vergat wat je gebruikt hebt.'],[v.kg-v.g/1000,'Je rekende in kilo. De vraag is in gram.'],[v.kg*1000-2*v.g,'Je haalde het twee keer eraf.']],
+  'B03.reeks':v=>[[v.s+v.d*v.k-v.d+v.s,'Het eerste getal tel je maar één keer.'],[v.s+(v.k-1)*v.d-v.d,'Je deed één stap te weinig.']],
+  // ---------- niveau 4 ----------
+  'G04.groot':v=>[[Math.floor(v.x/v.op)*v.op+v.op*10,'Je rondde op de verkeerde plek af.'],[v.x-v.x%(v.op/10),'Je rondde af op een plek te ver naar rechts.']],
+  'G04.kommageld':v=>v.op==='+'?[[(v.a+v.b)/1000,'De komma staat verkeerd. Schat: past het bedrag?'],[Math.floor(v.a/100)+Math.floor(v.b/100)+(v.a%100+v.b%100)/1000,'Je schreef de centen achter elkaar. 100 cent is 1 euro.']]:[[(v.a+v.b)/100,'Dat is wat je eerst had.'],[v.b/100,'Dat is wat je uitgeeft.']],
+  'V04.schaal':v=>[[v.s*v.cm*100,'Je rekende om naar centimeters. De vraag is in meters.'],[v.s,'Dat is 1 cm. De glijbaan staat '+v.cm+' cm verder.']],
+  'V04.verhouding':v=>[[v.p,'Dat kost er één. Je wilt er '+v.m+'.'],[v.m*v.n,'Je deed het aantal keer het aantal. Reken met de prijs van één.']],
+  'M04.eenheden':v=>[[v.x*v.f/10,'Eén nul te weinig: 1 '+v.a+' is '+v.f+' '+v.b+'.'],[v.x+v.f,'Je telde op. Je moet keer '+v.f+'.']],
+  'M04.opp':v=>[[v.l*v.b*2,'Je deed het dubbel. Het is gewoon lengte × breedte.'],[v.l*v.l,'Je deed lengte × lengte. Het is lengte × breedte.']].filter(x=>x[0]!==v.l*v.b),
+  'M04.liter':v=>[[v.l*1000,'Dat zijn de milliliters. Deel nog door wat er in een beker gaat.'],[v.l*1000/v.b*2,'Je rekende met een halve beker.']],
+  'B04.lijn':v=>v.s==='een'?[[v.w[(v.i+4)%5],'Je keek bij een ander tijdstip.'],[v.w[v.i]+1,'Lees precies af. Tussen twee strepen zit 2 graden.']]:[[v.w[v.i],'Dat is de temperatuur op één tijdstip.'],[v.w[v.j],'Dat is de temperatuur op één tijdstip.']],
+  'B04.tabel':v=>[[v.s[v.i][1],'Dat is één kaartje. Je gaat met '+v.n+' kinderen.'],[v.s[v.i][1]*(v.n+1),'Je telde één kaartje te veel.']],
+  'V04.korting':v=>v.k==='helft'?[[v.p*2,'Je deed keer 2. Met de helft korting betaal je minder.'],[v.p/4,'Dat is een kwart. De helft is delen door 2.']]:[[v.p/2,'Dat is de helft. Een kwart korting is minder korting.'],[v.p*5/4,'Je telde het kwart erbij. Korting gaat eraf.']],
+  'B04.staaf':v=>v.t==='weekend'?[[v.w[5],'Dat is alleen zaterdag. Tel zondag erbij.'],[v.w.reduce((a,b)=>a+b,0),'Dat is de hele week. Alleen zaterdag en zondag.']]:[[v.w[2]/50,'Dat is het aantal strepen. Elke streep is 50 bezoekers.'],[v.w[1],'Dat is dinsdag.']],
+  // ---------- niveau 5 en hoger ----------
+  'B1.tabel':v=>v.wat==='verschil'?[[v.w[v.j],'Dat is alleen het bedrag van '+v.m[v.j]+'.']]:[[v.w.reduce((a,b)=>a+b,0)/5,'Dat is het gemiddelde per maand. De vraag is hoeveel samen.'],[Math.max(...v.w)*5,'Niet elke maand is evenveel gespaard. Tel alle bedragen op.']],
+  'G2.verdelen':v=>v.c[3]==='op'?[[Math.ceil(v.n/v.g)+1,'Eén extra is niet nodig: met '+Math.ceil(v.n/v.g)+' past iedereen al.'],[rondaf(v.n/v.g,2),'Je kunt geen deel nemen. Rond af op een heel getal, en kijk of dat naar boven of naar beneden moet.']]:[[Math.floor(v.n/v.g)-1,'Er past nog een volle groep in.'],[rondaf(v.n/v.g,2),'Je kunt geen deel nemen. Rond af op een heel getal, en kijk of dat naar boven of naar beneden moet.']],
+  'M3.temperatuur':v=>v.t==='verschil'?[[v.b-v.a+1,'Je telde de 0 dubbel.']]:[[2*v.b+v.d,'Je telde de temperatuur overdag erbij. Die gaat er juist af.'],[v.d+1,'Tel nog eens: de eerste '+v.b+' graden brengen je naar 0.']],
+  'M4.prijsm2':v=>{ const n=Math.ceil(rondaf(v.l*v.b*1.1/v.pak,6)); return [[rondaf(v.l*v.b*1.1,2),'Dat is het aantal m². Deel nog door de m² per pak.'],[rondaf(n*v.prijs,2),'Dat is de prijs. De vraag is hoeveel pakken.']] },
+  'G3.volgorde':v=>({'a+b×c':[[v.a+v.b+v.c,'Er staat ook een keer.'],[v.a*v.c+v.b,'De keer hoort bij '+v.b+' en '+v.c+'.']],'a−b×c':[[v.a-v.b-v.c,'Er staat ook een keer.'],[v.b*v.c-v.a,'Let op de volgorde: '+v.a+' min het product.']],'(a+b)×c':[[v.a+v.b+v.c,'Er staat ook een keer.'],[v.a*v.c+v.b,'Het hele haakje gaat keer '+v.c+'.']],'a+b:c':[[v.a+v.b*v.c,'Er staat delen, geen keer.'],[rondaf(v.a/v.c+v.b,2),'De deling hoort bij '+v.b+' en '+v.c+'.']],'a×b−c×d':[[v.a*(v.b-v.c)*v.d,'Keer gaat vóór min: reken eerst beide producten uit.'],[v.a*v.b-v.c,'Je vergat × '+v.d+'.']]})[v.vorm]||[],
+  'G3.negatief':v=>v.type==='verschil'?[[v.hoog-v.laag+1,'Je telde de 0 dubbel.'],[-v.laag,'Dat is alleen het stuk onder nul.']]:[[-v.d,'Je begon bij 0 in plaats van bij '+v.start+' °C.'],[-(v.start+v.d),'Je telde de temperatuur overdag erbij. Hij gaat er juist af.']],
+  'M3.oppeenheden':v=>v.naarKlein?[[rondaf(v.g*v.e[2]/10,4),'Bij oppervlakte is elke stap keer 100.'],[rondaf(v.g*v.e[2]*10,4),'Eén nul te veel. Tel de stappen tussen de eenheden.']]:[[rondaf(v.k/v.e[2]*10,4),'Bij oppervlakte is elke stap delen door 100.'],[rondaf(v.k/v.e[2]/10,6),'Eén nul te veel weggestreept. Tel de stappen tussen de eenheden.']],
+  'M3.hoeken':v=>{ const tot=v.type==='vierhoek'?360:180, s=v.h.reduce((a,b)=>a+b,0); return v.type==='lijn'?[[v.h[0],'Dat is de gegeven hoek zelf.'],[90-v.h[0]>0?90-v.h[0]:v.h[0]-90,'Op een rechte lijn is het samen 180°, niet 90°.']]:[[s,'Dat zijn de gegeven hoeken samen. Trek dat af van '+tot+'°.'],[tot-v.h[0],'Je trok maar één hoek af.']] },
+  'G4.afronden':v=>v.type==='geld'?[[rondaf(v.t/v.n,2),'Dat is in centen. Deel nog door 100 voor euro.']]:[[rondaf(v.a/v.b,2),'Rond af op 1 decimaal, niet op 2.'],[rondaf(v.b/v.a,1),'Je deelde andersom.']],
+  'G4.miljoen':v=>v.naarGetal?[[rondaf(v.x*v.e[1]/1000,0),'Er ontbreken drie nullen.']]:[[v.x*1000,'Je deelde niet genoeg. Streep '+Math.log10(v.e[1])+' nullen weg.'],[rondaf(v.x/1000,6),'Je deelde te veel.']],
+  'M4.inhoudmaten':v=>v.e[2]===1?[[rondaf((v.naarKlein?v.g:v.k)*10,4),`1 ${v.e[0]} is precies 1 ${v.e[1]}.`]]:v.naarKlein?[[rondaf(v.g*v.e[2]*1000,4),'Je deed een stap te veel.']]:[[rondaf(v.k/v.e[2]/1000,7),'Je deed een stap te veel.']],
+  'G5.breukdelen':v=>[[rondaf(v.a+v.n/v.t,2),'Je telde op. Delen door een breuk is: hoe vaak past die erin?'],[rondaf(v.a*v.n/v.t/2,2),'Reken na: past '+breuk(v.t,v.n)+' echt zo vaak in '+nl(v.a)+'?']],
+  'V5.tweekortingen':v=>v.wat==='prijs'?[[rondaf(v.p*(100-(100-v.k1)*(100-v.k2)/100)/100,2),'Dat is de korting. De vraag is wat je betaalt.']]:[[100-v.k1-v.k2,'Dat is wat je zou betalen als je de kortingen optelt.'],[rondaf(v.k1*v.k2/100,2),'Je vermenigvuldigde de kortingen. Vermenigvuldig de factoren: '+nl((100-v.k1)/100)+' × '+nl((100-v.k2)/100)+'.']],
+  'V5.procentvan':v=>v.wat==='aantal'?[[v.n*v.p1/100,'Dat zijn alle sporters. Neem daar nog '+v.p2+'% van.']]:[[v.p1,'Dat zijn alle sporters. Neem daar nog '+v.p2+'% van.'],[v.p1*v.p2,'Je vergat te delen door 100: '+v.p2+'% van '+v.p1+'% is '+nl(v.p2/100)+' × '+v.p1+'%.']],
+  'G6.rekenvolgorde':v=>v.t==='a'?[[v.a+v.b*v.c,'Je vergat het kwadraat.']]:v.t==='b'?[[(v.a+v.b-v.c)**2,'Het kwadraat hoort alleen bij de haakjes. Trek '+v.c+' er daarna af.']]:[[(v.a*v.a-v.b)*v.c,'Je rekende van links naar rechts. Keer gaat vóór min.'],[2*v.a-v.b*v.c,'Kwadrateren is keer zichzelf, niet keer 2.']],
+  'V6.wisselkoers':v=>v.naarEur?[[rondaf(v.b-v.k,2),'Omrekenen met een koers is delen of vermenigvuldigen, niet aftrekken.']]:[[rondaf(v.b+v.k,2),'Omrekenen met een koers is delen of vermenigvuldigen, niet optellen.']],
+  'G7.wetnotrekenen':v=>v.type==='exp'?[[Math.abs(v.p-v.q),'Bij vermenigvuldigen tel je de exponenten op, je trekt ze niet af.']]:[[rondaf(v.a+v.b,4),'Je telde de getallen op. Vermenigvuldig ze.']],
+  'G8.machtregels':v=>v.t==='keer'?[[Math.max(v.a,v.b),'Gebruik beide exponenten: tel ze op.']]:v.t==='deel'?[[v.b-v.a,'Trek de exponent van de noemer af van die van de teller, niet andersom.']]:[[v.b,'Vermenigvuldig de exponenten: '+v.a+' × '+v.b+'.']],
+  'V8.groeiperiode':v=>v.t==='jaar'?[[rondaf((1+v.p/100)**12-1,4),'Dat is de groei als decimaal getal. Keer 100 voor procent.'],[rondaf(((1+v.p/100)**11-1)*100,2),'Je rekende met 11 stappen. Een jaar heeft 12 maanden.']]:[[rondaf((1+v.p/100)**(1/12)-1,4),'Dat is de groei als decimaal getal. Keer 100 voor procent.']],
+  'X2.webshop':v=>[[rondaf(v.w[0].p+v.w[1].p+9.9,2),'Je rekende twee keer verzendkosten. Die betaal je één keer per bestelling.']],
+  'X7.afbetalen':v=>[[rondaf((v.A+v.n*v.T)/v.P*100,1),'Dat is het totaal als percentage van de contante prijs. Trek er 100% vanaf.']],
+};
+Object.entries(EXTRA_FOUTEN).forEach(([id,extra])=>{ const ld=LD[id]; if(!ld||!ld.fouten) return; const oud=ld.fouten; ld.fouten=v=>{ let e=[]; try{ e=extra(v).filter(x=>Number.isFinite(x[0])) }catch(err){} return oud(v).concat(e) } });
 
 // ===== Schermen voor de leerling =====
 // Foto's: Unsplash (gratis te gebruiken onder de Unsplash-licentie)

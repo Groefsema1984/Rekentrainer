@@ -38,4 +38,20 @@ for(const ld of LDS){ if(!ld.stappen) continue; for(let s=1;s<=30;s++){ let it; 
   const o=it.check.opties.map(x=>tekst(x.t)); if(new Set(o).size!==o.length||o.some(x=>!x.trim())||it.check.opties.filter(x=>x.goed).length!==1){ meld(ld.id,'checkvraag: '+tekst(it.check.vraag)+' | '+o.join(' | ')); break } } }
 // invoer
 [['1 1/6',7/6],['12,5',12.5],['12.5',12.5],[' 3 ',3],['€ 4,50',4.5],['1.250',1250],['0,125',.125],['−2',-2],['2 3/4 kg',2.75]].forEach(([s,w])=>{ const x=parseGetal(s); if(Math.abs(x-w)>1e-9) meld('parseGetal',`"${s}" → ${x}, verwacht ${w}`) });
+// nieuwe leerdoelen niveau 1–5: onafhankelijk narekenen
+check('M04.tijdsduur',(v,it)=>((v.eu*60+v.em)-(v.u*60+v.m))!==it.antw?'tijdsduur klopt niet':v.em>59||v.eu>23?'onmogelijke tijd':null);
+check('V05.schaal',(v,it)=>Math.abs(v.c*v.s/100/1000-it.antw)>1e-9?'schaal klopt niet':it.antw>20?'wandelroute '+it.antw+' km':null);
+check('M05.aquarium',(v,it)=>Math.abs(v.l*v.b*v.h/1000-it.antw)>1e-9?'inhoud klopt niet':null);
+check('X5.traktatie',(v,it)=>{ const z=Math.ceil(v.k*v.p/v.z); return z*v.z<v.k*v.p||(z-1)*v.z>=v.k*v.p?'aantal zakken klopt niet':Math.abs(z*v.pr-it.antw)>0.005?'prijs klopt niet':null });
+check('B05.gemiddelde',(v,it)=>it.antw<1||it.antw>10?'benodigd cijfer '+it.antw:Math.abs((v.w.reduce((a,b)=>a+b,0)+it.antw)/5-v.g)>1e-9?'gemiddelde klopt niet':null);
+check('G05.negatief',(v,it)=>it.antw!==(v.op==='kouder'?-v.a-v.b:v.b-v.a)?'temperatuur klopt niet':null);
+
+// ---------- kwaliteitssignalen (waarschuwing, geen fout) ----------
+// a) meerkeuze zonder echte denkfout: gemiddeld 1 of meer opgevulde afleiders zonder feedback
+const zwak=[]; for(const ld of LDS){ if(!ld.antw||!ld.fouten||ld.opties) continue; let fill=0,n=0; for(let s=1;s<=30;s++){ try{ const it=maakItem(ld.id,{seed:s*97+1,vorm:'mc',trede:3}); fill+=it.opties.filter(o=>!o.goed&&!o.fb).length; n++ }catch(e){} } if(n&&fill/n>=1) zwak.push(ld.id) }
+if(zwak.length) console.log(`⚠ ${zwak.length} leerdoel(en) met meestal een opvul-afleider zonder denkfout: ${zwak.join(', ')}`);
+// b) dekking: elk niveau minstens 3 leerdoelen per domein
+const SUBD=ctx.SUBDOMEINEN||{}; const perNiv={}; LDS.forEach(l=>{ const k=perNiv[l.niv]=perNiv[l.niv]||{G:0,V:0,M:0,B:0}; k[l.dom]++ });
+Object.entries(perNiv).forEach(([n,k])=>{ const dun=Object.entries(k).filter(([d,x])=>x<3).map(([d,x])=>d+':'+x); if(dun.length) console.log(`⚠ niveau ${n}: weinig leerdoelen in domein ${dun.join(', ')}`) });
+
 console.log(fouten?`${fouten} inhoudsfout(en) gevonden.`:'Orakel: geen inhoudsfouten gevonden.'); process.exit(fouten?1:0);
